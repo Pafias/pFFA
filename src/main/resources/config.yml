@@ -1,0 +1,34 @@
+mysql:
+  enabled: true
+  host: '127.0.0.1'
+  port: 3306
+  database: 'minecraft'
+  username: 'root'
+  password: ''
+  ssl: false
+
+ffa_worlds:
+  - world
+
+death_message_suffix: "&7(&c%s ❤&7)"
+
+heal_on_kill: true
+disable_falldamage: false
+
+override_kill_command: true
+kill_command_cooldown: 5
+
+lobby_detection: ycoord
+
+lobby:
+  world: 'world'
+  x: 50.5
+  y: 70.5
+  z: 50.5
+  yaw: 0.0
+  pitch: 0.0
+  hradius: 20
+  vradius: 6
+  xbounds: '40.0,60.0'
+  ybounds: '60.0,80.0'
+  zbounds: '40.0,60.0'
