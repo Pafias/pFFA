@@ -1,0 +1,16 @@
+name: PafiasFFA
+version: '${project.version}'
+main: me.pafias.pafiasffa.PafiasFFA
+api-version: 1.13
+softdepend: [ ProtocolLib, PlaceholderAPI, Citizens ]
+authors: [ Pafias ]
+description: The best FFA plugin!
+commands:
+  ffa:
+    usage: /ffa [subcommand]
+    aliases: [freeforall]
+    description: FFA Main Command
+  kill:
+    usage: /kill [player]
+    aliases: []
+    description: Kill command

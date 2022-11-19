@@ -1,0 +1,27 @@
+{
+  "name": "Beast",
+  "gui_item": {
+    "material": "DIAMOND_SWORD",
+    "displayname": "&b&lBeast Kit",
+    "lore": [
+      "Click to spawn with Beast Kit"
+    ]
+  },
+  "items": [
+    {
+      "slot": 0,
+      "material": "DIAMOND_HELMET",
+      "amount": 1,
+      "enchantments": [
+        {
+          "name": "DAMAGE_ALL",
+          "level": 1
+        },
+        {
+          "name": "DURABILITY",
+          "level": 1
+        }
+      ]
+    }
+  ]
+}
