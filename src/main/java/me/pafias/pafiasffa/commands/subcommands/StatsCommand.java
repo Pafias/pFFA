@@ -7,6 +7,8 @@ import me.pafias.pafiasffa.util.CC;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.concurrent.CompletableFuture;
+
 public class StatsCommand extends ICommand {
 
     public StatsCommand() {
@@ -39,17 +41,24 @@ public class StatsCommand extends ICommand {
             sender.sendMessage(CC.t(String.format("&6Deaths: &7%d", target.getDeaths())));
             sender.sendMessage("");
         } else {
-            UserConfig config = new UserConfig(targetName);
-            config.exists().thenAccept(exists -> {
-                if (!exists) {
+            String finalTargetName = targetName;
+            CompletableFuture.supplyAsync(() -> plugin.getServer().getOfflinePlayer(finalTargetName)).thenAccept(offlinePlayer -> {
+                if (!offlinePlayer.hasPlayedBefore())
                     sender.sendMessage(CC.t("&cPlayer not found!"));
-                } else {
-                    config.get("name", "kills", "deaths").thenAccept(list -> {
-                        sender.sendMessage("");
-                        sender.sendMessage(CC.t(String.format("&3---------- &9FFA Stats for &d%s &3----------", list.get(0))));
-                        sender.sendMessage(CC.t(String.format("&6Kills: &7%d", list.get(1))));
-                        sender.sendMessage(CC.t(String.format("&6Deaths: &7%d", list.get(2))));
-                        sender.sendMessage("");
+                else {
+                    UserConfig config = new UserConfig(offlinePlayer.getUniqueId());
+                    config.exists().thenAccept(exists -> {
+                        if (!exists) {
+                            sender.sendMessage(CC.t("&cPlayer not found!"));
+                        } else {
+                            config.get("kills", "deaths").thenAccept(list -> {
+                                sender.sendMessage("");
+                                sender.sendMessage(CC.t(String.format("&3---------- &9FFA Stats for &d%s &3----------", offlinePlayer.getName())));
+                                sender.sendMessage(CC.t(String.format("&6Kills: &7%d", list.get(0))));
+                                sender.sendMessage(CC.t(String.format("&6Deaths: &7%d", list.get(1))));
+                                sender.sendMessage("");
+                            });
+                        }
                     });
                 }
             });

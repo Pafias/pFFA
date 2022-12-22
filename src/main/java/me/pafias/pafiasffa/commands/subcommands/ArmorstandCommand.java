@@ -39,9 +39,10 @@ public class ArmorstandCommand extends ICommand {
         if (player.getWorld().getEntities().stream().anyMatch(e -> (e instanceof ArmorStand) && e.getLocation().getBlock() == player.getLocation().getBlock())) {
             armorstand = (ArmorStand) player.getWorld().getEntities().stream().filter(e -> (e instanceof ArmorStand) && e.getLocation().getBlock() == player.getLocation().getBlock()).findAny().orElse(null);
         }
-        if (armorstand == null)
-            armorstand = player.getWorld().spawn(player.getLocation(), ArmorStand.class, as -> prepAs(as, name));
-        else
+        if (armorstand == null) {
+            armorstand = player.getWorld().spawn(player.getLocation(), ArmorStand.class);
+            prepAs(armorstand, name);
+        } else
             prepAs(armorstand, name);
     }
 

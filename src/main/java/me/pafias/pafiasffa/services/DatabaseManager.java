@@ -32,11 +32,10 @@ public class DatabaseManager {
                 PreparedStatement ps = conn.prepareStatement(
                         "CREATE TABLE IF NOT EXISTS " + plugin.getSM().getVariables().mysqlTable + " (" +
                                 "uuid varchar(36) NOT NULL," +
-                                "name varchar(16) NOT NULL," +
                                 "kills INT DEFAULT 0 NOT NULL," +
                                 "deaths INT DEFAULT 0 NOT NULL," +
                                 "PRIMARY KEY (uuid)" +
-                                ")"
+                                ");"
                 );
                 ps.execute();
             } catch (SQLException e) {

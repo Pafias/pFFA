@@ -18,8 +18,7 @@ public class UserConfig {
 
     private final PafiasFFA plugin = PafiasFFA.get();
 
-    private UUID uuid;
-    private String name;
+    private final UUID uuid;
 
     private File file;
     private FileConfiguration config;
@@ -34,10 +33,6 @@ public class UserConfig {
             if (file.exists())
                 config = YamlConfiguration.loadConfiguration(file);
         }
-    }
-
-    public UserConfig(String name) {
-        this.name = name;
     }
 
     public CompletableFuture<List<Object>> get(String... key) {
@@ -60,14 +55,8 @@ public class UserConfig {
                     StringBuilder sb = new StringBuilder();
                     for (int i = 0; i < key.length; i++)
                         sb.append(key[i]).append(i == key.length - 1 ? "" : ", ");
-                    PreparedStatement pst;
-                    if (uuid != null) {
-                        pst = connection.prepareStatement(String.format("SELECT %s FROM %s WHERE uuid = ?;", sb.toString(), plugin.getSM().getVariables().mysqlTable));
-                        pst.setString(1, uuid.toString());
-                    } else {
-                        pst = connection.prepareStatement(String.format("SELECT %s FROM %s WHERE name = ?;", sb.toString(), plugin.getSM().getVariables().mysqlTable));
-                        pst.setString(1, name);
-                    }
+                    PreparedStatement pst = connection.prepareStatement(String.format("SELECT %s FROM %s WHERE uuid = ?;", sb.toString(), plugin.getSM().getVariables().mysqlTable));
+                    pst.setString(1, uuid.toString());
                     ResultSet result = pst.executeQuery();
                     List<Object> values = new ArrayList<>();
                     while (result.next()) {
@@ -105,16 +94,9 @@ public class UserConfig {
             });
             plugin.getSM().getDBManager().getConnection().thenAccept(connection -> {
                 try {
-                    PreparedStatement pst;
-                    if (uuid != null) {
-                        pst = connection.prepareStatement(String.format("UPDATE %s SET %s = ? WHERE uuid = ?;", plugin.getSM().getVariables().mysqlTable, key));
-                        pst.setObject(1, value);
-                        pst.setString(2, uuid.toString());
-                    } else {
-                        pst = connection.prepareStatement(String.format("UPDATE %s SET %s = ? WHERE name = ?;", plugin.getSM().getVariables().mysqlTable, key));
-                        pst.setObject(1, value);
-                        pst.setString(2, name);
-                    }
+                    PreparedStatement pst = connection.prepareStatement(String.format("UPDATE %s SET %s = ? WHERE uuid = ?;", plugin.getSM().getVariables().mysqlTable, key));
+                    pst.setObject(1, value);
+                    pst.setString(2, uuid.toString());
                     pst.executeUpdate();
                 } catch (SQLException throwables) {
                     throwables.printStackTrace();
@@ -134,19 +116,11 @@ public class UserConfig {
         if (!plugin.getSM().getVariables().useMysql) {
             if (uuid != null)
                 future.complete(plugin.getServer().getOfflinePlayer(uuid).hasPlayedBefore());
-            else
-                future.complete(plugin.getServer().getOfflinePlayer(name).hasPlayedBefore());
         } else {
             plugin.getSM().getDBManager().getConnection().thenAccept(connection -> {
                 try {
-                    PreparedStatement pst;
-                    if (uuid != null) {
-                        pst = connection.prepareStatement(String.format("SELECT 1 FROM %s WHERE uuid = ?;", plugin.getSM().getVariables().mysqlTable));
-                        pst.setString(1, uuid.toString());
-                    } else {
-                        pst = connection.prepareStatement(String.format("SELECT 1 FROM %s WHERE name = ?;", plugin.getSM().getVariables().mysqlTable));
-                        pst.setString(1, name);
-                    }
+                    PreparedStatement pst = connection.prepareStatement(String.format("SELECT 1 FROM %s WHERE uuid = ?;", plugin.getSM().getVariables().mysqlTable));
+                    pst.setString(1, uuid.toString());
                     ResultSet resultSet = pst.executeQuery();
                     if (resultSet.next())
                         future.complete(true);
@@ -170,8 +144,8 @@ public class UserConfig {
     public void createPlayer() {
         plugin.getSM().getDBManager().getConnection().thenAccept(connection -> {
             try {
-                PreparedStatement ps = connection.prepareStatement("INSERT INTO " + plugin.getSM().getVariables().mysqlTable + " (uuid, name) " +
-                        "SELECT * FROM (SELECT '" + uuid + "', '" + name + "') AS tmp " +
+                PreparedStatement ps = connection.prepareStatement("INSERT INTO " + plugin.getSM().getVariables().mysqlTable + " (uuid) " +
+                        "SELECT * FROM (SELECT '" + uuid + "') AS tmp " +
                         "WHERE NOT EXISTS (" +
                         "SELECT uuid FROM " + plugin.getSM().getVariables().mysqlTable + " WHERE uuid = '" + uuid + "'" +
                         ") LIMIT 1;");

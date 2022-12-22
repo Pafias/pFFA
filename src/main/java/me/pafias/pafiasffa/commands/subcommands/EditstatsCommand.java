@@ -1,8 +1,8 @@
 package me.pafias.pafiasffa.commands.subcommands;
 
+import me.pafias.pafiasffa.commands.ICommand;
 import me.pafias.pafiasffa.objects.User;
 import me.pafias.pafiasffa.objects.UserConfig;
-import me.pafias.pafiasffa.commands.ICommand;
 import me.pafias.pafiasffa.util.CC;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -13,6 +13,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 
 public class EditstatsCommand extends ICommand {
 
@@ -69,7 +70,7 @@ public class EditstatsCommand extends ICommand {
             if (player == null) {
                 String target = event.getMessage().trim();
                 if (plugin.getServer().getPlayer(target) == null) {
-                    new UserConfig(target).exists().thenAccept(exists -> {
+                    CompletableFuture.supplyAsync(() -> plugin.getServer().getOfflinePlayer(target).hasPlayedBefore()).thenAccept(exists -> {
                         if (!exists)
                             event.getPlayer().sendMessage(ChatColor.RED + "Player not found! Try again.");
                     });
@@ -112,16 +113,18 @@ public class EditstatsCommand extends ICommand {
                         user.setKills(kills);
                         user.setDeaths(deaths);
                     } else {
-                        UserConfig config = new UserConfig(player);
-                        try {
-                            config.update("kills", kills);
-                            config.update("deaths", deaths);
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
-                            event.getPlayer().sendMessage(CC.t("&cSomething went wrong while saving: " + ex.getMessage()));
-                            event.getPlayer().sendMessage(CC.t("&cOperation cancelled."));
-                            cleanup();
-                        }
+                        CompletableFuture.supplyAsync(() -> plugin.getServer().getOfflinePlayer(player)).thenAccept(offlinePlayer -> {
+                            UserConfig config = new UserConfig(offlinePlayer.getUniqueId());
+                            try {
+                                config.update("kills", kills);
+                                config.update("deaths", deaths);
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                                event.getPlayer().sendMessage(CC.t("&cSomething went wrong while saving: " + ex.getMessage()));
+                                event.getPlayer().sendMessage(CC.t("&cOperation cancelled."));
+                                cleanup();
+                            }
+                        });
                     }
                     event.getPlayer().sendMessage(ChatColor.GREEN + "All set.");
                     cleanup();
