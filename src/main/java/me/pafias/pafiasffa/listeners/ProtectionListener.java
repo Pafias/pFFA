@@ -12,6 +12,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 
 public class ProtectionListener implements Listener {
@@ -20,6 +21,12 @@ public class ProtectionListener implements Listener {
 
     public ProtectionListener(PafiasFFA plugin) {
         this.plugin = plugin;
+    }
+
+    @EventHandler
+    public void onItem(PlayerItemDamageEvent event) {
+        if (!plugin.getSM().getVariables().ffaWorlds.contains(event.getPlayer().getWorld().getName())) return;
+        event.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -65,7 +72,7 @@ public class ProtectionListener implements Listener {
         if (!(event.getEntity() instanceof Player)) return;
         if (!plugin.getSM().getVariables().ffaWorlds.contains(event.getEntity().getWorld().getName())) return;
         User user = plugin.getSM().getUserManager().getUser((Player) event.getEntity());
-        if(user == null) return;
+        if (user == null) return;
         if (user.isInSpawn()) event.setCancelled(true);
     }
 

@@ -66,9 +66,11 @@ public class UserManager {
     }
 
     private void saveData(User user) {
+        int kills = user.getKills();
+        int deaths = user.getDeaths();
         try {
-            user.getConfig().update("kills", user.getKills());
-            user.getConfig().update("deaths", user.getDeaths());
+            user.getConfig().update("kills", kills);
+            user.getConfig().update("deaths", deaths);
         } catch (IOException e) {
             user.getPlayer().sendMessage(CC.t("&cFailed to save player data: Your kills and deaths will revert when you rejoin."));
             e.printStackTrace();
