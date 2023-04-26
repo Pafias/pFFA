@@ -15,11 +15,10 @@ public class UserManager {
 
     private PafiasFFA plugin;
 
-    private final Set<User> users;
+    private final Set<User> users = new HashSet<>();
 
     public UserManager(PafiasFFA plugin) {
         this.plugin = plugin;
-        users = new HashSet<>();
         startAutoSave();
     }
 

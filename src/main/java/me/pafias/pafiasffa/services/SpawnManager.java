@@ -28,7 +28,7 @@ public class SpawnManager {
             public void run() {
                 loadSpawns();
             }
-        }.runTaskLaterAsynchronously(plugin, (2 * 20));
+        }.runTaskAsynchronously(plugin);
     }
 
     private final List<Spawn> spawns = new ArrayList<>();
