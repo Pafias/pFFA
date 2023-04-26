@@ -25,6 +25,7 @@ public class Variables {
     public double dataSaveIntervalMinutes = 5;
     public Set<String> ffaWorlds = new HashSet<>(Collections.singletonList("FFA"));
     public boolean preventPlayersBlockingArmorstands = true;
+    public boolean cleanArrows = true;
     public String deathMessageSuffix = "&7(&c%s ❤&7)";
     public boolean healOnKill = true;
     public Location lobby;
@@ -64,6 +65,7 @@ public class Variables {
         dataSaveIntervalMinutes = plugin.getConfig().getDouble("data_save_interval_minutes", 5);
         ffaWorlds = new HashSet<>(plugin.getConfig().getStringList("ffa_worlds"));
         preventPlayersBlockingArmorstands = plugin.getConfig().getBoolean("prevent_players_blocking_armorstands", true);
+        cleanArrows = plugin.getConfig().getBoolean("clean_arrows", true);
         deathMessageSuffix = plugin.getConfig().getString("death_message_suffix");
         healOnKill = plugin.getConfig().getBoolean("heal_on_kill", true);
         disableFalldamage = plugin.getConfig().getBoolean("disable_falldamage", true);
