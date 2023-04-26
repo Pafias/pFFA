@@ -2,7 +2,9 @@ package me.pafias.pafiasffa.objects;
 
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
 
+import java.util.Collection;
 import java.util.Map;
 
 public class Kit {
@@ -10,11 +12,13 @@ public class Kit {
     private String name;
     private ItemStack gui_item;
     private Map<Integer, ItemStack> items;
+    private Collection<PotionEffect> potionEffects;
 
-    public Kit(String name, ItemStack gui_item, Map<Integer, ItemStack> items) {
+    public Kit(String name, ItemStack gui_item, Map<Integer, ItemStack> items, Collection<PotionEffect> potionEffects) {
         this.name = name;
         this.gui_item = gui_item;
         this.items = items;
+        this.potionEffects = potionEffects;
     }
 
     public void give(Player player) {
@@ -36,16 +40,12 @@ public class Kit {
         return gui_item;
     }
 
-    public void setGUIItem(ItemStack gui_item) {
-        this.gui_item = gui_item;
-    }
-
     public Map<Integer, ItemStack> getItems() {
         return items;
     }
 
-    public void setItems(Map<Integer, ItemStack> items) {
-        this.items = items;
+    public Collection<PotionEffect> getPotionEffects() {
+        return potionEffects;
     }
 
 }

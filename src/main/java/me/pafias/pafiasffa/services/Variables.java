@@ -2,11 +2,11 @@ package me.pafias.pafiasffa.services;
 
 import me.pafias.pafiasffa.PafiasFFA;
 import org.bukkit.Location;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.io.File;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Variables {
 
@@ -14,6 +14,7 @@ public class Variables {
 
     // config.yml
     public boolean useMysql;
+    public boolean setupDbOnStart = true;
     public String mysqlHost = "127.0.0.1";
     public int mysqlPort = 3306;
     public String mysqlDatabase = "minecraft";
@@ -22,6 +23,7 @@ public class Variables {
     public String mysqlPassword = "";
     public boolean mysqlSSL = false;
 
+    public double dataSaveIntervalMinutes = 5;
     public Set<String> ffaWorlds = new HashSet<>(Collections.singletonList("FFA"));
     public String deathMessageSuffix = "&7(&c%s ❤&7)";
     public boolean healOnKill = true;
@@ -55,26 +57,28 @@ public class Variables {
 
     private void reloadConfigYML() {
         useMysql = plugin.getConfig().getBoolean("mysql.enabled");
-        mysqlHost = plugin.getConfig().getString("mysql.host");
-        mysqlPort = plugin.getConfig().getInt("mysql.port");
-        mysqlDatabase = plugin.getConfig().getString("mysql.database");
-        mysqlUsername = plugin.getConfig().getString("mysql.username");
-        mysqlPassword = plugin.getConfig().getString("mysql.password");
-        mysqlSSL = plugin.getConfig().getBoolean("mysql.ssl");
+        setupDbOnStart = plugin.getConfig().getBoolean("mysql.setup_on_start");
+        mysqlHost = plugin.getConfig().getString("mysql.host", "127.0.0.1");
+        mysqlPort = plugin.getConfig().getInt("mysql.port", 3306);
+        mysqlDatabase = plugin.getConfig().getString("mysql.database", "minecraft");
+        mysqlUsername = plugin.getConfig().getString("mysql.username", "root");
+        mysqlPassword = plugin.getConfig().getString("mysql.password", "");
+        mysqlSSL = plugin.getConfig().getBoolean("mysql.ssl", false);
 
+        dataSaveIntervalMinutes = plugin.getConfig().getDouble("data_save_interval_minutes", 5);
         ffaWorlds = new HashSet<>(plugin.getConfig().getStringList("ffa_worlds"));
         deathMessageSuffix = plugin.getConfig().getString("death_message_suffix");
-        healOnKill = plugin.getConfig().getBoolean("heal_on_kill");
-        disableFalldamage = plugin.getConfig().getBoolean("disable_falldamage");
-        overrideKillCommand = plugin.getConfig().getBoolean("override_kill_command");
-        killCooldown = plugin.getConfig().getInt("kill_command_cooldown");
+        healOnKill = plugin.getConfig().getBoolean("heal_on_kill", true);
+        disableFalldamage = plugin.getConfig().getBoolean("disable_falldamage", true);
+        overrideKillCommand = plugin.getConfig().getBoolean("override_kill_command", true);
+        killCooldown = plugin.getConfig().getInt("kill_command_cooldown", 5);
         lobby = new Location(
-                plugin.getServer().getWorld(plugin.getConfig().getString("lobby.world")),
-                plugin.getConfig().getDouble("lobby.x"),
-                plugin.getConfig().getDouble("lobby.y"),
-                plugin.getConfig().getDouble("lobby.z"),
-                (float) plugin.getConfig().getDouble("lobby.yaw"),
-                (float) plugin.getConfig().getDouble("lobby.pitch")
+                plugin.getServer().getWorld(plugin.getConfig().getString("lobby.world", "world")),
+                plugin.getConfig().getDouble("lobby.x", 0.5),
+                plugin.getConfig().getDouble("lobby.y", 60),
+                plugin.getConfig().getDouble("lobby.z", 0.5),
+                (float) plugin.getConfig().getDouble("lobby.yaw", 0),
+                (float) plugin.getConfig().getDouble("lobby.pitch", 0)
         );
         lobbyHRadius = plugin.getConfig().getDouble("lobby.hradius");
         lobbyVRadius = plugin.getConfig().getDouble("lobby.vradius");
@@ -82,21 +86,6 @@ public class Variables {
         lobbyYBounds = plugin.getConfig().getString("lobby.ybounds");
         lobbyZBounds = plugin.getConfig().getString("lobby.zbounds");
         lobbyDetection = plugin.getConfig().getString("lobby_detection");
-    }
-
-    // Langs
-
-    public Map<String, Object> langEN;
-    public Map<String, Object> langNL;
-    public Map<String, Object> langTR;
-
-    private void reloadLangs() {
-        File dir = new File(plugin.getDataFolder() + "/lang");
-        if (!dir.exists())
-            dir.mkdirs();
-        langEN = new HashMap<>(YamlConfiguration.loadConfiguration(new File(dir, "en.yml")).getValues(false));
-        langNL = new HashMap<>(YamlConfiguration.loadConfiguration(new File(dir, "nl.yml")).getValues(false));
-        langTR = new HashMap<>(YamlConfiguration.loadConfiguration(new File(dir, "tr.yml")).getValues(false));
     }
 
 }

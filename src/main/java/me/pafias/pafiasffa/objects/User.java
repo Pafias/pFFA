@@ -17,12 +17,16 @@ public class User {
     private int kills;
     private int deaths;
 
+    private int killstreak;
+    private int bestKillstreak;
+
     public User(Player player) {
         this.player = player;
         config = new UserConfig(player.getUniqueId());
-        config.get("kills", "deaths").thenAccept(list -> {
+        config.get("kills", "deaths", "killstreak").thenAccept(list -> {
             kills = (int) list.get(0);
             deaths = (int) list.get(1);
+            bestKillstreak = (int) list.get(2);
         });
     }
 
@@ -46,6 +50,13 @@ public class User {
         return kills;
     }
 
+    public void addKill() {
+        setKills(getKills() + 1);
+        setKillstreak(getCurrentKillstreak() + 1);
+        if (getCurrentKillstreak() > getBestKillstreak())
+            setBestKillstreak(getCurrentKillstreak());
+    }
+
     public void setKills(int kills) {
         this.kills = kills;
         manager.queueDataSave(this, false);
@@ -55,8 +66,30 @@ public class User {
         return deaths;
     }
 
+    public void addDeath() {
+        setDeaths(getDeaths() + 1);
+        setKillstreak(0);
+    }
+
     public void setDeaths(int deaths) {
         this.deaths = deaths;
+        manager.queueDataSave(this, false);
+    }
+
+    public int getCurrentKillstreak() {
+        return killstreak;
+    }
+
+    public void setKillstreak(int killstreak) {
+        this.killstreak = killstreak;
+    }
+
+    public int getBestKillstreak() {
+        return bestKillstreak;
+    }
+
+    public void setBestKillstreak(int bestKillstreak) {
+        this.bestKillstreak = bestKillstreak;
         manager.queueDataSave(this, false);
     }
 

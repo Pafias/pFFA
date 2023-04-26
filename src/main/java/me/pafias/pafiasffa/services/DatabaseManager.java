@@ -15,13 +15,13 @@ public class DatabaseManager {
 
     public DatabaseManager(PafiasFFA plugin) {
         this.plugin = plugin;
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                if (plugin.getSM().getVariables().useMysql)
+        if (plugin.getSM().getVariables().setupDbOnStart && plugin.getSM().getVariables().useMysql)
+            new BukkitRunnable() {
+                @Override
+                public void run() {
                     setup();
-            }
-        }.runTaskLaterAsynchronously(plugin, (2 * 20));
+                }
+            }.runTaskLaterAsynchronously(plugin, (2 * 20));
     }
 
     private Connection connection;
@@ -34,10 +34,15 @@ public class DatabaseManager {
                                 "uuid varchar(36) NOT NULL," +
                                 "kills INT DEFAULT 0 NOT NULL," +
                                 "deaths INT DEFAULT 0 NOT NULL," +
+                                "killstreak INT DEFAULT 0 NOT NULL," +
                                 "PRIMARY KEY (uuid)" +
                                 ");"
                 );
                 ps.execute();
+                plugin.getServer().getScheduler().runTask(plugin, () -> {
+                    plugin.getConfig().set("mysql.setup_on_start", false);
+                    plugin.saveConfig();
+                });
             } catch (SQLException e) {
                 e.printStackTrace();
             }

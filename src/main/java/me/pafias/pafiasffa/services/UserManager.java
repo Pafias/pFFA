@@ -68,9 +68,11 @@ public class UserManager {
     private void saveData(User user) {
         int kills = user.getKills();
         int deaths = user.getDeaths();
+        int ks = user.getBestKillstreak();
         try {
             user.getConfig().update("kills", kills);
             user.getConfig().update("deaths", deaths);
+            user.getConfig().update("killstreak", ks);
         } catch (IOException e) {
             user.getPlayer().sendMessage(CC.t("&cFailed to save player data: Your kills and deaths will revert when you rejoin."));
             e.printStackTrace();
@@ -84,7 +86,7 @@ public class UserManager {
                 if (savingQueue.isEmpty()) return;
                 savingQueue.forEach(user -> saveData(user));
             }
-        }.runTaskTimerAsynchronously(plugin, (60 * 20), (60 * 20));
+        }.runTaskTimerAsynchronously(plugin, (5 * 60 * 20), (5 * 60 * 20));
     }
 
 }
