@@ -2,9 +2,11 @@ package me.pafias.pafiasffa.listeners;
 
 import me.pafias.pafiasffa.PafiasFFA;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.util.Vector;
 
@@ -14,6 +16,17 @@ public class MiscListener implements Listener {
 
     public MiscListener(PafiasFFA plugin) {
         this.plugin = plugin;
+    }
+
+    @EventHandler
+    public void onProjectileHit(ProjectileHitEvent event) {
+        if (!plugin.getSM().getVariables().cleanArrows) return;
+        if (event.getEntity() != null) {
+            if (event.getEntity() instanceof Arrow) {
+                Arrow arrow = (Arrow) event.getEntity();
+                arrow.remove();
+            }
+        }
     }
 
     @EventHandler

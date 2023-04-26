@@ -15,6 +15,7 @@ ffa_worlds:
   - world
 
 prevent_players_blocking_armorstands: true
+clean_arrows: true
 
 death_message_suffix: "&7(&c%s ❤&7)"
 
