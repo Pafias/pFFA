@@ -55,6 +55,7 @@ public class Variables {
         mysqlHost = plugin.getConfig().getString("mysql.host", "127.0.0.1");
         mysqlPort = plugin.getConfig().getInt("mysql.port", 3306);
         mysqlDatabase = plugin.getConfig().getString("mysql.database", "minecraft");
+        mysqlTable = plugin.getConfig().getString("mysql.table", "ffa_players");
         mysqlUsername = plugin.getConfig().getString("mysql.username", "root");
         mysqlPassword = plugin.getConfig().getString("mysql.password", "");
         mysqlSSL = plugin.getConfig().getBoolean("mysql.ssl", false);
