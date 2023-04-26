@@ -39,6 +39,9 @@ public class StatsCommand extends ICommand {
             sender.sendMessage(CC.t(String.format("&3---------- &9FFA Stats for &d%s &3----------", target.getName())));
             sender.sendMessage(CC.t(String.format("&6Kills: &7%d", target.getKills())));
             sender.sendMessage(CC.t(String.format("&6Deaths: &7%d", target.getDeaths())));
+            sender.sendMessage(CC.t(String.format("&6KDR: &7%.2f", target.getKDR())));
+            sender.sendMessage(CC.t(String.format("&6Current killstreak: &7%d", target.getCurrentKillstreak())));
+            sender.sendMessage(CC.t(String.format("&6Best killstreak: &7%d", target.getBestKillstreak())));
             sender.sendMessage("");
         } else {
             String finalTargetName = targetName;
@@ -51,11 +54,18 @@ public class StatsCommand extends ICommand {
                         if (!exists) {
                             sender.sendMessage(CC.t("&cPlayer not found!"));
                         } else {
-                            config.get("kills", "deaths").thenAccept(list -> {
+                            config.get("kills", "deaths", "killstreak").thenAccept(list -> {
+                                int kills = (int) list.get(0);
+                                int deaths = (int) list.get(1);
+                                int ks = (int) list.get(2);
+                                double kdr = kills / (double) (deaths == 0 ? 1 : deaths);
                                 sender.sendMessage("");
                                 sender.sendMessage(CC.t(String.format("&3---------- &9FFA Stats for &d%s &3----------", offlinePlayer.getName())));
-                                sender.sendMessage(CC.t(String.format("&6Kills: &7%d", list.get(0))));
-                                sender.sendMessage(CC.t(String.format("&6Deaths: &7%d", list.get(1))));
+                                sender.sendMessage(CC.t(String.format("&6Kills: &7%d", kills)));
+                                sender.sendMessage(CC.t(String.format("&6Deaths: &7%d", deaths)));
+                                sender.sendMessage(CC.t(String.format("&6KDR: &7%.2f", kdr)));
+                                sender.sendMessage(CC.t(String.format("&6Best killstreak: &7%d", ks)));
+
                                 sender.sendMessage("");
                             });
                         }
