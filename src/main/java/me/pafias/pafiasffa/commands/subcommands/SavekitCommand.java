@@ -41,10 +41,6 @@ public class SavekitCommand extends ICommand {
         Player player = (Player) sender;
         String name = args[1];
         KitManager kitManager = plugin.getSM().getKitManager();
-        if (kitManager.exists(name)) {
-            sender.sendMessage(CC.t("&cA kit with that name already exists!"));
-            return;
-        }
         if (player.getItemInHand() == null || player.getItemInHand().getType().equals(Material.AIR)) {
             sender.sendMessage(CC.t("&cYou have to have an item in your hand (will be the gui item)"));
             return;

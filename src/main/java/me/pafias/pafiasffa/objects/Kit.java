@@ -26,6 +26,7 @@ public class Kit {
             ItemStack item = getItems().get(slot);
             player.getInventory().setItem(slot, item);
         });
+        potionEffects.forEach(potionEffect -> player.addPotionEffect(potionEffect, true));
     }
 
     public String getName() {
