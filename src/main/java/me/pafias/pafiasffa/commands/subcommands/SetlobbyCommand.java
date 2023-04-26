@@ -2,9 +2,13 @@ package me.pafias.pafiasffa.commands.subcommands;
 
 import me.pafias.pafiasffa.commands.ICommand;
 import me.pafias.pafiasffa.util.CC;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Collections;
+import java.util.List;
 
 public class SetlobbyCommand extends ICommand {
 
@@ -40,6 +44,11 @@ public class SetlobbyCommand extends ICommand {
         plugin.getConfig().set("lobby.pitch", player.getLocation().getPitch());
         plugin.saveConfig();
         sender.sendMessage(CC.t("&aLobby set."));
+    }
+
+    @Override
+    public List<String> tabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        return Collections.emptyList();
     }
 
 }

@@ -3,15 +3,15 @@ package me.pafias.pafiasffa.commands.subcommands;
 import me.pafias.pafiasffa.commands.ICommand;
 import me.pafias.pafiasffa.objects.User;
 import me.pafias.pafiasffa.util.CC;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class KillCommand extends ICommand {
 
@@ -52,7 +52,7 @@ public class KillCommand extends ICommand {
                 }
             }.runTaskLater(plugin, (kc * 20)));
             user.getPlayer().sendMessage(CC.t("&6You will die in " + kc + " seconds. Make sure you don't get hit!"));
-        } else if (args.length > 1) {
+        } else if (args.length > 1 && sender.hasPermission("ffa.kill.others")) {
             if (plugin.getServer().getPluginManager().isPluginEnabled("Essentials")) {
                 if (sender instanceof Player)
                     ((Player) sender).performCommand("essentials:kill " + args[1]);
@@ -65,6 +65,20 @@ public class KillCommand extends ICommand {
                     plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), "minecraft:kill " + args[1]);
             }
         }
+    }
+
+    @Override
+    public List<String> tabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        if (args.length >= 3) return Collections.emptyList();
+        if (args.length == 2 && sender.hasPermission("ffa.kill.others"))
+            return plugin.getServer().getOnlinePlayers()
+                    .stream()
+                    .filter(p -> ((Player) sender).canSee(p))
+                    .map(Player::getName)
+                    .filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
+                    .collect(Collectors.toList());
+        else
+            return Collections.emptyList();
     }
 
 }

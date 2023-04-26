@@ -14,3 +14,41 @@ commands:
     usage: /kill [player]
     aliases: []
     description: Kill command
+permissions:
+  ffa:
+    children:
+      armorstand:
+        default: op
+      editstats:
+        default: op
+      kill:
+        default: true
+        children:
+          others:
+            default: op
+      kit:
+        default: op
+        children:
+          others:
+            default: op
+      lobby:
+        default: op
+        children:
+          others:
+            default: op
+      savekit:
+        default: op
+      savespawn:
+        default: op
+      setlobby:
+        default: op
+      spawn:
+        default: op
+        children:
+          others:
+            default: op
+      stats:
+        default: true
+        children:
+          others:
+            default: true

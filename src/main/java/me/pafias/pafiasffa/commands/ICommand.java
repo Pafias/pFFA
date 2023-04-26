@@ -2,10 +2,12 @@ package me.pafias.pafiasffa.commands;
 
 import me.pafias.pafiasffa.PafiasFFA;
 import me.pafias.pafiasffa.util.CC;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public abstract class ICommand {
@@ -47,6 +49,8 @@ public abstract class ICommand {
     public abstract String getDescription();
 
     public abstract void execute(String mainCommand, CommandSender sender, String[] args);
+
+    public abstract List<String> tabComplete(CommandSender sender, Command command, String alias, String[] args);
 
     public void noPermission(CommandSender sender) {
         sender.sendMessage(CC.t("&cNo permission."));
