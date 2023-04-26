@@ -14,6 +14,8 @@ data_save_interval_minutes: 5
 ffa_worlds:
   - world
 
+prevent_players_blocking_armorstands: true
+
 death_message_suffix: "&7(&c%s ❤&7)"
 
 heal_on_kill: true
