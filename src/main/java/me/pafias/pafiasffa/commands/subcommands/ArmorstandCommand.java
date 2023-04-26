@@ -1,10 +1,18 @@
 package me.pafias.pafiasffa.commands.subcommands;
 
 import me.pafias.pafiasffa.commands.ICommand;
+import me.pafias.pafiasffa.objects.Kit;
+import me.pafias.pafiasffa.objects.Spawn;
 import me.pafias.pafiasffa.util.CC;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ArmorstandCommand extends ICommand {
 
@@ -44,6 +52,17 @@ public class ArmorstandCommand extends ICommand {
             prepAs(armorstand, name);
         } else
             prepAs(armorstand, name);
+    }
+
+    @Override
+    public List<String> tabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        if (args.length >= 3) return Collections.emptyList();
+        return Stream.concat(
+                        plugin.getSM().getKitManager().getKits().stream().map(Kit::getName),
+                        plugin.getSM().getSpawnManager().getSpawns().stream().map(Spawn::getName)
+                )
+                .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
+                .collect(Collectors.toList());
     }
 
     private void prepAs(ArmorStand as, String name) {

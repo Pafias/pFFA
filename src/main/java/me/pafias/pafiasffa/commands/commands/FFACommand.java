@@ -8,12 +8,16 @@ import me.pafias.pafiasffa.util.CC;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-public class FFACommand implements CommandExecutor {
+public class FFACommand implements CommandExecutor, TabExecutor {
 
     private final PafiasFFA plugin;
 
@@ -67,6 +71,21 @@ public class FFACommand implements CommandExecutor {
                 cmd.execute(label, sender, args);
         }
         return true;
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        if (args.length == 0) return null;
+        if (args.length == 1)
+            return commands.stream().map(ICommand::getName).filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase())).collect(Collectors.toList());
+        else {
+            ICommand cmd = commands.stream().filter(c -> c.getName().equalsIgnoreCase(args[0]) || c.getAliases().contains(args[0])).findFirst().orElse(null);
+            if (cmd == null) return null;
+            if (cmd.getPermission() != null && !sender.hasPermission(cmd.getPermission()))
+                return Collections.emptyList();
+            else
+                return cmd.tabComplete(sender, command, alias, args);
+        }
     }
 
 }

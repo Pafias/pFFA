@@ -46,7 +46,9 @@ public final class PafiasFFA extends JavaPlugin {
         if (pm.isPluginEnabled("Citizens"))
             pm.registerEvents(new BotListener(plugin), plugin);
 
-        getCommand("ffa").setExecutor(new FFACommand(plugin));
+        FFACommand ffaCommand = new FFACommand(plugin);
+        getCommand("ffa").setExecutor(ffaCommand);
+        getCommand("ffa").setTabCompleter(ffaCommand);
         if (plugin.getSM().getVariables().overrideKillCommand)
             getCommand("kill").setExecutor(new KillCommand(plugin));
     }

@@ -5,6 +5,7 @@ import me.pafias.pafiasffa.objects.User;
 import me.pafias.pafiasffa.objects.UserConfig;
 import me.pafias.pafiasffa.util.CC;
 import net.md_5.bungee.api.ChatColor;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -13,6 +14,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class EditstatsCommand extends ICommand {
@@ -42,6 +45,11 @@ public class EditstatsCommand extends ICommand {
             sender.sendMessage(CC.t("&6Type the name of the player"));
             sender.sendMessage(" ");
         }
+    }
+
+    @Override
+    public List<String> tabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        return Collections.emptyList();
     }
 
     class EditstatsListener implements Listener {

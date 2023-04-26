@@ -4,10 +4,16 @@ import me.pafias.pafiasffa.commands.ICommand;
 import me.pafias.pafiasffa.objects.User;
 import me.pafias.pafiasffa.objects.UserConfig;
 import me.pafias.pafiasffa.util.CC;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 public class StatsCommand extends ICommand {
 
@@ -30,7 +36,7 @@ public class StatsCommand extends ICommand {
     @Override
     public void execute(String mainCommand, CommandSender sender, String[] args) {
         String targetName = sender.getName();
-        if (args.length == 2)
+        if (args.length == 2 && sender.hasPermission("ffa.stats.others"))
             targetName = args[1];
         sender.sendMessage(CC.t("&6Fetching data..."));
         User target = plugin.getSM().getUserManager().getUser(targetName);
@@ -73,6 +79,17 @@ public class StatsCommand extends ICommand {
                 }
             });
         }
+    }
+
+    @Override
+    public List<String> tabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        if (args.length >= 3) return Collections.emptyList();
+        if (!sender.hasPermission("ffa.stats.others")) return Collections.emptyList();
+        if (args[1].length() < 4) return Collections.singletonList("Type at least 4 letters to auto-complete");
+        return Arrays.stream(plugin.getServer().getOfflinePlayers())
+                .map(OfflinePlayer::getName)
+                .filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
+                .collect(Collectors.toList());
     }
 
 }
