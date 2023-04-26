@@ -41,6 +41,11 @@ public class PAPIExpansion extends PlaceholderExpansion {
                 return String.valueOf(user.getKills());
             case "deaths":
                 return String.valueOf(user.getDeaths());
+            case "killstreak":
+            case "currentkillstreak":
+                return String.valueOf(user.getCurrentKillstreak());
+            case "bestkillstreak":
+                return String.valueOf(user.getBestKillstreak());
             case "kdr":
                 return String.valueOf(RandomUtils.getKDR(user.getKills(), user.getDeaths()));
         }

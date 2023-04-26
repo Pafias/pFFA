@@ -3,6 +3,8 @@ package me.pafias.pafiasffa.util;
 import org.bukkit.ChatColor;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class CC {
 
@@ -10,14 +12,12 @@ public class CC {
         return ChatColor.translateAlternateColorCodes('&', string);
     }
 
-    public static String tf(String s, Object... o){
+    public static String tf(String s, Object... o) {
         return t(String.format(s, o));
     }
 
-    public static ArrayList<String> t(ArrayList<String> list) {
-        ArrayList<String> l = new ArrayList<>();
-        list.forEach(s -> l.add(t(s)));
-        return l;
+    public static List<String> t(ArrayList<String> list) {
+        return list.stream().map(CC::t).collect(Collectors.toList());
     }
 
 }

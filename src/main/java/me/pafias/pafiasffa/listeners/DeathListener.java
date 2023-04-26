@@ -37,7 +37,7 @@ public class DeathListener implements Listener {
         if (event.getEntity().getKiller() != null) {
             User user = plugin.getSM().getUserManager().getUser(event.getEntity());
             if (user != null)
-                user.setDeaths(user.getDeaths() + 1);
+                user.addDeath();
             if (event.getEntity().hasMetadata("NPC"))
                 event.setDeathMessage(CC.tf("%s was slain by %s %s", event.getEntity().getName(), event.getEntity().getKiller().getName(), CC.tf(plugin.getSM().getVariables().deathMessageSuffix, new DecimalFormat("#.##").format(killerHealth / 2))));
             else
@@ -46,7 +46,7 @@ public class DeathListener implements Listener {
                 event.getEntity().getKiller().setHealth(event.getEntity().getKiller().getMaxHealth());
             User killer = plugin.getSM().getUserManager().getUser(event.getEntity().getKiller());
             if (killer != null)
-                killer.setKills(killer.getKills() + 1);
+                killer.addKill();
         }
     }
 

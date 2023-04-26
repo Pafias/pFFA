@@ -1,11 +1,14 @@
 mysql:
   enabled: true
+  setup_on_start: true
   host: '127.0.0.1'
   port: 3306
   database: 'minecraft'
   username: 'root'
   password: ''
   ssl: false
+
+data_save_interval_minutes: 5
 
 ffa_worlds:
   - world
