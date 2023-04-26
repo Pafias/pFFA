@@ -4,6 +4,7 @@ mysql:
   host: '127.0.0.1'
   port: 3306
   database: 'minecraft'
+  table: 'ffa_players'
   username: 'root'
   password: ''
   ssl: false
