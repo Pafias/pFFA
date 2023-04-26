@@ -36,8 +36,10 @@ public class SpawnUtils {
     public static JsonObject guiItemToJson(ItemStack item) {
         JsonObject json = new JsonObject();
         json.addProperty("material", item.getType().name());
-        json.addProperty("displayname", item.getItemMeta().getDisplayName());
-        json.add("lore", new JsonParser().parse(new GsonBuilder().create().toJson(Optional.ofNullable(item.getItemMeta().getLore()).orElse(new ArrayList<>()))));
+        if (item.getItemMeta().hasDisplayName())
+            json.addProperty("displayname", item.getItemMeta().getDisplayName());
+        if (item.getItemMeta().hasLore())
+            json.add("lore", new JsonParser().parse(new GsonBuilder().create().toJson(Optional.ofNullable(item.getItemMeta().getLore()).orElse(new ArrayList<>()))));
         return json;
     }
 
