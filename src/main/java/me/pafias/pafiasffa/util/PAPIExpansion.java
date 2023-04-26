@@ -47,7 +47,7 @@ public class PAPIExpansion extends PlaceholderExpansion {
             case "bestkillstreak":
                 return String.valueOf(user.getBestKillstreak());
             case "kdr":
-                return String.valueOf(RandomUtils.getKDR(user.getKills(), user.getDeaths()));
+                return String.format("%.2f", user.getKDR());
         }
         return null;
     }

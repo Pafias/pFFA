@@ -76,6 +76,10 @@ public class User {
         manager.queueDataSave(this, false);
     }
 
+    public double getKDR() {
+        return kills / (double) (deaths == 0 ? 1 : deaths);
+    }
+
     public int getCurrentKillstreak() {
         return killstreak;
     }
