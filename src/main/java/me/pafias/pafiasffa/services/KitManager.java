@@ -30,7 +30,7 @@ public class KitManager {
             public void run() {
                 loadKits();
             }
-        }.runTaskLaterAsynchronously(plugin, (2 * 20));
+        }.runTaskAsynchronously(plugin);
     }
 
     private final List<Kit> kits = new ArrayList<>();

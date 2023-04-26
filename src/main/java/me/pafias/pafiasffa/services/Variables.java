@@ -2,7 +2,6 @@ package me.pafias.pafiasffa.services;
 
 import me.pafias.pafiasffa.PafiasFFA;
 import org.bukkit.Location;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -44,15 +43,10 @@ public class Variables {
     }
 
     public void reloadConfig() {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                plugin.getConfig().options().copyDefaults(true);
-                plugin.saveConfig();
-                plugin.reloadConfig();
-                reloadConfigYML();
-            }
-        }.runTaskAsynchronously(plugin);
+        plugin.getConfig().options().copyDefaults(true);
+        plugin.saveConfig();
+        plugin.reloadConfig();
+        reloadConfigYML();
     }
 
     private void reloadConfigYML() {

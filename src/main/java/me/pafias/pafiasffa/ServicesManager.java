@@ -5,42 +5,33 @@ import me.pafias.pafiasffa.util.PAPIExpansion;
 
 public class ServicesManager {
 
-    private final PafiasFFA plugin;
-
     public ServicesManager(PafiasFFA plugin) {
-        this.plugin = plugin;
-        databaseManager = new DatabaseManager(plugin);
-        userManager = new UserManager(plugin);
         variables = new Variables(plugin);
-        if (plugin.getServer().getPluginManager().getPlugin("PlaceholderAPI") != null)
-            papiExpansion = new PAPIExpansion(plugin);
+        databaseManager = new DatabaseManager(plugin, variables);
+        userManager = new UserManager(plugin);
         kitManager = new KitManager(plugin);
         spawnManager = new SpawnManager(plugin);
         armorstandManager = new ArmorstandManager(plugin);
-    }
-
-    private DatabaseManager databaseManager;
-
-    public DatabaseManager getDBManager() {
-        return databaseManager;
-    }
-
-    private PAPIExpansion papiExpansion;
-
-    public PAPIExpansion getPAPIExpansion() {
-        return papiExpansion;
-    }
-
-    private final UserManager userManager;
-
-    public UserManager getUserManager() {
-        return userManager;
+        if (plugin.getServer().getPluginManager().getPlugin("PlaceholderAPI") != null)
+            papiExpansion = new PAPIExpansion(plugin);
     }
 
     private final Variables variables;
 
     public Variables getVariables() {
         return variables;
+    }
+
+    private final DatabaseManager databaseManager;
+
+    public DatabaseManager getDBManager() {
+        return databaseManager;
+    }
+
+    private final UserManager userManager;
+
+    public UserManager getUserManager() {
+        return userManager;
     }
 
     private final KitManager kitManager;
@@ -59,6 +50,12 @@ public class ServicesManager {
 
     public ArmorstandManager getArmorstandManager() {
         return armorstandManager;
+    }
+
+    private PAPIExpansion papiExpansion;
+
+    public PAPIExpansion getPAPIExpansion() {
+        return papiExpansion;
     }
 
 }

@@ -13,15 +13,15 @@ public class DatabaseManager {
 
     private final PafiasFFA plugin;
 
-    public DatabaseManager(PafiasFFA plugin) {
+    public DatabaseManager(PafiasFFA plugin, Variables variables) {
         this.plugin = plugin;
-        if (plugin.getSM().getVariables().setupDbOnStart && plugin.getSM().getVariables().useMysql)
+        if (variables.setupDbOnStart && variables.useMysql)
             new BukkitRunnable() {
                 @Override
                 public void run() {
                     setup();
                 }
-            }.runTaskLaterAsynchronously(plugin, (2 * 20));
+            }.runTaskAsynchronously(plugin);
     }
 
     private Connection connection;
