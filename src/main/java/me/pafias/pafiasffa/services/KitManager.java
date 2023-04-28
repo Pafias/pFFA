@@ -33,26 +33,26 @@ public class KitManager {
         }.runTaskAsynchronously(plugin);
     }
 
-    private final List<Kit> kits = new ArrayList<>();
+    private final LinkedHashMap<String, Kit> kits = new LinkedHashMap<>();
 
-    public List<Kit> getKits() {
+    public LinkedHashMap<String, Kit> getKits() {
         return kits;
     }
 
     public boolean exists(String name) {
-        return kits.stream().anyMatch(kit -> kit.getName().equalsIgnoreCase(name) || kit.getName().toLowerCase().contains(name.toLowerCase()) || name.toLowerCase().contains(kit.getName().toLowerCase()));
+        return kits.containsKey(name.toLowerCase());
     }
 
     public Kit getDefaultKit() {
-        return kits.get(0);
+        return kits.values().iterator().next();
     }
 
     public Kit getKit(String name) {
-        return kits.stream().filter(kit -> kit.getName().equalsIgnoreCase(name) || kit.getName().toLowerCase().contains(name.toLowerCase()) || name.toLowerCase().contains(kit.getName().toLowerCase())).findAny().orElse(null);
+        return kits.get(name.toLowerCase());
     }
 
     public Kit getKit(ItemStack guiItem) {
-        return kits.stream().filter(kit -> kit.getGUIItem().equals(guiItem)).findAny().orElse(null);
+        return kits.values().stream().filter(kit -> kit.getGUIItem().equals(guiItem)).findAny().orElse(null);
     }
 
     public void saveNewKit(Player player, String name) throws IOException {
@@ -108,7 +108,7 @@ public class KitManager {
                     potionEffects.add(potionEffect);
                 }
             }
-            kits.add(new Kit(name, gui_item, items, potionEffects));
+            kits.put(name.toLowerCase(), new Kit(name, gui_item, items, potionEffects));
         } catch (IOException ex) {
             ex.printStackTrace();
             plugin.getServer().getLogger().log(Level.WARNING, "");

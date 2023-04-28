@@ -63,9 +63,8 @@ public class KitCommand extends ICommand {
     @Override
     public List<String> tabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length >= 3) return Collections.emptyList();
-        return plugin.getSM().getKitManager().getKits()
+        return plugin.getSM().getKitManager().getKits().keySet()
                 .stream()
-                .map(Kit::getName)
                 .filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
                 .collect(Collectors.toList());
     }

@@ -8,7 +8,7 @@ public class ServicesManager {
     public ServicesManager(PafiasFFA plugin) {
         variables = new Variables(plugin);
         databaseManager = new DatabaseManager(plugin, variables);
-        userManager = new UserManager(plugin);
+        userManager = new UserManager(plugin, variables);
         kitManager = new KitManager(plugin);
         spawnManager = new SpawnManager(plugin);
         armorstandManager = new ArmorstandManager(plugin);

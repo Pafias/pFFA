@@ -55,6 +55,7 @@ public final class PafiasFFA extends JavaPlugin {
     public void onDisable() {
         getServer().getScheduler().cancelTasks(plugin);
         getServer().getOnlinePlayers().forEach(player -> servicesManager.getUserManager().removeUser(player));
+        servicesManager.getDBManager().closePool();
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null)
             servicesManager.getPAPIExpansion().unregister();
         plugin = null;

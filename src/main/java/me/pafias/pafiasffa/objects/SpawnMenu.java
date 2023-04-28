@@ -11,7 +11,7 @@ public class SpawnMenu extends GuiMenu {
     public SpawnMenu(Player player, int size, Kit kitToGive) {
         super(player, CC.t("&6Spawn selection"), size);
         this.kit = kitToGive;
-        plugin.getSM().getSpawnManager().getSpawns().forEach(spawn -> getInventory().addItem(spawn.getGUIItem()));
+        plugin.getSM().getSpawnManager().getSpawns().values().forEach(spawn -> getInventory().addItem(spawn.getGUIItem()));
     }
 
     @Override
