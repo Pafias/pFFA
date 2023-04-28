@@ -12,9 +12,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.logging.Level;
 
 public class SpawnManager {
@@ -31,22 +30,22 @@ public class SpawnManager {
         }.runTaskAsynchronously(plugin);
     }
 
-    private final List<Spawn> spawns = new ArrayList<>();
+    private final LinkedHashMap<String, Spawn> spawns = new LinkedHashMap<>();
 
-    public List<Spawn> getSpawns() {
+    public LinkedHashMap<String, Spawn> getSpawns() {
         return spawns;
     }
 
     public boolean exists(String name) {
-        return spawns.stream().anyMatch(spawn -> spawn.getName().equalsIgnoreCase(name) || spawn.getName().toLowerCase().contains(name.toLowerCase()) || name.toLowerCase().contains(spawn.getName().toLowerCase()));
+        return spawns.containsKey(name.toLowerCase());
     }
 
     public Spawn getSpawn(String name) {
-        return spawns.stream().filter(spawn -> spawn.getName().equalsIgnoreCase(name) || spawn.getName().toLowerCase().contains(name.toLowerCase()) || name.toLowerCase().contains(spawn.getName().toLowerCase())).findAny().orElse(null);
+        return spawns.get(name.toLowerCase());
     }
 
     public Spawn getSpawn(ItemStack guiItem) {
-        return spawns.stream().filter(spawn -> spawn.getGUIItem().equals(guiItem)).findAny().orElse(null);
+        return spawns.values().stream().filter(spawn -> spawn.getGUIItem().equals(guiItem)).findAny().orElse(null);
     }
 
     public void saveNewSpawn(Player player, String name) throws IOException {
@@ -71,7 +70,7 @@ public class SpawnManager {
             String name = json.get("name").getAsString();
             ItemStack gui_item = SpawnUtils.jsonToGuiItem(json.get("gui_item").getAsJsonObject());
             Location location = SpawnUtils.jsonToLocation(json.get("location").getAsJsonObject());
-            spawns.add(new Spawn(name, gui_item, location));
+            spawns.put(name.toLowerCase(), new Spawn(name, gui_item, location));
         } catch (IOException ex) {
             ex.printStackTrace();
             plugin.getServer().getLogger().log(Level.WARNING, "");

@@ -63,9 +63,8 @@ public class SpawnCommand extends ICommand {
     @Override
     public List<String> tabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length >= 3) return Collections.emptyList();
-        return plugin.getSM().getSpawnManager().getSpawns()
+        return plugin.getSM().getSpawnManager().getSpawns().keySet()
                 .stream()
-                .map(Spawn::getName)
                 .filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
                 .collect(Collectors.toList());
     }

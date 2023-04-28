@@ -7,27 +7,26 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class UserManager {
 
-    private PafiasFFA plugin;
+    private final PafiasFFA plugin;
 
-    private final Set<User> users = new HashSet<>();
+    private final Map<UUID, User> users = new HashMap<>();
+    private final Map<String, User> usersByName = new WeakHashMap<>();
 
-    public UserManager(PafiasFFA plugin) {
+    public UserManager(PafiasFFA plugin, Variables variables) {
         this.plugin = plugin;
-        startAutoSave();
+        startAutoSave(variables.dataSaveIntervalMinutes);
     }
 
-    public Set<User> getUsers() {
+    public Map<UUID, User> getUsers() {
         return users;
     }
 
     public User getUser(UUID uuid) {
-        return users.stream().filter(u -> u.getUUID().equals(uuid)).findAny().orElse(null);
+        return users.get(uuid);
     }
 
     public User getUser(Player player) {
@@ -35,11 +34,17 @@ public class UserManager {
     }
 
     public User getUser(String name) {
-        return users.stream().filter(u -> u.getName().toLowerCase().startsWith(name.toLowerCase().trim())).findAny().orElse(null);
+        User user = usersByName.get(name.toLowerCase());
+        if (user == null) {
+            user = users.values().stream().filter(u -> u.getName().toLowerCase().startsWith(name.toLowerCase().trim())).findAny().orElse(null);
+            if (user != null)
+                usersByName.put(name.toLowerCase(), user);
+        }
+        return user;
     }
 
     public void addUser(Player player) {
-        users.add(new User(player));
+        users.put(player.getUniqueId(), new User(player));
     }
 
     public void removeUser(Player player) {
@@ -51,7 +56,7 @@ public class UserManager {
         queueDataSave(user, true);
         if (plugin.getSM().getVariables().ffaWorlds.contains(user.getPlayer().getWorld().getName()))
             user.getPlayer().getInventory().clear();
-        users.remove(user);
+        users.remove(user.getUUID());
     }
 
     private final Set<User> savingQueue = new HashSet<>();
@@ -78,14 +83,14 @@ public class UserManager {
         }
     }
 
-    private void startAutoSave() {
+    private void startAutoSave(double saveInterval) {
         new BukkitRunnable() {
             @Override
             public void run() {
                 if (savingQueue.isEmpty()) return;
                 savingQueue.forEach(user -> saveData(user));
             }
-        }.runTaskTimerAsynchronously(plugin, (5 * 60 * 20), (5 * 60 * 20));
+        }.runTaskTimerAsynchronously(plugin, (long) (saveInterval * 60 * 20), (long) (saveInterval * 60 * 20));
     }
 
 }

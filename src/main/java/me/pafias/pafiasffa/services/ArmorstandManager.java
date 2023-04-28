@@ -9,6 +9,10 @@ import me.pafias.pafiasffa.util.RandomUtils;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 public class ArmorstandManager {
 
     private final PafiasFFA plugin;
@@ -17,11 +21,19 @@ public class ArmorstandManager {
         this.plugin = plugin;
     }
 
+    private Map<UUID, KitMenu> kitMenuCache = new HashMap<>();
+    private Map<UUID, SpawnMenu> spawnMenuCache = new HashMap<>();
+
     public void trigger(ArmorStand as, Player player, boolean leftclick) throws NullPointerException {
         if (as.isCustomNameVisible() && as.getCustomName() != null && plugin.getSM().getKitManager().exists(as.getCustomName())) {
             Kit kit = plugin.getSM().getKitManager().getKit(as.getCustomName());
             if (!leftclick) {
-                SpawnMenu menu = new SpawnMenu(player, RandomUtils.parseSizeToInvSize(plugin.getSM().getSpawnManager().getSpawns().size()), kit);
+                SpawnMenu menu;
+                if (!spawnMenuCache.containsKey(player.getUniqueId())) {
+                    menu = new SpawnMenu(player, RandomUtils.parseSizeToInvSize(plugin.getSM().getSpawnManager().getSpawns().size()), kit);
+                    spawnMenuCache.put(player.getUniqueId(), menu);
+                } else
+                    menu = spawnMenuCache.get(player.getUniqueId());
                 menu.open();
             } else {
                 kit.give(player);

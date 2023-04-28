@@ -1,8 +1,6 @@
 package me.pafias.pafiasffa.commands.subcommands;
 
 import me.pafias.pafiasffa.commands.ICommand;
-import me.pafias.pafiasffa.objects.Kit;
-import me.pafias.pafiasffa.objects.Spawn;
 import me.pafias.pafiasffa.util.CC;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -58,8 +56,8 @@ public class ArmorstandCommand extends ICommand {
     public List<String> tabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length >= 3) return Collections.emptyList();
         return Stream.concat(
-                        plugin.getSM().getKitManager().getKits().stream().map(Kit::getName),
-                        plugin.getSM().getSpawnManager().getSpawns().stream().map(Spawn::getName)
+                        plugin.getSM().getKitManager().getKits().keySet().stream(),
+                        plugin.getSM().getSpawnManager().getSpawns().keySet().stream()
                 )
                 .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
                 .collect(Collectors.toList());
