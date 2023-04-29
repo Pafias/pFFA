@@ -29,10 +29,6 @@ public class DatabaseManager {
             config.setJdbcUrl("jdbc:mysql://" + host + ":" + port + "/" + database + "?autoReconnect=true&useSSL=" + ssl);
             config.setUsername(username);
             config.setPassword(password);
-            int maxPoolSize = Math.max(3, Runtime.getRuntime().availableProcessors() * 3);
-            config.setMaximumPoolSize(maxPoolSize);
-            int minimumIdle = Math.max(1, Math.floorDiv(maxPoolSize, 5000));
-            config.setMinimumIdle(minimumIdle);
             dataSource = new HikariDataSource(config);
             if (variables.setupDbOnStart)
                 new BukkitRunnable() {
