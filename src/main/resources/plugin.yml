@@ -19,53 +19,53 @@ commands:
 permissions:
   ffa:
     children:
-      armorstand:
+      ffa.armorstand:
         description: Permission to use the ffa's armorstand subcommand
         default: op
-      editstats:
+      ffa.editstats:
         description: Permission to use the ffa's editstats subcommand
         default: op
-      kill:
+      ffa.kill:
         description: Permission to use the ffa's kill (sub)command
         default: true
         children:
-          others:
+          ffa.kill.others:
             description: Permission to use the ffa's kill (sub)command on other players
             default: op
-      kit:
+      ffa.kit:
         description: Permission to use the ffa's kit subcommand
         default: op
         children:
-          others:
+          ffa.kit.others:
             description: Permission to use the ffa's kit subcommand on other players
             default: op
-      lobby:
+      ffa.lobby:
         description: Permission to use the ffa's lobby subcommand
         default: op
         children:
-          others:
+          ffa.lobby.others:
             description: Permission to use the ffa's lobby subcommand on other players
             default: op
-      savekit:
+      ffa.savekit:
         description: Permission to use the ffa's savekit subcommand
         default: op
-      savespawn:
+      ffa.savespawn:
         description: Permission to use the ffa's savespawn subcommand
         default: op
-      setlobby:
+      ffa.setlobby:
         description: Permission to use the ffa's setlobby subcommand
         default: op
-      spawn:
+      ffa.spawn:
         description: Permission to use the ffa's spawn subcommand
         default: op
         children:
-          others:
+          ffa.spawn.others:
             description: Permission to use the ffa's spawn subcommand on other players
             default: op
-      stats:
+      ffa.stats:
         description: Permission to use the ffa's stats subcommand
         default: true
         children:
-          others:
+          ffa.stats.others:
             description: Permission to use the ffa's stats subcommand on other players
             default: true

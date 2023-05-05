@@ -32,20 +32,32 @@ public class SpawnManager {
 
     private final LinkedHashMap<String, Spawn> spawns = new LinkedHashMap<>();
 
+    private Spawn defaultSpawn;
+
     public LinkedHashMap<String, Spawn> getSpawns() {
         return spawns;
     }
 
     public boolean exists(String name) {
-        return spawns.containsKey(name.toLowerCase());
+        boolean found = spawns.containsKey(name.toLowerCase());
+        if (!found)
+            found = spawns.keySet().stream().anyMatch(n -> name.toLowerCase().contains(n.toLowerCase()));
+        return found;
     }
 
     public Spawn getSpawn(String name) {
-        return spawns.get(name.toLowerCase());
+        Spawn spawn = spawns.get(name.toLowerCase());
+        if (spawn == null)
+            spawn = spawns.values().stream().filter(s -> name.toLowerCase().contains(s.getName().toLowerCase())).findAny().orElse(null);
+        return spawn;
     }
 
     public Spawn getSpawn(ItemStack guiItem) {
         return spawns.values().stream().filter(spawn -> spawn.getGUIItem().equals(guiItem)).findAny().orElse(null);
+    }
+
+    public Spawn getDefaultSpawn() {
+        return defaultSpawn;
     }
 
     public void saveNewSpawn(Player player, String name) throws IOException {
@@ -90,6 +102,7 @@ public class SpawnManager {
             if (!file.isDirectory())
                 loadSpawn(file);
         }
+        defaultSpawn = spawns.get(spawns.keySet().iterator().next());
     }
 
     private static String readAll(Reader rd) throws IOException {
