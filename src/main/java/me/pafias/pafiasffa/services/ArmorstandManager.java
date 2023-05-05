@@ -37,7 +37,7 @@ public class ArmorstandManager {
                 menu.open();
             } else {
                 kit.give(player);
-                plugin.getSM().getSpawnManager().getSpawns().get(0).teleport(player);
+                plugin.getSM().getSpawnManager().getDefaultSpawn().teleport(player);
             }
         } else if (as.isCustomNameVisible() && as.getCustomName() != null && plugin.getSM().getSpawnManager().exists(as.getCustomName())) {
             Spawn spawn = plugin.getSM().getSpawnManager().getSpawn(as.getCustomName());
@@ -45,7 +45,7 @@ public class ArmorstandManager {
                 KitMenu menu = new KitMenu(player, RandomUtils.parseSizeToInvSize(plugin.getSM().getKitManager().getKits().size()), spawn);
                 menu.open();
             } else {
-                plugin.getSM().getKitManager().getKits().get(0).give(player);
+                plugin.getSM().getKitManager().getDefaultKit().give(player);
                 spawn.teleport(player);
             }
         }

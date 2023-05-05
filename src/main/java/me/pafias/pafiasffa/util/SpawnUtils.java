@@ -26,7 +26,7 @@ public class SpawnUtils {
         List<String> lore = new ArrayList<>();
         if (json.has("lore")) {
             for (int i = 0; i < json.get("lore").getAsJsonArray().size(); i++)
-                lore.add(json.get("lore").getAsJsonArray().get(i).getAsString());
+                lore.add(CC.t(json.get("lore").getAsJsonArray().get(i).getAsString()));
             meta.setLore(lore);
         }
         is.setItemMeta(meta);

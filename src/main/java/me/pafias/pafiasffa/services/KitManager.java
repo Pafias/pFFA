@@ -35,20 +35,28 @@ public class KitManager {
 
     private final LinkedHashMap<String, Kit> kits = new LinkedHashMap<>();
 
+    private Kit defaultKit;
+
     public LinkedHashMap<String, Kit> getKits() {
         return kits;
     }
 
     public boolean exists(String name) {
-        return kits.containsKey(name.toLowerCase());
+        boolean found = kits.containsKey(name.toLowerCase());
+        if (!found)
+            found = kits.keySet().stream().anyMatch(n -> name.toLowerCase().contains(n.toLowerCase()));
+        return found;
     }
 
     public Kit getDefaultKit() {
-        return kits.values().iterator().next();
+        return defaultKit;
     }
 
     public Kit getKit(String name) {
-        return kits.get(name.toLowerCase());
+        Kit kit = kits.get(name.toLowerCase());
+        if (kit == null)
+            kit = kits.values().stream().filter(k -> name.toLowerCase().contains(k.getName().toLowerCase())).findAny().orElse(null);
+        return kit;
     }
 
     public Kit getKit(ItemStack guiItem) {
@@ -128,6 +136,7 @@ public class KitManager {
             if (!file.isDirectory())
                 loadKit(file);
         }
+        defaultKit = kits.get(kits.keySet().iterator().next());
     }
 
     private static String readAll(Reader rd) throws IOException {
