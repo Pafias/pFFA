@@ -10,62 +10,63 @@ commands:
     usage: /ffa [subcommand]
     aliases: [ freeforall ]
     description: FFA Main Command
-    permission: ffa
   kill:
     usage: /kill [player]
     aliases: [ suicide, die, kys, dead, iwanttodiebecauseimdepressed ]
     description: Kill command
-    permission: ffa.kill
 permissions:
-  ffa:
+  ffa.kill.others:
+    description: Permission to use the ffa's kill (sub)command on other players
+    default: op
     children:
-      ffa.armorstand:
-        description: Permission to use the ffa's armorstand subcommand
-        default: op
-      ffa.editstats:
-        description: Permission to use the ffa's editstats subcommand
-        default: op
-      ffa.kill:
-        description: Permission to use the ffa's kill (sub)command
-        default: true
-        children:
-          ffa.kill.others:
-            description: Permission to use the ffa's kill (sub)command on other players
-            default: op
-      ffa.kit:
-        description: Permission to use the ffa's kit subcommand
-        default: op
-        children:
-          ffa.kit.others:
-            description: Permission to use the ffa's kit subcommand on other players
-            default: op
-      ffa.lobby:
-        description: Permission to use the ffa's lobby subcommand
-        default: op
-        children:
-          ffa.lobby.others:
-            description: Permission to use the ffa's lobby subcommand on other players
-            default: op
-      ffa.savekit:
-        description: Permission to use the ffa's savekit subcommand
-        default: op
-      ffa.savespawn:
-        description: Permission to use the ffa's savespawn subcommand
-        default: op
-      ffa.setlobby:
-        description: Permission to use the ffa's setlobby subcommand
-        default: op
-      ffa.spawn:
-        description: Permission to use the ffa's spawn subcommand
-        default: op
-        children:
-          ffa.spawn.others:
-            description: Permission to use the ffa's spawn subcommand on other players
-            default: op
-      ffa.stats:
-        description: Permission to use the ffa's stats subcommand
-        default: true
-        children:
-          ffa.stats.others:
-            description: Permission to use the ffa's stats subcommand on other players
-            default: true
+      ffa.kill: true
+  ffa.kill:
+    description: Permission to use the ffa's kill (sub)command
+    default: true
+  ffa.stats.others:
+    description: Permission to use the ffa's stats subcommand on other players
+    default: true
+    children:
+      ffa.stats: true
+  ffa.stats:
+    description: Permission to use the ffa's stats subcommand
+    default: true
+  ffa.armorstand:
+    description: Permission to use the ffa's armorstand subcommand
+    default: op
+  ffa.editstats:
+    description: Permission to use the ffa's editstats subcommand
+    default: op
+  ffa.kit.others:
+    description: Permission to use the ffa's kit subcommand on other players
+    default: op
+    children:
+      ffa.kit: true
+  ffa.kit:
+    description: Permission to use the ffa's kit subcommand
+    default: op
+  ffa.lobby.others:
+    description: Permission to use the ffa's lobby subcommand on other players
+    default: op
+    children:
+      ffa.lobby: true
+  ffa.lobby:
+    description: Permission to use the ffa's lobby subcommand
+    default: op
+  ffa.savekit:
+    description: Permission to use the ffa's savekit subcommand
+    default: op
+  ffa.savespawn:
+    description: Permission to use the ffa's savespawn subcommand
+    default: op
+  ffa.setlobby:
+    description: Permission to use the ffa's setlobby subcommand
+    default: op
+  ffa.spawn.others:
+    description: Permission to use the ffa's spawn subcommand on other players
+    default: op
+    children:
+      ffa.spawn: true
+  ffa.spawn:
+    description: Permission to use the ffa's spawn subcommand
+    default: op
