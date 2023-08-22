@@ -6,17 +6,16 @@ import me.pafias.pafiasffa.util.CC;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class KillCommand extends ICommand {
 
     public KillCommand() {
-        super("kill", "ffa.kill", "suicide", "die");
+        super("kill", null, "suicide", "die");
     }
 
     @NotNull
@@ -31,8 +30,6 @@ public class KillCommand extends ICommand {
         return "Kill yourself";
     }
 
-    private Map<UUID, BukkitTask> cooldown = new HashMap<>();
-
     @Override
     public void execute(String mainCommand, CommandSender sender, String[] args) {
         if (args.length == 1) {
@@ -41,17 +38,9 @@ public class KillCommand extends ICommand {
                 return;
             }
             User user = plugin.getSM().getUserManager().getUser((Player) sender);
-            if (cooldown.containsKey(user.getUUID()) || user.isInSpawn())
+            if (user.isInSpawn())
                 return;
-            int kc = plugin.getSM().getVariables().killCooldown;
-            cooldown.put(user.getUUID(), new BukkitRunnable() {
-                @Override
-                public void run() {
-                    user.getPlayer().setHealth(0);
-                    cooldown.remove(user.getUUID());
-                }
-            }.runTaskLater(plugin, (kc * 20)));
-            user.getPlayer().sendMessage(CC.t("&6You will die in " + kc + " seconds. Make sure you don't get hit!"));
+            user.getPlayer().setHealth(0);
         } else if (args.length > 1 && sender.hasPermission("ffa.kill.others")) {
             if (plugin.getServer().getPluginManager().isPluginEnabled("Essentials")) {
                 if (sender instanceof Player)
