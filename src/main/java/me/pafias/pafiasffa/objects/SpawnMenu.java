@@ -1,5 +1,6 @@
 package me.pafias.pafiasffa.objects;
 
+import me.pafias.pafiasffa.services.ArmorstandManager;
 import me.pafias.pafiasffa.util.CC;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -22,6 +23,7 @@ public class SpawnMenu extends GuiMenu {
             return;
         }
         spawn.teleport(player);
+        ArmorstandManager.handlePlayer(player);
         if (kit != null)
             kit.give(player);
     }
