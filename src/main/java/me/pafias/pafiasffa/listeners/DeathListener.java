@@ -19,7 +19,7 @@ public class DeathListener implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onDeath(PlayerDeathEvent event) {
         if (!plugin.getSM().getVariables().ffaWorlds.contains(event.getEntity().getLocation().getWorld().getName()))
             return;
@@ -34,6 +34,8 @@ public class DeathListener implements Listener {
         event.getEntity().teleport(plugin.getSM().getVariables().lobby);
         event.getEntity().getInventory().clear();
         event.getEntity().getActivePotionEffects().forEach(pe -> event.getEntity().removePotionEffect(pe.getType()));
+        event.getEntity().setFoodLevel(20);
+        event.getEntity().setSaturation(0);
         if (event.getEntity().getKiller() != null) {
             User user = plugin.getSM().getUserManager().getUser(event.getEntity());
             if (user != null)
@@ -50,12 +52,14 @@ public class DeathListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onRespawn(PlayerRespawnEvent event) {
         User user = plugin.getSM().getUserManager().getUser(event.getPlayer());
         if (user == null) return;
         if (!user.isInFFAWorld()) return;
         event.setRespawnLocation(plugin.getSM().getVariables().lobby);
+        event.getPlayer().setFoodLevel(20);
+        event.getPlayer().setSaturation(0);
     }
 
 }

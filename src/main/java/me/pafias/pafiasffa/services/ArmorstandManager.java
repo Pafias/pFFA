@@ -38,6 +38,7 @@ public class ArmorstandManager {
             } else {
                 kit.give(player);
                 plugin.getSM().getSpawnManager().getDefaultSpawn().teleport(player);
+                handlePlayer(player);
             }
         } else if (as.isCustomNameVisible() && as.getCustomName() != null && plugin.getSM().getSpawnManager().exists(as.getCustomName())) {
             Spawn spawn = plugin.getSM().getSpawnManager().getSpawn(as.getCustomName());
@@ -47,8 +48,15 @@ public class ArmorstandManager {
             } else {
                 plugin.getSM().getKitManager().getDefaultKit().give(player);
                 spawn.teleport(player);
+                handlePlayer(player);
             }
         }
+    }
+
+    public static void handlePlayer(Player player) {
+        player.setHealth(player.getMaxHealth());
+        player.setFoodLevel(20);
+        player.setSaturation(0);
     }
 
 }
