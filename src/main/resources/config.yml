@@ -1,5 +1,13 @@
+preferred_db_type: 'file'
+mongo:
+  host: 'localhost'
+  port: 27017
+  database: 'minecraft'
+  collection: 'ffa'
+  username: 'root'
+  password: ''
+  options: '?authSource=minecraft'
 mysql:
-  enabled: true
   setup_on_start: true
   host: '127.0.0.1'
   port: 3306
@@ -14,6 +22,22 @@ data_save_interval_minutes: 5
 ffa_worlds:
   - world
 
+world_protection:
+  bypass_with_gm_creative: true
+  prevent_doors: false
+  prevent_gates: false
+  prevent_buttons: true
+  prevent_itemframes: true
+  prevent_soil_dry: true
+  prevent_pressure_plates: false
+  prevent_juke_box: true
+  prevent_chests: false
+  prevent_vehicles: true
+  prevent_dispenser: true
+  prevent_dropper: true
+  prevent_custom:
+    - REPEATER
+
 prevent_players_blocking_armorstands: true
 clean_arrows: true
 
@@ -24,6 +48,31 @@ disable_falldamage: false
 
 override_kill_command: true
 kill_command_cooldown: 5
+
+interactive_pressureplates: true
+quick_respawn: true
+
+killstreak_broadcasts:
+  enabled: true
+  data:
+    25:
+      - "&b%s &7has reached a kill streak of 25 kills!"
+    50:
+      - ''
+      - "&b%s &eis on fire with a kill streak of 50 kills!"
+      - ''
+    100:
+      - ''
+      - "&b&l%s is absolutely dominating with a kill streak of 100 kills!"
+      - ''
+
+combatlog:
+  enabled: true
+  duration: 10
+  display:
+    action_bar: true
+    exp_bar: true
+    level: true
 
 lobby_detection: ycoord
 

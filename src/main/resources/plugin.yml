@@ -1,9 +1,9 @@
-name: PafiasFFA
+name: pFFA
 version: '${project.version}'
-main: me.pafias.pafiasffa.PafiasFFA
+main: me.pafias.pffa.pFFA
 api-version: 1.13
 softdepend: [ ProtocolLib, PlaceholderAPI, Citizens ]
-authors: [ Pafias ]
+author: Pafias
 description: The best FFA plugin!
 commands:
   ffa:
@@ -70,3 +70,6 @@ permissions:
   ffa.spawn:
     description: Permission to use the ffa's spawn subcommand
     default: op
+  ffa.settings:
+    description: Permission to access the settings subcommand
+    default: true

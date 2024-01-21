@@ -1,0 +1,82 @@
+enabled: true
+messages:
+  with_killer:
+    hit_the_ground_too_hard:
+      - '&7{player} &6hit the ground too hard while trying to escape &c{killer} &7({health} &4❤)'
+      - '&7{player} &6smashed himself into the ground thanks to &c{killer} &7({health} &4❤)'
+    drowned:
+      - '&7{player} &6drowned thanks to &c{killer}'
+      - '&7{player} &6tried to go for a swim but drowned thanks to &c{killer}'
+    swim_in_lava:
+      - '&7{player} &6tried to swim in lava while escaping &c{killer}'
+      - '&7{player} &6didn''t realise the pool he was in was too hot to escape &c{killer}'
+    struck_by_lightning:
+      - '&7{player} &6was struck by a lightning thanks to &c{killer}'
+    blew_up:
+      - '&7{player} &6blew up trying to escape &c{killer}'
+    burned:
+      - '&7{player} &6burned to death thanks to &c{killer}'
+      - '&7{player} &6went up in flames thanks to &c{killer}'
+    shot:
+      - '&7{player} &6was shot by &c{killer} &7({health} &4❤)'
+      - '&7{player} &6got sniped by &c{killer} &7({health} &4❤)'
+      - '&7{player} got 360 noscoped by &c{killer} &7({health} &4❤)'
+    pricked:
+      - '&7{player} &6died to a cactus because of &c{killer}'
+    falling_anvil:
+      - '&7{player} &6got his head smashed with an anvil thanks to &c{killer}'
+    starved:
+      - '&7{player} &6starved to death because of &c{killer}'
+    suffocated:
+      - '&7{player} &6suffocated while escaping &c{killer}'
+    fell_out_of_world:
+      - '&7{player} &6fell out of the world trying to escape &c{killer}'
+      - '&7{player} &6tried to explore new galaxies while escaping &c{killer} &6but ended up dying in the void'
+      - '&7{player} &6got killed in the void trying to escape &c{killer}'
+    was_slain_by:
+      - '&7{player} &6was slain by &c{killer} &7({health} &4❤)'
+      - '&7{player} &6got rekt by &c{killer} &7({health} &4❤)'
+      - '&7{player} &6couldn''t win the fight against &c{killer} &7({health} &4❤)'
+    other:
+      - '&7{player} &6died thanks to &c{killer}'
+  without_killer:
+    hit_the_ground_too_hard:
+      - '&7{player} &6hit the ground too hard!'
+      - '&7{player} &6smashed himself into the ground!'
+    drowned:
+      - '&7{player} &6drowned'
+      - '&7{player} &6tried to go for a swim but drowned'
+    swim_in_lava:
+      - '&7{player} &6tried to swim in lava'
+      - '&7{player} &6didn''t realise the pool he was in was too hot'
+    struck_by_lightning:
+      - '&7{player} &6was struck by a lightning'
+    blew_up:
+      - '&7{player} &6blew up'
+    burned:
+      - '&7{player} &6burned to death'
+      - '&7{player} &6went up in flames'
+    shot:
+      - '&7{player} &6was shot'
+      - '&7{player} &6got sniped'
+      - '&7{player} &6 got 360 noscoped'
+    pricked:
+      - '&7{player} &6died to a cactus'
+    falling_anvil:
+      - '&7{player} &6got his head smashed with an anvil'
+    starved:
+      - '&7{player} &6starved to death'
+    suffocated:
+      - '&7{player} &6suffocated'
+    fell_out_of_world:
+      - '&7{player} &6fell out of the world'
+      - '&7{player} &6tried to explore new galaxies but ended up dying in the void'
+      - '&7{player} &6got killed in the void'
+    was_slain_by:
+      - '&7{player} &6was slain'
+      - '&7{player} &6got rekt'
+    intentional_game_design:
+      - '&7{player} &6got crystaled'
+      - '&7{player} &6got cpvped xd'
+    other:
+      - '&7{player} &6died'
