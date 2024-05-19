@@ -28,7 +28,7 @@ public final class pFFA extends JavaPlugin {
         plugin = this;
         version = parseVersion();
         servicesManager = new ServicesManager(plugin);
-        new AutoUpdaterTask(plugin).run();
+//        new AutoUpdaterTask(plugin).run();
         getServer().getOnlinePlayers().stream().filter(p -> !p.hasMetadata("NPC")).forEach(p -> servicesManager.getUserManager().addUser(p));
         register();
         new ArmorstandBlockingTask(plugin).runTaskTimer(plugin, 100, 3 * 20L);

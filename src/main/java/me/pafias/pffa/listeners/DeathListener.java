@@ -72,10 +72,9 @@ public class DeathListener implements Listener {
     }
 
     private static final ItemStack QUICK_RESPAWN_FEATHER = new ItemBuilder(Material.FEATHER)
-            .setName(CC.t("&bQuick Respawn &7&o(Check lore for info)"))
+            .setName(CC.t("&bQuick Respawn"))
             .setLore("",
-                    CC.t("&7Left-click to respawn with &l&nlast chosen &r&7kit & spawn"),
-                    CC.t("&7Right-click to respawn with &l&ndefault &r&7kit & spawn"),
+                    CC.t("&7Click to respawn with last chosen kit and spawn."),
                     "")
             .build();
 

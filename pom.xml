@@ -31,34 +31,34 @@
 
             </plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-toolchains-plugin</artifactId>
-                <version>1.1</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>toolchain</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <toolchains>
-                        <jdk>
-                            <version>1.8</version>
-                            <vendor>Java</vendor>
-                        </jdk>
-                        <jdk>
-                            <version>11</version>
-                            <vendor>Java</vendor>
-                        </jdk>
-                        <jdk>
-                            <version>17</version>
-                            <vendor>Java</vendor>
-                        </jdk>
-                    </toolchains>
-                </configuration>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-toolchains-plugin</artifactId>-->
+<!--                <version>1.1</version>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <goals>-->
+<!--                            <goal>toolchain</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--                <configuration>-->
+<!--                    <toolchains>-->
+<!--                        <jdk>-->
+<!--                            <version>1.8</version>-->
+<!--                            <vendor>Java</vendor>-->
+<!--                        </jdk>-->
+<!--                        <jdk>-->
+<!--                            <version>11</version>-->
+<!--                            <vendor>Java</vendor>-->
+<!--                        </jdk>-->
+<!--                        <jdk>-->
+<!--                            <version>17</version>-->
+<!--                            <vendor>Java</vendor>-->
+<!--                        </jdk>-->
+<!--                    </toolchains>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -125,7 +125,7 @@
         <dependency>
             <groupId>com.comphenix.protocol</groupId>
             <artifactId>ProtocolLib</artifactId>
-            <version>5.0.0-SNAPSHOT</version>
+            <version>5.2.0-20231209.220838-1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
