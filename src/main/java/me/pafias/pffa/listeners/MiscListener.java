@@ -57,8 +57,8 @@ public class MiscListener implements Listener {
         Kit kit;
         Spawn spawn;
         if (event.getAction().name().contains("RIGHT") || event.getAction().name().contains("LEFT")) {
-            kit = plugin.getSM().getKitManager().getDefaultKit();
-            spawn = plugin.getSM().getSpawnManager().getDefaultSpawn();
+            kit = user.getLastKit();
+            spawn = user.getLastSpawn();
         } else return;
         if (kit == null || spawn == null) return;
         kit.give(user.getPlayer());
