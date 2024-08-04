@@ -29,17 +29,18 @@ public class MysqlManager {
         config.setPassword(password);
         dataSource = new HikariDataSource(config);
         if (variables.mysql.getBoolean("setup_on_start"))
-            setup();
+            setup(variables);
     }
 
-    private void setup() {
+    private void setup(Variables variables) {
         try (Connection conn = dataSource.getConnection()) {
             PreparedStatement ps = conn.prepareStatement(
-                    "CREATE TABLE IF NOT EXISTS " + plugin.getSM().getVariables().mysql.getString("table", "ffa_players") + " (" +
+                    "CREATE TABLE IF NOT EXISTS " + variables.mysql.getString("table", "ffa_players") + " (" +
                             "uuid varchar(36) NOT NULL," +
                             "kills INT DEFAULT 0 NOT NULL," +
                             "deaths INT DEFAULT 0 NOT NULL," +
                             "killstreak INT DEFAULT 0 NOT NULL," +
+                            "settings LONGTEXT DEFAULT '[]'," +
                             "PRIMARY KEY (uuid)" +
                             ");"
             );
