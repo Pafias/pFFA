@@ -51,7 +51,12 @@ public final class pFFA extends JavaPlugin {
             pm.registerEvents(new BotListener(plugin), plugin);
 
         if (pm.isPluginEnabled("ProtocolLib"))
-            new ProtocolListener(plugin);
+            try {
+                new ProtocolListener(plugin);
+            } catch (Throwable ex) {
+                ex.printStackTrace();
+                getLogger().warning("Failed to register the ProtocolListener.");
+            }
 
         FFACommand ffaCommand = new FFACommand(plugin);
         getCommand("ffa").setExecutor(ffaCommand);
