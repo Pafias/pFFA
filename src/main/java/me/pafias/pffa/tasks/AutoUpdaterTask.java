@@ -1,6 +1,7 @@
 package me.pafias.pffa.tasks;
 
 import me.pafias.pffa.pFFA;
+import me.pafias.pffa.util.Tasks;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -39,8 +40,8 @@ public class AutoUpdaterTask extends BukkitRunnable {
                     int bytesCounter;
                     while ((bytesCounter = bufferedInputStream.read(bytes, 0, 1024)) != -1)
                         fileOutputStream.write(bytes, 0, bytesCounter);
-                    plugin.getLogger().info("Updated to latest version successfully.");
-                    Runtime.getRuntime().exit(0);
+                    plugin.getLogger().info("Updated to latest version successfully. Restarting in 5 seconds...");
+                    Tasks.runLaterSync(5 * 20, () -> plugin.getServer().shutdown());
                 } finally {
                     httpResponse.getEntity().getContent().close();
                     fileOutputStream.close();
