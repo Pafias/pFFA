@@ -1,4 +1,4 @@
-package me.pafias.pffa.listeners;
+package me.pafias.pffa.listeners.protocol;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
@@ -9,12 +9,12 @@ import com.comphenix.protocol.events.PacketEvent;
 import me.pafias.pffa.objects.User;
 import me.pafias.pffa.pFFA;
 
-public class ProtocolListener extends PacketAdapter {
+public class DamageTiltListener extends PacketAdapter {
 
     private final pFFA pl;
 
-    public ProtocolListener(pFFA pl) {
-        super(pl, ListenerPriority.HIGH, PacketType.Play.Server.HURT_ANIMATION);
+    public DamageTiltListener(pFFA pl) {
+        super(pl, ListenerPriority.NORMAL, PacketType.Play.Server.HURT_ANIMATION);
         this.pl = pl;
         ProtocolLibrary.getProtocolManager().addPacketListener(this);
     }
