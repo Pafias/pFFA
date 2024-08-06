@@ -4,6 +4,7 @@ import me.pafias.pffa.botfight.BotListener;
 import me.pafias.pffa.commands.commands.FFACommand;
 import me.pafias.pffa.commands.commands.KillCommand;
 import me.pafias.pffa.listeners.*;
+import me.pafias.pffa.listeners.protocol.ProtocolListener;
 import me.pafias.pffa.tasks.ArmorstandBlockingTask;
 import me.pafias.pffa.tasks.AutoUpdaterTask;
 import org.bukkit.plugin.PluginManager;
@@ -34,6 +35,8 @@ public final class pFFA extends JavaPlugin {
         new ArmorstandBlockingTask(plugin).runTaskTimer(plugin, 100, 3 * 20L);
     }
 
+    private ProtocolListener protocolListener;
+
     private void register() {
         PluginManager pm = getServer().getPluginManager();
 
@@ -52,7 +55,7 @@ public final class pFFA extends JavaPlugin {
 
         if (pm.isPluginEnabled("ProtocolLib"))
             try {
-                new ProtocolListener(plugin);
+                protocolListener = new ProtocolListener(plugin);
             } catch (Throwable ex) {
                 ex.printStackTrace();
                 getLogger().warning("Failed to register the ProtocolListener.");
@@ -74,6 +77,8 @@ public final class pFFA extends JavaPlugin {
             servicesManager.getMongoManager().shutdown();
         if (servicesManager.getMysqlManager() != null)
             servicesManager.getMysqlManager().closePool();
+        if (protocolListener != null)
+            protocolListener.shutdown();
         getServer().getOnlinePlayers().forEach(player -> servicesManager.getUserManager().removeUser(player));
     }
 
