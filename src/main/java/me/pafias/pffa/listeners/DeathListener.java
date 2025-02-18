@@ -23,6 +23,16 @@ public class DeathListener implements Listener {
 
     public DeathListener(pFFA plugin) {
         this.plugin = plugin;
+        boolean quickRespawnSingleAction = plugin.getSM().getVariables().quickRespawnSingleAction;
+        QUICK_RESPAWN_FEATHER = new ItemBuilder(Material.FEATHER)
+                .setName(CC.t("&bQuick Respawn &7&o(Check lore for info)"))
+                .setLore("",
+                        CC.t("&7Left-click to respawn with &l&nlast chosen&r &7kit & spawn"),
+                        quickRespawnSingleAction ?
+                                CC.t("&7Right-click to respawn with &l&nlast chosen&r &7kit & spawn")
+                                : CC.t("&7Right-click to respawn with &l&ndefault&r &7kit & spawn"),
+                        "")
+                .build();
     }
 
     private void handleKillstreakBroadcast(User user) {
@@ -71,13 +81,7 @@ public class DeathListener implements Listener {
         }
     }
 
-    private static final ItemStack QUICK_RESPAWN_FEATHER = new ItemBuilder(Material.FEATHER)
-            .setName(CC.t("&bQuick Respawn &7&o(Check lore for info)"))
-            .setLore("",
-                    CC.t("&7Left-click to respawn with &l&nlast chosen &r&7kit & spawn"),
-                    CC.t("&7Right-click to respawn with &l&ndefault &r&7kit & spawn"),
-                    "")
-            .build();
+    private final ItemStack QUICK_RESPAWN_FEATHER;
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onRespawn(PlayerRespawnEvent event) {

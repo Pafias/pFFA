@@ -35,6 +35,7 @@ public class Variables {
     public boolean disableFalldamage = false;
     public boolean interactivePressureplates = true;
     public boolean quickRespawn = true;
+    public boolean quickRespawnSingleAction = false;
     public ConfigurationSection killstreakBroadcasts;
     public ConfigurationSection combatlog;
     public ConfigurationSection worldProtection;
@@ -67,6 +68,7 @@ public class Variables {
         killCooldown = plugin.getConfig().getInt("kill_command_cooldown", 5);
         interactivePressureplates = plugin.getConfig().getBoolean("interactive_pressureplates", true);
         quickRespawn = plugin.getConfig().getBoolean("quick_respawn", true);
+        quickRespawnSingleAction = plugin.getConfig().getBoolean("quick_respawn_single_action", false);
         killstreakBroadcasts = plugin.getConfig().getConfigurationSection("killstreak_broadcasts");
         combatlog = plugin.getConfig().getConfigurationSection("combatlog");
         worldProtection = plugin.getConfig().getConfigurationSection("world_protection");
