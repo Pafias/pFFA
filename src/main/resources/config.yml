@@ -51,6 +51,7 @@ kill_command_cooldown: 5
 
 interactive_pressureplates: true
 quick_respawn: true
+quick_respawn_single_action: false
 
 killstreak_broadcasts:
   enabled: true
