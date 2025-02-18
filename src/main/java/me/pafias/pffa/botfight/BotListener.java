@@ -25,7 +25,11 @@ public class BotListener implements Listener {
         new BukkitRunnable() {
             @Override
             public void run() {
-                plugin.getSM().getKitManager().getDefaultKit().getItems().forEach(((Player) event.getNPC().getEntity()).getInventory()::setItem);
+                plugin.getSM().getKitManager().getDefaultKit().getItems().forEach((slot, item) -> {
+                    if (event.getNPC().getEntity() instanceof Player) {
+                        ((Player) event.getNPC().getEntity()).getInventory().setItem(slot, item);
+                    }
+                });
             }
         }.runTaskLater(plugin, 40);
     }
