@@ -91,7 +91,7 @@ public class DeathListener implements Listener {
         event.setRespawnLocation(plugin.getSM().getVariables().lobby);
         event.getPlayer().setFoodLevel(20);
         event.getPlayer().setSaturation(0);
-        if (plugin.getSM().getVariables().quickRespawn) {
+        if (plugin.getSM().getVariables().quickRespawn && event.getPlayer().hasPermission("ffa.quickrespawn")) {
             event.getPlayer().getInventory().addItem(QUICK_RESPAWN_FEATHER);
         }
     }

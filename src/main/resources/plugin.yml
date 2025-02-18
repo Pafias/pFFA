@@ -73,3 +73,6 @@ permissions:
   ffa.settings:
     description: Permission to access the settings subcommand
     default: true
+  ffa.quickrespawn:
+    description: Permission to use the quick respawn feather
+    default: true
