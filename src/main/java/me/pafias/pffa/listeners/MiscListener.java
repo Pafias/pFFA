@@ -45,6 +45,7 @@ public class MiscListener implements Listener {
     @EventHandler
     public void onQuickRespawn(PlayerInteractEvent event) {
         if (!plugin.getSM().getVariables().quickRespawn) return;
+        if (!event.getPlayer().hasPermission("ffa.quickrespawn")) return;
         if (!event.getAction().name().contains("CLICK")) return;
         if (!event.hasItem() || !event.getItem().getType().equals(Material.FEATHER)) return;
         ItemStack item = event.getItem();
