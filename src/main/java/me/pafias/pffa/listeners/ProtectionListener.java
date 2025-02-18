@@ -17,8 +17,10 @@ import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 
 public class ProtectionListener implements Listener {
 
@@ -155,6 +157,18 @@ public class ProtectionListener implements Listener {
         if (damager instanceof Player && ((Player) damager).getGameMode().equals(GameMode.CREATIVE) && config.getBoolean("bypass_with_gm_creative"))
             return;
         if (event.getEntity() instanceof ItemFrame && config.getBoolean("prevent_itemframes"))
+            event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onInventoryMove(InventoryMoveItemEvent event) {
+        if (!(event.getInitiator() instanceof PlayerInventory)) return;
+        PlayerInventory inv = (PlayerInventory) event.getInitiator();
+        Player player = (Player) inv.getHolder();
+        if (player == null || player.getGameMode().equals(GameMode.CREATIVE) && config.getBoolean("bypass_with_gm_creative"))
+            return;
+        // Prevent players from putting kit items in chests and such
+        if (plugin.getSM().getKitManager().getKits().values().stream().anyMatch(kit -> kit.getItems().containsValue(event.getItem())))
             event.setCancelled(true);
     }
 
