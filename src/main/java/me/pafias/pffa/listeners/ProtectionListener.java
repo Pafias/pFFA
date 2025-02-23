@@ -17,10 +17,9 @@ import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryMoveItemEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 
 public class ProtectionListener implements Listener {
 
@@ -161,14 +160,13 @@ public class ProtectionListener implements Listener {
     }
 
     @EventHandler
-    public void onInventoryMove(InventoryMoveItemEvent event) {
-        if (!(event.getInitiator() instanceof PlayerInventory)) return;
-        PlayerInventory inv = (PlayerInventory) event.getInitiator();
-        Player player = (Player) inv.getHolder();
-        if (player == null || player.getGameMode().equals(GameMode.CREATIVE) && config.getBoolean("bypass_with_gm_creative"))
+    public void onInventoryMove(InventoryClickEvent event) {
+        if (event.getClickedInventory() == null) return;
+        Player player = (Player) event.getWhoClicked();
+        if (!plugin.getSM().getVariables().ffaWorlds.contains(player.getWorld().getName())) return;
+        if (player.getGameMode().equals(GameMode.CREATIVE) && config.getBoolean("bypass_with_gm_creative"))
             return;
-        // Prevent players from putting kit items in chests and such
-        if (plugin.getSM().getKitManager().getKits().values().stream().anyMatch(kit -> kit.getItems().containsValue(event.getItem())))
+        if (!event.getView().getTopInventory().getType().equals(InventoryType.PLAYER) && !event.getView().getTopInventory().getType().equals(InventoryType.CRAFTING))
             event.setCancelled(true);
     }
 
