@@ -4,6 +4,7 @@ import me.pafias.pffa.objects.User;
 import me.pafias.pffa.pFFA;
 import me.pafias.pffa.util.CC;
 import me.pafias.pffa.util.ItemBuilder;
+import me.pafias.pffa.util.Tasks;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.EventHandler;
@@ -92,7 +93,7 @@ public class DeathListener implements Listener {
         event.getPlayer().setFoodLevel(20);
         event.getPlayer().setSaturation(0);
         if (plugin.getSM().getVariables().quickRespawn && event.getPlayer().hasPermission("ffa.quickrespawn")) {
-            event.getPlayer().getInventory().addItem(QUICK_RESPAWN_FEATHER);
+            Tasks.runLaterSync(20, () -> event.getPlayer().getInventory().addItem(QUICK_RESPAWN_FEATHER));
         }
     }
 
