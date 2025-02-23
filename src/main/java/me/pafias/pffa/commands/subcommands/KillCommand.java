@@ -16,7 +16,10 @@ public class KillCommand extends ICommand {
 
     public KillCommand() {
         super("kill", null, "suicide", "die");
+        killCooldownMillis = plugin.getSM().getVariables().killCooldown * 1000;
     }
+
+    private final int killCooldownMillis;
 
     @NotNull
     @Override
@@ -40,7 +43,7 @@ public class KillCommand extends ICommand {
             User user = plugin.getSM().getUserManager().getUser((Player) sender);
             if (user.isInSpawn())
                 return;
-            if (System.currentTimeMillis() - user.lastKillMillis < 10000) {
+            if (System.currentTimeMillis() - user.lastKillMillis < killCooldownMillis) {
                 sender.sendMessage(CC.t("&cPlease wait until using this command again"));
                 return;
             }
