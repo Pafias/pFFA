@@ -6,7 +6,7 @@
 
     <groupId>me.pafias</groupId>
     <artifactId>pFFA</artifactId>
-    <version>1.5-SNAPSHOT</version>
+    <version>1.6-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>pFFA</name>

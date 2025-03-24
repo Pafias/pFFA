@@ -14,6 +14,10 @@ commands:
     usage: /kill [player]
     aliases: [ suicide, die, kys, dead, iwanttodiebecauseimdepressed ]
     description: Kill command
+  stats:
+    usage: /stats [player]
+    aliases: [statistics]
+    description: Stats command
 permissions:
   ffa.kill.others:
     description: Permission to use the ffa's kill (sub)command on other players
