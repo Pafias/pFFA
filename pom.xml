@@ -6,7 +6,7 @@
 
     <groupId>me.pafias</groupId>
     <artifactId>pFFA</artifactId>
-    <version>1.6-SNAPSHOT</version>
+    <version>1.7-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>pFFA</name>
@@ -117,7 +117,7 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.19-R0.1-SNAPSHOT</version>
+            <version>1.21.4-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <!-- Other -->
