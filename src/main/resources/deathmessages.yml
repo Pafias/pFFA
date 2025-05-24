@@ -1,4 +1,5 @@
 enabled: true
+health_decimals: 1
 messages:
   with_killer:
     hit_the_ground_too_hard:
