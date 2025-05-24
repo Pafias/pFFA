@@ -46,6 +46,7 @@ death_message_suffix: "&7(&c%s ❤&7)"
 heal_on_kill: true
 disable_falldamage: false
 
+override_spawn_command: true
 override_stats_command: true
 override_kill_command: true
 kill_command_cooldown: 5

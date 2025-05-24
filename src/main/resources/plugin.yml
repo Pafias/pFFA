@@ -18,6 +18,10 @@ commands:
     usage: /stats [player]
     aliases: [statistics]
     description: Stats command
+  spawn:
+    usage: /spawn [player]
+    aliases: [lobby]
+    description: Spawn command
 permissions:
   ffa.kill.others:
     description: Permission to use the ffa's kill (sub)command on other players

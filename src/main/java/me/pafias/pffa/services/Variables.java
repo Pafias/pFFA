@@ -32,6 +32,7 @@ public class Variables {
     public int killCooldown = 5;
     public boolean overrideKillCommand = true;
     public boolean overrideStatsCommand = true;
+    public boolean overrideSpawnCommand = true;
     public String lobbyDetection = "ycoord";
     public boolean disableFalldamage = false;
     public boolean interactivePressureplates = true;
@@ -67,6 +68,7 @@ public class Variables {
         disableFalldamage = plugin.getConfig().getBoolean("disable_falldamage", true);
         overrideKillCommand = plugin.getConfig().getBoolean("override_kill_command", true);
         overrideStatsCommand = plugin.getConfig().getBoolean("override_stats_command", true);
+        overrideSpawnCommand = plugin.getConfig().getBoolean("override_spawn_command", true);
         killCooldown = plugin.getConfig().getInt("kill_command_cooldown", 5);
         interactivePressureplates = plugin.getConfig().getBoolean("interactive_pressureplates", true);
         quickRespawn = plugin.getConfig().getBoolean("quick_respawn", true);
