@@ -3,6 +3,7 @@ package me.pafias.pffa.commands.commands;
 import me.pafias.pffa.commands.ICommand;
 import me.pafias.pffa.commands.subcommands.*;
 import me.pafias.pffa.commands.subcommands.KillCommand;
+import me.pafias.pffa.commands.subcommands.SpawnCommand;
 import me.pafias.pffa.commands.subcommands.StatsCommand;
 import me.pafias.pffa.pFFA;
 import me.pafias.pffa.util.CC;

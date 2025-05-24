@@ -3,6 +3,7 @@ package me.pafias.pffa;
 import me.pafias.pffa.botfight.BotListener;
 import me.pafias.pffa.commands.commands.FFACommand;
 import me.pafias.pffa.commands.commands.KillCommand;
+import me.pafias.pffa.commands.commands.SpawnCommand;
 import me.pafias.pffa.commands.commands.StatsCommand;
 import me.pafias.pffa.listeners.*;
 import me.pafias.pffa.listeners.protocol.ProtocolListener;
@@ -69,6 +70,8 @@ public final class pFFA extends JavaPlugin {
             getCommand("kill").setExecutor(new KillCommand(plugin));
         if(plugin.getSM().getVariables().overrideStatsCommand)
             getCommand("stats").setExecutor(new StatsCommand(plugin));
+        if(plugin.getSM().getVariables().overrideSpawnCommand)
+            getCommand("spawn").setExecutor(new SpawnCommand(plugin));
     }
 
     @Override
