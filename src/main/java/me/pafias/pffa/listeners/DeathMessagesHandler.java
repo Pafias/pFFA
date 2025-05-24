@@ -22,10 +22,16 @@ public class DeathMessagesHandler implements Listener {
         plugin.saveResource("deathmessages.yml", !file.exists());
         FileConfiguration config = YamlConfiguration.loadConfiguration(file);
         if (!config.getBoolean("enabled")) return;
+        healthDecimals = config.getInt("health_decimals", 1);
+        if (healthDecimals < 0 || healthDecimals > 100) {
+            plugin.getLogger().warning("Invalid health_decimals value in deathmessages.yml, defaulting to 1.");
+            healthDecimals = 1;
+        }
         messages = config.getConfigurationSection("messages");
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
+    private int healthDecimals = 1;
     private ConfigurationSection messages;
 
     private String getRandomMessageWithKiller(String string, Player player, Player killer) {
@@ -33,7 +39,8 @@ public class DeathMessagesHandler implements Listener {
         String var = list.get(new Random().nextInt(list.size()));
         var = var.replace("{player}", player.getName());
         var = var.replace("{killer}", killer.getName());
-        var = var.replace("{health}", String.format("%.1f", killer.getPlayer().getHealth() / 2d));
+        String healthFormat = "%." + healthDecimals + "f";
+        var = var.replace("{health}", String.format(healthFormat, killer.getPlayer().getHealth() / 2d));
         return CC.t(var.trim());
     }
 
