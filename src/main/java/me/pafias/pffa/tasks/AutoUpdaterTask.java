@@ -29,7 +29,10 @@ public class AutoUpdaterTask extends BukkitRunnable {
         try {
             CloseableHttpClient closeableHttpClient = HttpClientBuilder.create().build();
             HttpGet httpGet = new HttpGet();
-            httpGet.setURI(new URI("https://pafias.me/minecraft/pFFA/pFFA.jar"));
+            if (plugin.serverVersion() < 17)
+                httpGet.setURI(new URI("https://pafias.me/minecraft/pFFA/legacy/pFFA.jar"));
+            else
+                httpGet.setURI(new URI("https://pafias.me/minecraft/pFFA/latest/pFFA.jar"));
             HttpResponse httpResponse = closeableHttpClient.execute(httpGet, new BasicHttpContext());
 
             File tempJarFile = new File(plugin.getDataFolder(), "pFFA_update.jar");
