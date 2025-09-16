@@ -1,8 +1,8 @@
 name: pFFA
 version: '${project.version}'
 main: me.pafias.pffa.pFFA
-api-version: 1.13
-softdepend: [ ProtocolLib, PlaceholderAPI, Citizens ]
+api-version: 1.17
+softdepend: [ packetevents, PlaceholderAPI, Citizens ]
 author: Pafias
 description: The best FFA plugin!
 commands:
@@ -12,16 +12,21 @@ commands:
     description: FFA Main Command
   kill:
     usage: /kill [player]
-    aliases: [ suicide, die, kys, dead, iwanttodiebecauseimdepressed ]
+    aliases: [ suicide, die, kys, dead, iwanttodiebecauseimdepressed, kms ]
     description: Kill command
   stats:
     usage: /stats [player]
-    aliases: [statistics]
+    aliases: [ statistics ]
     description: Stats command
   spawn:
     usage: /spawn [player]
-    aliases: [lobby]
+    aliases: [ lobby ]
     description: Spawn command
+  spectate:
+    usage: /spectate [player]
+    aliases: [ spec ]
+    description: Spectate command
+    permission: ffa.spectate
 permissions:
   ffa.kill.others:
     description: Permission to use the ffa's kill (sub)command on other players
@@ -84,3 +89,6 @@ permissions:
   ffa.quickrespawn:
     description: Permission to use the quick respawn feather
     default: true
+  ffa.spectate:
+    default: true
+    description: Permission to use the spectate command

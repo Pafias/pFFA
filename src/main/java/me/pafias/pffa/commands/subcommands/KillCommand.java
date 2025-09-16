@@ -1,8 +1,8 @@
 package me.pafias.pffa.commands.subcommands;
 
-import me.pafias.pffa.commands.ICommand;
+import me.pafias.pffa.commands.BaseFFACommand;
 import me.pafias.pffa.objects.User;
-import me.pafias.pffa.util.CC;
+import me.pafias.putils.CC;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -12,14 +12,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class KillCommand extends ICommand {
+public class KillCommand extends BaseFFACommand {
 
     public KillCommand() {
         super("kill", null, "suicide", "die");
-        killCooldownMillis = plugin.getSM().getVariables().killCooldown * 1000;
     }
-
-    private final int killCooldownMillis;
 
     @NotNull
     @Override
@@ -40,9 +37,10 @@ public class KillCommand extends ICommand {
                 sender.sendMessage(CC.t("&cOnly players."));
                 return;
             }
-            User user = plugin.getSM().getUserManager().getUser((Player) sender);
+            final User user = plugin.getSM().getUserManager().getUser((Player) sender);
             if (user.isInSpawn())
                 return;
+            final long killCooldownMillis = plugin.getConfig().getLong("commands.kill_command_cooldown") * 1000L;
             if (System.currentTimeMillis() - user.lastKillMillis < killCooldownMillis) {
                 sender.sendMessage(CC.t("&cPlease wait until using this command again"));
                 return;
@@ -54,17 +52,13 @@ public class KillCommand extends ICommand {
             user.getPlayer().setHealth(0);
             user.lastKillMillis = System.currentTimeMillis();
         } else if (args.length > 1 && sender.hasPermission("ffa.kill.others")) {
-            if (plugin.getServer().getPluginManager().isPluginEnabled("Essentials")) {
-                if (sender instanceof Player)
-                    ((Player) sender).performCommand("essentials:kill " + args[1]);
-                else
-                    plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), "essentials:kill " + args[1]);
-            } else {
-                if (sender instanceof Player)
-                    ((Player) sender).performCommand("minecraft:kill " + args[1]);
-                else
-                    plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), "minecraft:kill " + args[1]);
+            final Player target = plugin.getServer().getPlayer(args[1]);
+            if (target == null) {
+                sender.sendMessage(CC.t("&cPlayer not found."));
+                return;
             }
+            target.setHealth(0);
+            sender.sendMessage(CC.t("&aKilled &b" + target.getName()));
         }
     }
 

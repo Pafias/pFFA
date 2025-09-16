@@ -4,14 +4,20 @@ import me.pafias.pffa.objects.Kit;
 import me.pafias.pffa.objects.Spawn;
 import me.pafias.pffa.objects.User;
 import me.pafias.pffa.pFFA;
+import me.pafias.putils.CC;
 import org.bukkit.Material;
-import org.bukkit.entity.Arrow;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.EnumSet;
+import java.util.Set;
 
 public class MiscListener implements Listener {
 
@@ -19,44 +25,69 @@ public class MiscListener implements Listener {
 
     public MiscListener(pFFA plugin) {
         this.plugin = plugin;
+
+        cleanArrows = plugin.getConfig().getBoolean("clean_arrows");
+        interactivePlates = plugin.getConfig().getBoolean("interactive_pressureplates");
+
+        final ConfigurationSection quickRespawnConfig = plugin.getConfig().getConfigurationSection("death.quick_respawn");
+        quickRespawnEnabled = quickRespawnConfig.getBoolean("enabled");
+        quickRespawnPermission = quickRespawnConfig.getString("permission");
+        quickRespawnMaterial = Material.getMaterial(quickRespawnConfig.getString("item.material"));
+        quickRespawnName = quickRespawnConfig.getString("item.name");
+        quickRespawnSingleAction = quickRespawnConfig.getBoolean("single_action");
     }
+
+    private static final Set<Material> PLATES = EnumSet.noneOf(Material.class);
+
+    static {
+        for (Material material : Material.values())
+            if (material.name().endsWith("_PRESSURE_PLATE"))
+                PLATES.add(material);
+    }
+
+    private boolean cleanArrows, interactivePlates;
+
+    private boolean quickRespawnSingleAction, quickRespawnEnabled;
+    private String quickRespawnPermission, quickRespawnName;
+    private Material quickRespawnMaterial;
 
     @EventHandler
     public void onProjectileHit(ProjectileHitEvent event) {
-        if (!plugin.getSM().getVariables().cleanArrows) return;
-        if (event.getEntity() != null) {
-            if (event.getEntity() instanceof Arrow) {
-                Arrow arrow = (Arrow) event.getEntity();
-                arrow.remove();
-            }
-        }
+        if (event.getEntityType() != EntityType.ARROW) return;
+        if (!cleanArrows) return;
+        event.getEntity().remove();
     }
 
     @EventHandler
     public void onPressurePlate(PlayerInteractEvent event) {
-        if (!plugin.getSM().getVariables().interactivePressureplates) return;
-        if (!event.getAction().equals(Action.PHYSICAL)) return;
-        if (!event.getClickedBlock().getType().name().contains("PLATE")) return;
-        User user = plugin.getSM().getUserManager().getUser(event.getPlayer());
+        if (event.getAction() != Action.PHYSICAL) return;
+        if (!PLATES.contains(event.getClickedBlock().getType())) return;
+        if (!interactivePlates) return;
+        final User user = plugin.getSM().getUserManager().getUser(event.getPlayer());
         if (user != null && user.isInSpawn())
             event.getPlayer().setVelocity(event.getPlayer().getLocation().getDirection().multiply(2));
     }
 
     @EventHandler
     public void onQuickRespawn(PlayerInteractEvent event) {
-        if (!plugin.getSM().getVariables().quickRespawn) return;
-        if (!event.getPlayer().hasPermission("ffa.quickrespawn")) return;
-        if (!event.getAction().name().contains("CLICK")) return;
-        if (!event.hasItem() || !event.getItem().getType().equals(Material.FEATHER)) return;
-        ItemStack item = event.getItem();
-        if (!item.hasItemMeta() || !item.getItemMeta().hasDisplayName() || !item.getItemMeta().getDisplayName().toLowerCase().contains("respawn"))
+        if (!quickRespawnEnabled) return;
+        if (!event.hasItem() || event.getAction() == Action.PHYSICAL) return;
+        final ItemStack item = event.getItem();
+        if (!item.hasItemMeta()) return;
+        final ItemMeta meta = item.getItemMeta();
+        if (!meta.hasDisplayName()) return;
+        if (!event.getPlayer().hasPermission(quickRespawnPermission)) return;
+        if (event.getItem().getType() != quickRespawnMaterial)
             return;
-        User user = plugin.getSM().getUserManager().getUser(event.getPlayer());
+        if (!meta.displayName().equals(CC.a(quickRespawnName)))
+            return;
+        final User user = plugin.getSM().getUserManager().getUser(event.getPlayer());
+        if (user == null) return;
         // Left click = respawn with last kit and spawn
-        // Right click = respawn with default kit and spawn unless config option quickRespawnSingleAction is true
-        Kit kit;
-        Spawn spawn;
-        if (event.getAction().name().contains("RIGHT") && !plugin.getSM().getVariables().quickRespawnSingleAction) {
+        // Right click = respawn with default kit and spawn unless the config option for single action is true
+        final Kit kit;
+        final Spawn spawn;
+        if (event.getAction().isRightClick() && !quickRespawnSingleAction) {
             kit = plugin.getSM().getKitManager().getDefaultKit();
             spawn = plugin.getSM().getSpawnManager().getDefaultSpawn();
         } else {

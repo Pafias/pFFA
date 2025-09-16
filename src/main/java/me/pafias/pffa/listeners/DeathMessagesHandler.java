@@ -1,7 +1,8 @@
 package me.pafias.pffa.listeners;
 
+import me.clip.placeholderapi.PlaceholderAPI;
 import me.pafias.pffa.pFFA;
-import me.pafias.pffa.util.CC;
+import me.pafias.putils.CC;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -18,9 +19,9 @@ import java.util.Random;
 public class DeathMessagesHandler implements Listener {
 
     public DeathMessagesHandler(pFFA plugin) {
-        File file = new File(plugin.getDataFolder(), "deathmessages.yml");
+        final File file = new File(plugin.getDataFolder(), "deathmessages.yml");
         plugin.saveResource("deathmessages.yml", !file.exists());
-        FileConfiguration config = YamlConfiguration.loadConfiguration(file);
+        final FileConfiguration config = YamlConfiguration.loadConfiguration(file);
         if (!config.getBoolean("enabled")) return;
         healthDecimals = config.getInt("health_decimals", 1);
         if (healthDecimals < 0 || healthDecimals > 100) {
@@ -35,28 +36,32 @@ public class DeathMessagesHandler implements Listener {
     private ConfigurationSection messages;
 
     private String getRandomMessageWithKiller(String string, Player player, Player killer) {
-        List<String> list = messages.getStringList("with_killer." + string);
+        final List<String> list = messages.getStringList("with_killer." + string);
         String var = list.get(new Random().nextInt(list.size()));
         var = var.replace("{player}", player.getName());
         var = var.replace("{killer}", killer.getName());
-        String healthFormat = "%." + healthDecimals + "f";
+        final String healthFormat = "%." + healthDecimals + "f";
         var = var.replace("{health}", String.format(healthFormat, killer.getPlayer().getHealth() / 2d));
-        return CC.t(var.trim());
+        var = CC.t(var.trim());
+        var = PlaceholderAPI.setPlaceholders(player, var);
+        return var;
     }
 
     private String getRandomMessageWithOUTKiller(String string, Player player) {
-        List<String> list = messages.getStringList("without_killer." + string);
+        final List<String> list = messages.getStringList("without_killer." + string);
         String var = list.get(new Random().nextInt(list.size()));
         var = var.replace("{player}", player.getName());
-        return CC.t(var.trim());
+        var = CC.t(var.trim());
+        var = PlaceholderAPI.setPlaceholders(player, var);
+        return var;
     }
 
     @EventHandler(priority = EventPriority.LOW)
     public void onDeath(PlayerDeathEvent event) {
         if (event.getDeathMessage() == null) return;
-        Player player = event.getEntity();
+        final Player player = event.getEntity();
         if (player.getKiller() != null) {
-            Player killer = player.getKiller();
+            final Player killer = player.getKiller();
             if (event.getDeathMessage().contains("hit the ground too hard") || event.getDeathMessage().contains("fell from a high place")) {
                 event.setDeathMessage(getRandomMessageWithKiller("hit_the_ground_too_hard", player, killer));
             } else if (event.getDeathMessage().contains("drowned")) {

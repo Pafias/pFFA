@@ -1,49 +1,81 @@
 package me.pafias.pffa.objects;
 
-import com.google.gson.JsonParser;
+import lombok.Data;
 import me.pafias.pffa.pFFA;
-import me.pafias.pffa.services.UserManager;
+import me.pafias.pffa.util.Serializer;
+import org.bukkit.Location;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
 
 import java.util.UUID;
 
+@Data
 public class User {
 
-    private final pFFA plugin = pFFA.get();
-    private final UserManager manager = plugin.getSM().getUserManager();
-
     private final Player player;
-    private final UserConfig config;
+    private UserData userData;
 
-    private int kills;
-    private int deaths;
+    private int currentKillstreak;
 
-    private int killstreak;
-    private int bestKillstreak;
-
-    private Kit lastKit = plugin.getSM().getKitManager().getDefaultKit();
-    private Spawn lastSpawn = plugin.getSM().getSpawnManager().getDefaultSpawn();
+    private Kit lastKit;
+    private Spawn lastSpawn;
 
     public long lastKillMillis = 0;
 
-    private UserSettings settings = new UserSettings();
+    private boolean spectating = false;
 
-    public User(Player player) {
+    public User(Player player, UserData userData) {
         this.player = player;
-        config = new UserConfig(player.getUniqueId());
-        config.get("kills", "deaths", "killstreak").thenAccept(map -> {
-            kills = (int) map.get("kills");
-            deaths = (int) map.get("deaths");
-            bestKillstreak = (int) map.get("killstreak");
-        });
-        config.get("settings").thenAccept(map -> settings = new UserSettings(JsonParser.parseString((String) map.get("settings")).getAsJsonObject()));
+        this.userData = userData;
     }
 
-    public Player getPlayer() {
-        return player;
+    public boolean isInSpawn() {
+        final ConfigurationSection config = pFFA.get().getConfig().getConfigurationSection("lobby");
+        if (config == null) return false;
+        final String detectionMode = config.getString("detection_mode");
+        if (detectionMode == null || detectionMode.equalsIgnoreCase("none")) return false;
+
+        final Location lobbySpawn = Serializer.parseConfigLocation("lobby.spawn");
+        if (lobbySpawn == null) return false;
+
+        if (!player.getWorld().equals(lobbySpawn.getWorld())) return false;
+
+        if (detectionMode.equalsIgnoreCase("ycoord")) {
+            return player.getLocation().getY() >= lobbySpawn.getY() - 1;
+        } else if (detectionMode.equalsIgnoreCase("bounds")) {
+            final int x = player.getLocation().getBlockX();
+            final int y = player.getLocation().getBlockY();
+            final int z = player.getLocation().getBlockZ();
+            final String xBounds = config.getString("x_bounds");
+            final double xMin = Double.parseDouble(xBounds.split(",")[0]);
+            final double xMax = Double.parseDouble(xBounds.split(",")[1]);
+            final String yBounds = config.getString("y_bounds");
+            final double yMin = Double.parseDouble(yBounds.split(",")[0]);
+            final double yMax = Double.parseDouble(yBounds.split(",")[1]);
+            final String zBounds = config.getString("z_bounds");
+            final double zMin = Double.parseDouble(zBounds.split(",")[0]);
+            final double zMax = Double.parseDouble(zBounds.split(",")[1]);
+            return (x > xMin && x < xMax) && (y > yMin && y < yMax) && (z > zMin && z < zMax);
+        } else {
+            final double distance = player.getLocation().distance(lobbySpawn);
+            final int hRadius = config.getInt("h_radius");
+            final int vRadius = config.getInt("v_radius");
+            final double yDiff = Math.abs(player.getLocation().getY() - lobbySpawn.getY());
+            return distance <= hRadius && yDiff <= vRadius;
+        }
     }
 
-    public UUID getUUID() {
+    public void heal(boolean clearPotionEffects) {
+        if (clearPotionEffects)
+            for (PotionEffect pe : player.getActivePotionEffects())
+                player.removePotionEffect(pe.getType());
+        player.setHealth(player.getMaxHealth());
+        player.setFoodLevel(20);
+        player.setSaturation(0);
+    }
+
+    public UUID getUniqueId() {
         return player.getUniqueId();
     }
 
@@ -51,125 +83,43 @@ public class User {
         return player.getName();
     }
 
-    public UserConfig getConfig() {
-        return config;
-    }
-
     public int getKills() {
-        return kills;
+        return userData.getFfaData().getKills();
     }
 
     public void addKill() {
         setKills(getKills() + 1);
-        setKillstreak(getCurrentKillstreak() + 1);
+        setCurrentKillstreak(getCurrentKillstreak() + 1);
         if (getCurrentKillstreak() > getBestKillstreak()) setBestKillstreak(getCurrentKillstreak());
     }
 
     public void setKills(int kills) {
-        this.kills = kills;
-        manager.queueDataSave(this, false);
+        userData.getFfaData().setKills(kills);
     }
 
     public int getDeaths() {
-        return deaths;
+        return userData.getFfaData().getDeaths();
     }
 
     public void addDeath() {
         setDeaths(getDeaths() + 1);
-        setKillstreak(0);
+        setCurrentKillstreak(0);
     }
 
     public void setDeaths(int deaths) {
-        this.deaths = deaths;
-        manager.queueDataSave(this, false);
+        userData.getFfaData().setDeaths(deaths);
     }
 
     public double getKDR() {
-        return kills / (double) (deaths == 0 ? 1 : deaths);
-    }
-
-    public int getCurrentKillstreak() {
-        return killstreak;
-    }
-
-    public void setKillstreak(int killstreak) {
-        this.killstreak = killstreak;
+        return getKills() / (double) (getDeaths() == 0 ? 1 : getDeaths());
     }
 
     public int getBestKillstreak() {
-        return bestKillstreak;
+        return userData.getFfaData().getKillstreak();
     }
 
     public void setBestKillstreak(int bestKillstreak) {
-        this.bestKillstreak = bestKillstreak;
-        manager.queueDataSave(this, false);
-    }
-
-    public Kit getLastKit() {
-        return lastKit;
-    }
-
-    public void setLastKit(Kit lastKit) {
-        this.lastKit = lastKit;
-    }
-
-    public Spawn getLastSpawn() {
-        return lastSpawn;
-    }
-
-    public void setLastSpawn(Spawn lastSpawn) {
-        this.lastSpawn = lastSpawn;
-    }
-
-    public UserSettings getSettings() {
-        return settings;
-    }
-
-    public boolean isInFFAWorld() {
-        return plugin.getSM().getVariables().ffaWorlds.contains(player.getLocation().getWorld().getName());
-    }
-
-    public boolean isInSpawn() {
-        if (plugin.getSM().getVariables().lobbyDetection.equalsIgnoreCase("ycoord")) {
-            return player.getLocation().getY() >= plugin.getSM().getVariables().lobby.getY() - 1;
-        } else if (plugin.getSM().getVariables().lobbyDetection.equalsIgnoreCase("bounds")) {
-            int x = player.getLocation().getBlockX();
-            int y = player.getLocation().getBlockY();
-            int z = player.getLocation().getBlockZ();
-            int xS = plugin.getSM().getVariables().lobby.getBlockX();
-            int yS = plugin.getSM().getVariables().lobby.getBlockY();
-            int zS = plugin.getSM().getVariables().lobby.getBlockZ();
-            String xbounds = plugin.getSM().getVariables().lobbyXBounds;
-            double xMin = Double.parseDouble(xbounds.split(",")[0]);
-            double xMax = Double.parseDouble(xbounds.split(",")[1]);
-            String ybounds = plugin.getSM().getVariables().lobbyYBounds;
-            double yMin = Double.parseDouble(ybounds.split(",")[0]);
-            double yMax = Double.parseDouble(ybounds.split(",")[1]);
-            String zbounds = plugin.getSM().getVariables().lobbyZBounds;
-            double zMin = Double.parseDouble(zbounds.split(",")[0]);
-            double zMax = Double.parseDouble(zbounds.split(",")[1]);
-            return (x > xMin && x < xMax) && (y > yMin && y < yMax) && (z > zMin && z < zMax);
-        } else {
-            int x = player.getLocation().getBlockX();
-            int y = player.getLocation().getBlockY();
-            int z = player.getLocation().getBlockZ();
-            int xS = plugin.getSM().getVariables().lobby.getBlockX();
-            int yS = plugin.getSM().getVariables().lobby.getBlockY();
-            int zS = plugin.getSM().getVariables().lobby.getBlockZ();
-            double hrS = plugin.getSM().getVariables().lobbyHRadius;
-            double vrS = plugin.getSM().getVariables().lobbyVRadius;
-            return (x > xS - hrS && x < xS + hrS) && (y > yS - vrS && y < yS + vrS) && (z > zS - hrS && z < zS + hrS);
-            // return Math.abs(x - xS) < hrS && Math.abs(z - zS) < hrS && Math.abs(y - yS) < vrS;
-            // return (y == yS || y == yS + vrS || y == yS - 1) && ((x == xS || x == xS + hrS || x == xS - hrS) && (z == zS || z == zS + hrS || z == zS - hrS));
-        }
-    }
-
-    public void heal(boolean clearPotionEffects) {
-        if (clearPotionEffects)
-            player.getActivePotionEffects().forEach(pe -> player.removePotionEffect(pe.getType()));
-        player.setHealth(player.getMaxHealth());
-        player.setFoodLevel(20);
-        player.setSaturation(0);
+        userData.getFfaData().setKillstreak(bestKillstreak);
     }
 
 }

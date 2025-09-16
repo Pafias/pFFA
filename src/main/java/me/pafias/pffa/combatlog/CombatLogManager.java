@@ -1,10 +1,9 @@
 package me.pafias.pffa.combatlog;
 
 import me.pafias.pffa.pFFA;
-import me.pafias.pffa.services.Variables;
-import me.pafias.pffa.util.CC;
-import me.pafias.pffa.util.Reflection;
-import me.pafias.pffa.util.Tasks;
+import me.pafias.putils.CC;
+import me.pafias.putils.Tasks;
+import net.kyori.adventure.text.Component;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -13,11 +12,9 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.bukkit.event.EventPriority.*;
 
@@ -25,16 +22,14 @@ public class CombatLogManager implements Listener {
 
     private final pFFA plugin;
 
-    private final List<CombatLog> combatLogs = new ArrayList<>();
-    private int combatLogDurationInSeconds;
-
-    public CombatLogManager(pFFA plugin, Variables variables) {
+    public CombatLogManager(pFFA plugin) {
         this.plugin = plugin;
-        ConfigurationSection combatlog = variables.combatlog;
+        ConfigurationSection combatlog = plugin.getConfig().getConfigurationSection("combatlog");
 
-        if (!combatlog.getBoolean("enabled")) return;
-
-        combatLogDurationInSeconds = combatlog.getInt("duration", 10);
+        if (!combatlog.getBoolean("enabled")) {
+            plugin.getLogger().warning("Combatlog is disabled in the config, not loading Combatlog Manager.");
+            return;
+        }
 
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
 
@@ -50,8 +45,9 @@ public class CombatLogManager implements Listener {
 
                 int secondsLeft = combatLog.getTimeLeftSeconds() + 1;
                 combatLog.getPlayers().forEach(player -> {
-                    if (combatlog.getBoolean("display.action_bar"))
-                        Reflection.sendActionbar(player, CC.t("&aYou are in combat. &cDo not log out!"));
+                    String actionBar = combatlog.getString("display.action_bar");
+                    if (actionBar != null && !actionBar.isEmpty())
+                        player.sendActionBar(CC.a(actionBar));
                     if (combatlog.getBoolean("display.level"))
                         player.setLevel(secondsLeft);
                     if (combatlog.getBoolean("display.exp_bar"))
@@ -64,17 +60,14 @@ public class CombatLogManager implements Listener {
     @EventHandler(priority = MONITOR)
     public void onPlayerDamage(EntityDamageByEntityEvent event) {
         if (event.isCancelled()) return;
-        if (!plugin.getSM().getVariables().ffaWorlds.contains(event.getEntity().getWorld().getName())) return;
-        if (event.getEntity() instanceof Player && event.getDamager() instanceof Player) {
-            Player attacker = (Player) event.getDamager();
-            Player victim = (Player) event.getEntity();
+        if (!plugin.getConfig().getStringList("ffa_worlds").contains(event.getEntity().getWorld().getName())) return;
+        if (event.getEntity() instanceof Player victim && event.getDamager() instanceof Player attacker)
             startCombat(attacker, victim);
-        }
     }
 
     @EventHandler(priority = HIGH)
     public void onPlayerDeath(PlayerDeathEvent event) {
-        if (!plugin.getSM().getVariables().ffaWorlds.contains(event.getEntity().getWorld().getName())) return;
+        if (!plugin.getConfig().getStringList("ffa_worlds").contains(event.getEntity().getWorld().getName())) return;
         event.setDroppedExp(0);
         event.getDrops().clear();
         getCombatLogs(event.getEntity()).forEach(this::endCombat);
@@ -82,32 +75,36 @@ public class CombatLogManager implements Listener {
 
     @EventHandler(priority = LOW)
     public void onPlayerQuit(PlayerQuitEvent event) {
-        if (!plugin.getSM().getVariables().ffaWorlds.contains(event.getPlayer().getWorld().getName())) return;
+        if (!plugin.getConfig().getStringList("ffa_worlds").contains(event.getPlayer().getWorld().getName())) return;
         Player player = event.getPlayer();
         CombatLog combatLog = getLastCombatLog(player);
         if (combatLog != null) {
             Player other = combatLog.getAttacker().equals(player) ? combatLog.getVictim() : combatLog.getAttacker();
-            try {
-                Class c = player.getClass();
-                Method method = c.getMethod("setKiller", Player.class);
-                method.invoke(player, other);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                player.damage(1, other);
-            }
+            player.setKiller(other);
             player.setHealth(0);
-            plugin.getServer().broadcastMessage(CC.tf("&b%s &clogged out while in combat!", player.getName()));
+            String logoutBroadcast = plugin.getConfig().getString("combatlog.logout_broadcast");
+            if (logoutBroadcast != null && !logoutBroadcast.isEmpty())
+                plugin.getServer().broadcast(CC.af(logoutBroadcast, player.getName()));
         }
         getCombatLogs(player).forEach(this::endCombat);
     }
 
+    private final List<CombatLog> combatLogs = new ArrayList<>();
+
     private void startCombat(Player attacker, Player victim) {
         CombatLog combatLog = getCombatLog(attacker, victim);
+        int combatLogDurationInSeconds = plugin.getConfig().getInt("combatlog.duration");
         if (combatLog == null) {
-            if (getCombatLogs(attacker).isEmpty())
-                attacker.sendMessage(CC.tf("&aYou attacked &b%s&c. Do not log out", victim.getName()));
-            if (getCombatLogs(victim).isEmpty())
-                victim.sendMessage(CC.tf("&cYou got attacked by &b%s&c. Do not log out", attacker.getName()));
+            if (getCombatLogs(attacker).isEmpty()) {
+                String message = plugin.getConfig().getString("combatlog.attacker_message");
+                if (message != null && !message.isEmpty())
+                    attacker.sendMessage(CC.af(message, victim.getName()));
+            }
+            if (getCombatLogs(victim).isEmpty()) {
+                String message = plugin.getConfig().getString("combatlog.victim_message");
+                if (message != null && !message.isEmpty())
+                    victim.sendMessage(CC.af(message, attacker.getName()));
+            }
             combatLogs.add(new CombatLog(attacker, victim, combatLogDurationInSeconds));
         } else
             combatLog.reset(combatLogDurationInSeconds);
@@ -115,12 +112,12 @@ public class CombatLogManager implements Listener {
 
     private void endCombat(CombatLog combatLog) {
         combatLogs.remove(combatLog);
-        combatLog.getPlayers().forEach(player -> {
-            Reflection.sendActionbar(player, "");
+        for (Player player : combatLog.getPlayers()) {
+            player.sendActionBar(Component.empty());
             player.setLevel(0);
             player.setExp(0);
-            player.sendMessage(CC.t("&aYou are no longer in combat"));
-        });
+            player.sendMessage(CC.tf("&aYou are no longer in combat with %s", combatLog.getVictim() == player ? combatLog.getAttacker().getName() : combatLog.getVictim().getName()));
+        }
     }
 
     public boolean isInCombat(Player player) {
@@ -128,7 +125,9 @@ public class CombatLogManager implements Listener {
     }
 
     public List<CombatLog> getCombatLogs(Player player) {
-        return combatLogs.stream().filter(c -> c.getPlayers().contains(player)).collect(Collectors.toList());
+        return combatLogs.stream()
+                .filter(c -> c.getPlayers().contains(player))
+                .toList();
     }
 
     public CombatLog getLastCombatLog(Player player) {
@@ -138,7 +137,9 @@ public class CombatLogManager implements Listener {
     }
 
     public CombatLog getCombatLog(Player player1, Player player2) {
-        return combatLogs.stream().filter(c -> c.getPlayers().contains(player1) && c.getPlayers().contains(player2)).findAny().orElse(null);
+        return combatLogs.stream()
+                .filter(c -> c.getPlayers().contains(player1) && c.getPlayers().contains(player2))
+                .findAny().orElse(null);
     }
 
 }

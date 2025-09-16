@@ -1,30 +1,29 @@
 package me.pafias.pffa.combatlog;
 
 import com.google.common.collect.ImmutableSet;
+import lombok.Getter;
 import org.bukkit.entity.Player;
 
 import java.util.Set;
 
 public class CombatLog {
 
+    @Getter
     private final Player attacker;
+
+    @Getter
     private final Player victim;
+
     private long endTime;
-    private int durationSeconds;
+
+    @Getter
+    private final int durationSeconds;
 
     public CombatLog(Player attacker, Player victim, int durationSeconds) {
         this.attacker = attacker;
         this.victim = victim;
         this.durationSeconds = durationSeconds;
         reset(durationSeconds);
-    }
-
-    public Player getAttacker() {
-        return attacker;
-    }
-
-    public Player getVictim() {
-        return victim;
     }
 
     public Set<Player> getPlayers() {
@@ -41,10 +40,6 @@ public class CombatLog {
 
     public int getTimeLeftSeconds() {
         return (int) Math.max(0, getTimeLeftMillis() / 1000);
-    }
-
-    public int getDurationSeconds(){
-        return durationSeconds;
     }
 
     public void reset(int durationSeconds) {
