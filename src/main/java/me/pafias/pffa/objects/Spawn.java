@@ -1,47 +1,38 @@
 package me.pafias.pffa.objects;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
+@Data
+@AllArgsConstructor
 public class Spawn {
 
     private String name;
-    private ItemStack gui_item;
+
+    @Nullable
+    private String permission;
+
+    private ItemStack guiItem;
+
     private Location location;
 
-    public Spawn(String name, ItemStack gui_item, Location location) {
-        this.name = name;
-        this.gui_item = gui_item;
-        this.location = location;
-    }
+    private double playerDetectionRadius;
 
     public void teleport(Player player) {
         player.teleport(location);
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public ItemStack getGUIItem() {
-        return gui_item;
-    }
-
-    public void setGUIItem(ItemStack gui_item) {
-        this.gui_item = gui_item;
-    }
-
-    public Location getLocation() {
-        return location;
-    }
-
-    public void setLocation(Location location) {
-        this.location = location;
+    /**
+     * Checks if the spawn has a permission set.
+     *
+     * @return true if the spawn has a permission, false otherwise.
+     */
+    public boolean hasPermission() {
+        return permission != null && !permission.isEmpty();
     }
 
 }

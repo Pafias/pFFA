@@ -15,6 +15,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 public class AutoUpdaterTask extends BukkitRunnable {
 
@@ -27,41 +28,44 @@ public class AutoUpdaterTask extends BukkitRunnable {
     @Override
     public void run() {
         try {
-            CloseableHttpClient closeableHttpClient = HttpClientBuilder.create().build();
-            HttpGet httpGet = new HttpGet();
-            httpGet.setURI(new URI("https://pafias.me/minecraft/pFFA/pFFA.jar"));
-            HttpResponse httpResponse = closeableHttpClient.execute(httpGet, new BasicHttpContext());
+            try (final CloseableHttpClient closeableHttpClient = HttpClientBuilder.create().build()) {
+                final HttpGet httpGet = new HttpGet();
+                httpGet.setURI(new URI("https://pafias.me/minecraft/pFFA/latest/pFFA.jar"));
+                final HttpResponse httpResponse = closeableHttpClient.execute(httpGet, new BasicHttpContext());
 
-            File tempJarFile = new File(plugin.getDataFolder(), "pFFA_update.jar");
-            File jarFileOnPluginFolder = new File(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
+                int statusCode = httpResponse.getStatusLine().getStatusCode();
+                if (statusCode != 200 || httpResponse.getEntity() == null) {
+                    plugin.getLogger().warning("Failed to check for updates. HTTP " + statusCode);
+                    return;
+                }
 
-            if (jarFileOnPluginFolder.length() != httpResponse.getEntity().getContentLength()) {
-                plugin.getLogger().info("Found a new version and downloading the update!");
+                final File tempJarFile = new File(plugin.getDataFolder(), "pFFA_update.jar");
+                final File jarFileOnPluginFolder = new File(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
 
-                try (BufferedInputStream in = new BufferedInputStream(httpResponse.getEntity().getContent());
-                     FileOutputStream out = new FileOutputStream(tempJarFile)) {
+                if (jarFileOnPluginFolder.length() != httpResponse.getEntity().getContentLength()) {
+                    plugin.getLogger().info("Found a new version and downloading the update!");
 
-                    byte[] buffer = new byte[1024];
-                    int count;
-                    while ((count = in.read(buffer)) != -1) {
-                        out.write(buffer, 0, count);
-                    }
-                    plugin.getLogger().info("Downloaded update successfully.");
+                    try (BufferedInputStream in = new BufferedInputStream(httpResponse.getEntity().getContent());
+                         final FileOutputStream out = new FileOutputStream(tempJarFile)) {
 
-                    plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-                        plugin.getLogger().info("Server restarting to apply update...");
-                        Bukkit.getPluginManager().disablePlugins();
-
-                        try {
-                            Files.move(tempJarFile.toPath(), jarFileOnPluginFolder.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-                            plugin.getLogger().info("Updated to the latest version successfully. Restarting server...");
-                        } catch (IOException e) {
-                            plugin.getLogger().severe("Failed to replace the old JAR file with the new one.");
-                            e.printStackTrace();
+                        final byte[] buffer = new byte[1024];
+                        int count;
+                        while ((count = in.read(buffer)) != -1) {
+                            out.write(buffer, 0, count);
                         }
+                        plugin.getLogger().info("Downloaded update successfully.");
 
-                        Bukkit.shutdown();
-                    }, 60);
+                        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+                            try {
+                                Files.move(tempJarFile.toPath(), jarFileOnPluginFolder.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                                plugin.getLogger().info("Updated to the latest version successfully. Restarting server...");
+                                Bukkit.shutdown();
+                            } catch (IOException e) {
+                                plugin.getLogger().severe("Failed to replace the old JAR file with the new one.");
+                                e.printStackTrace();
+                            }
+                        }, 40);
+                    }
                 }
             }
         } catch (IOException | java.net.URISyntaxException ex) {

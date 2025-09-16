@@ -1,0 +1,53 @@
+package me.pafias.pffa.objects.gui;
+
+import me.pafias.pffa.objects.Kit;
+import me.pafias.pffa.objects.Spawn;
+import me.pafias.pffa.objects.User;
+import me.pafias.putils.CC;
+import me.pafias.putils.InventoryUtils;
+import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
+public class KitMenu extends GuiMenu {
+
+    private final User user;
+    private final Spawn spawn;
+
+    public KitMenu(User user, Spawn spawn, Collection<Kit> kits) {
+        super(user.getPlayer(), CC.t("&6Kit selection"), InventoryUtils.parseSizeToInvSize(kits.size()));
+
+        this.user = user;
+        this.spawn = spawn;
+
+        for (Kit kit : kits) {
+            mapping.put(kit.getGuiItem(), kit);
+            getInventory().addItem(kit.getGuiItem());
+        }
+    }
+
+    private final Map<ItemStack, Kit> mapping = new HashMap<>();
+
+    @Override
+    public void clickHandler(@Nullable ItemStack item, int slot) {
+        if (item == null) {
+            setCloseOnClick(false);
+            return;
+        }
+        final Kit kit = mapping.get(item);
+        if (kit == null) {
+            setCloseOnClick(false);
+            return;
+        }
+        user.heal(false);
+        kit.give(user.getPlayer());
+        if (spawn != null)
+            spawn.teleport(user.getPlayer());
+        user.setLastSpawn(spawn);
+        user.setLastKit(kit);
+    }
+
+}

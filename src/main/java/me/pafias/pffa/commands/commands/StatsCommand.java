@@ -14,7 +14,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class StatsCommand implements CommandExecutor, TabExecutor {
 
@@ -34,17 +33,18 @@ public class StatsCommand implements CommandExecutor, TabExecutor {
         return true;
     }
 
-    // Copied from subcommands/StatsCommand.java
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (args.length >= 2) return Collections.emptyList();
-        if (!sender.hasPermission("ffa.stats.others")) return Collections.emptyList();
-        if (args[0].length() < 4) return Collections.singletonList("Type at least 4 letters to auto-complete");
-        return Arrays.stream(plugin.getServer().getOfflinePlayers())
-                .map(OfflinePlayer::getName)
-                .filter(Objects::nonNull)
-                .filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase()))
-                .collect(Collectors.toList());
+        if (args.length == 1 && sender.hasPermission("ffa.stats.others")) {
+            if (args[0].length() < 4)
+                return Collections.singletonList("Type at least 4 letters to auto-complete");
+            return Arrays.stream(plugin.getServer().getOfflinePlayers())
+                    .map(OfflinePlayer::getName)
+                    .filter(Objects::nonNull)
+                    .filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase()))
+                    .toList();
+        }
+        return Collections.emptyList();
     }
 
 }

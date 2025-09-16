@@ -10,18 +10,76 @@
   "items": [
     {
       "slot": 0,
+      "material": "DIAMOND_SWORD",
+      "amount": 1,
+      "enchantments": []
+    },
+    {
+      "slot": 36,
+      "material": "DIAMOND_BOOTS",
+      "amount": 1,
+      "enchantments": [
+        {
+          "name": "PROTECTION_ENVIRONMENTAL",
+          "level": 3
+        },
+        {
+          "name": "DURABILITY",
+          "level": 10
+        }
+      ]
+    },
+    {
+      "slot": 37,
+      "material": "DIAMOND_LEGGINGS",
+      "amount": 1,
+      "enchantments": [
+        {
+          "name": "PROTECTION_ENVIRONMENTAL",
+          "level": 3
+        },
+        {
+          "name": "DURABILITY",
+          "level": 10
+        }
+      ]
+    },
+    {
+      "slot": 38,
+      "material": "DIAMOND_CHESTPLATE",
+      "amount": 1,
+      "enchantments": [
+        {
+          "name": "PROTECTION_ENVIRONMENTAL",
+          "level": 3
+        },
+        {
+          "name": "DURABILITY",
+          "level": 10
+        }
+      ]
+    },
+    {
+      "slot": 39,
       "material": "DIAMOND_HELMET",
       "amount": 1,
       "enchantments": [
         {
-          "name": "DAMAGE_ALL",
-          "level": 1
+          "name": "PROTECTION_ENVIRONMENTAL",
+          "level": 3
         },
         {
           "name": "DURABILITY",
-          "level": 1
+          "level": 10
         }
       ]
+    }
+  ],
+  "effects": [
+    {
+      "type": "NIGHT_VISION",
+      "duration": 1000000,
+      "amplifier": 255
     }
   ]
 }

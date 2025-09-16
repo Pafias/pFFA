@@ -1,8 +1,12 @@
 package me.pafias.pffa.services;
 
-import me.pafias.pffa.objects.*;
+import me.pafias.pffa.listeners.ArmorstandListener;
+import me.pafias.pffa.objects.Kit;
+import me.pafias.pffa.objects.Spawn;
+import me.pafias.pffa.objects.User;
+import me.pafias.pffa.objects.gui.KitMenu;
+import me.pafias.pffa.objects.gui.SpawnMenu;
 import me.pafias.pffa.pFFA;
-import me.pafias.pffa.util.RandomUtils;
 import org.bukkit.entity.ArmorStand;
 
 public class ArmorstandManager {
@@ -11,55 +15,36 @@ public class ArmorstandManager {
 
     public ArmorstandManager(pFFA plugin) {
         this.plugin = plugin;
+        plugin.getServer().getPluginManager().registerEvents(new ArmorstandListener(plugin, this), plugin);
     }
 
     public void trigger(ArmorStand as, User user, boolean leftclick) throws NullPointerException {
         if (as.isCustomNameVisible() && as.getCustomName() != null && plugin.getSM().getKitManager().exists(as.getCustomName())) {
             // Clicked on Kit armorstand
-            Kit kit = plugin.getSM().getKitManager().getKit(as.getCustomName());
+            final Kit kit = plugin.getSM().getKitManager().getKit(as.getCustomName());
             if (!leftclick) {
-                SpawnMenu menu = new SpawnMenu(user.getPlayer(), RandomUtils.parseSizeToInvSize(plugin.getSM().getSpawnManager().getSpawns().size()));
-                menu.open((item, slot) -> {
-                    Spawn spawn = plugin.getSM().getSpawnManager().getSpawn(item);
-                    if (spawn == null) {
-                        menu.setCloseOnClick(false);
-                        return;
-                    }
-                    user.heal(false);
-                    spawn.teleport(user.getPlayer());
-                    if (kit != null)
-                        kit.give(user.getPlayer());
-                    user.setLastSpawn(spawn);
-                    user.setLastKit(kit);
-                });
+                new SpawnMenu(user, kit, plugin.getSM().getSpawnManager().getSpawns(user.getPlayer()).values())
+                        .open();
             } else {
                 kit.give(user.getPlayer());
-                plugin.getSM().getSpawnManager().getDefaultSpawn().teleport(user.getPlayer());
+                final Spawn spawn = plugin.getSM().getSpawnManager().getDefaultSpawn();
+                spawn.teleport(user.getPlayer());
                 user.heal(false);
+                user.setLastSpawn(spawn);
             }
             user.setLastKit(kit);
         } else if (as.isCustomNameVisible() && as.getCustomName() != null && plugin.getSM().getSpawnManager().exists(as.getCustomName())) {
             // Clicked on Spawn armorstand
-            Spawn spawn = plugin.getSM().getSpawnManager().getSpawn(as.getCustomName());
+            final Spawn spawn = plugin.getSM().getSpawnManager().getSpawn(as.getCustomName());
             if (!leftclick) {
-                KitMenu menu = new KitMenu(user.getPlayer(), RandomUtils.parseSizeToInvSize(plugin.getSM().getKitManager().getKits().size()));
-                menu.open((item, slot) -> {
-                    Kit kit = plugin.getSM().getKitManager().getKit(item);
-                    if (kit == null) {
-                        menu.setCloseOnClick(false);
-                        return;
-                    }
-                    user.heal(false);
-                    kit.give(user.getPlayer());
-                    if (spawn != null)
-                        spawn.teleport(user.getPlayer());
-                    user.setLastSpawn(spawn);
-                    user.setLastKit(kit);
-                });
+                new KitMenu(user, spawn, plugin.getSM().getKitManager().getKits(user.getPlayer()).values())
+                        .open();
             } else {
-                plugin.getSM().getKitManager().getDefaultKit().give(user.getPlayer());
+                final Kit kit = plugin.getSM().getKitManager().getDefaultKit();
+                kit.give(user.getPlayer());
                 user.heal(false);
                 spawn.teleport(user.getPlayer());
+                user.setLastKit(kit);
             }
             user.setLastSpawn(spawn);
         }

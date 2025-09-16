@@ -4,16 +4,17 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import me.pafias.pffa.pFFA;
+import lombok.Getter;
 import me.pafias.pffa.objects.Kit;
-import me.pafias.pffa.util.CC;
-import me.pafias.pffa.util.KitUtils;
+import me.pafias.pffa.pFFA;
+import me.pafias.pffa.util.Serializer;
+import me.pafias.putils.CC;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.util.*;
@@ -25,20 +26,24 @@ public class KitManager {
 
     public KitManager(pFFA plugin) {
         this.plugin = plugin;
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                loadKits();
-            }
-        }.runTaskAsynchronously(plugin);
+        loadKits();
     }
 
+    @Getter
     private final LinkedHashMap<String, Kit> kits = new LinkedHashMap<>();
 
-    private Kit defaultKit;
-
-    public LinkedHashMap<String, Kit> getKits() {
-        return kits;
+    /**
+     * Get all kits that the player has permission to.
+     *
+     * @param player The player to check permissions for. If null, all kits are returned.
+     * @return A map of kit names to Kit objects, filtered by permission.
+     */
+    public Map<String, Kit> getKits(@Nullable Player player) {
+        if (player == null)
+            return kits;
+        return kits.entrySet().stream()
+                .filter(entry -> !entry.getValue().hasPermission() || player.hasPermission(entry.getValue().getPermission()))
+                .collect(LinkedHashMap::new, (map, entry) -> map.put(entry.getKey(), entry.getValue()), LinkedHashMap::putAll);
     }
 
     public boolean exists(String name) {
@@ -49,7 +54,7 @@ public class KitManager {
     }
 
     public Kit getDefaultKit() {
-        return defaultKit;
+        return kits.values().stream().findFirst().orElse(null);
     }
 
     public Kit getKit(String name) {
@@ -59,22 +64,20 @@ public class KitManager {
         return kit;
     }
 
-    public Kit getKit(ItemStack guiItem) {
-        return kits.values().stream().filter(kit -> kit.getGUIItem().equals(guiItem)).findAny().orElse(null);
-    }
-
-    public void saveNewKit(Player player, String name) throws IOException {
+    public void saveNewKit(Player player, String name, String permission) throws IOException {
         File file = new File(plugin.getDataFolder() + "/kits", name + ".json");
         if (!file.exists())
             file.createNewFile();
         JsonObject json = new JsonObject();
         json.addProperty("name", name);
-        json.add("gui_item", KitUtils.guiItemToJson(player.getItemInHand()));
+        if (permission != null && !permission.isEmpty())
+            json.addProperty("permission", permission);
+        json.add("gui_item", Serializer.guiItemToJson(player.getInventory().getItemInMainHand()));
         JsonArray items = new JsonArray();
         for (int i = 0; i < player.getInventory().getSize(); i++) {
             ItemStack item = player.getInventory().getItem(i);
             if (item == null || item.getType().equals(Material.AIR)) continue;
-            items.add(KitUtils.invItemToJson(i, item));
+            items.add(Serializer.invItemToJson(i, item));
         }
         json.add("items", items);
         if (!player.getActivePotionEffects().isEmpty()) {
@@ -97,13 +100,14 @@ public class KitManager {
     public void loadKit(File file) {
         try {
             String jsonText = readAll(new FileReader(file));
-            JsonObject json = new JsonParser().parse(jsonText).getAsJsonObject();
+            JsonObject json = JsonParser.parseString(jsonText).getAsJsonObject();
             String name = json.get("name").getAsString();
-            ItemStack gui_item = KitUtils.jsonToGuiItem(json.get("gui_item").getAsJsonObject());
+            String permission = json.has("permission") ? json.get("permission").getAsString() : null;
+            ItemStack gui_item = Serializer.jsonToGuiItem(json.get("gui_item").getAsJsonObject());
             Map<Integer, ItemStack> items = new HashMap<>();
             for (int i = 0; i < json.get("items").getAsJsonArray().size(); i++) {
                 JsonObject item = json.get("items").getAsJsonArray().get(i).getAsJsonObject();
-                items.put(item.get("slot").getAsInt(), KitUtils.jsonToInvItem(item));
+                items.put(item.get("slot").getAsInt(), Serializer.jsonToInvItem(item));
             }
             Collection<PotionEffect> potionEffects = new ArrayList<>();
             if (json.has("effects")) {
@@ -116,7 +120,7 @@ public class KitManager {
                     potionEffects.add(potionEffect);
                 }
             }
-            kits.put(name.toLowerCase(), new Kit(name, gui_item, items, potionEffects));
+            kits.put(name.toLowerCase(), new Kit(name, permission, gui_item, items, potionEffects));
         } catch (IOException ex) {
             ex.printStackTrace();
             plugin.getServer().getLogger().log(Level.WARNING, "");
@@ -126,6 +130,7 @@ public class KitManager {
     }
 
     public void loadKits() {
+        kits.clear();
         File dir = new File(plugin.getDataFolder() + "/kits");
         if (!dir.exists())
             dir.mkdirs();
@@ -136,7 +141,6 @@ public class KitManager {
             if (!file.isDirectory())
                 loadKit(file);
         }
-        defaultKit = kits.get(kits.keySet().iterator().next());
     }
 
     private static String readAll(Reader rd) throws IOException {

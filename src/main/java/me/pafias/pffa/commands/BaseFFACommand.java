@@ -1,7 +1,8 @@
 package me.pafias.pffa.commands;
 
+import lombok.Getter;
 import me.pafias.pffa.pFFA;
-import me.pafias.pffa.util.CC;
+import me.pafias.putils.CC;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
@@ -10,38 +11,29 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public abstract class ICommand {
+public abstract class BaseFFACommand {
 
     public pFFA plugin = pFFA.get();
 
+    @Getter
     String name;
-    Set<String> aliases;
-    String permission;
-    String args;
-    String description;
 
-    public ICommand(String name) {
+    @Getter
+    Set<String> aliases;
+
+    @Getter
+    String permission;
+
+    public BaseFFACommand(String name) {
         this.name = name;
         this.aliases = new HashSet<>();
         this.permission = null;
     }
 
-    public ICommand(String name, String permission, String... aliases) {
+    public BaseFFACommand(String name, String permission, String... aliases) {
         this.name = name;
         this.aliases = new HashSet<>(Arrays.asList(aliases));
         this.permission = permission;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Set<String> getAliases() {
-        return aliases;
-    }
-
-    public String getPermission() {
-        return permission;
     }
 
     public abstract String getArgs();

@@ -1,43 +1,24 @@
 package me.pafias.pffa.listeners.protocol;
 
-import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.events.ListenerPriority;
-import com.comphenix.protocol.events.PacketAdapter;
-import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.events.PacketEvent;
-import com.comphenix.protocol.wrappers.WrappedAttribute;
-import me.pafias.pffa.pFFA;
+import com.github.retrooper.packetevents.event.SimplePacketListenerAbstract;
+import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
+import com.github.retrooper.packetevents.protocol.attribute.Attributes;
+import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateAttributes;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class SprintglitchListener extends PacketAdapter {
-
-    private final String maxHealthKey;
-    private final String movementSpeedKey;
-
-    public SprintglitchListener(pFFA pl) {
-        super(pl, ListenerPriority.NORMAL, PacketType.Play.Server.UPDATE_ATTRIBUTES);
-        if (pl.serverVersion() >= 17) {
-            maxHealthKey = "generic.max_health";
-            movementSpeedKey = "generic.movement_speed";
-        } else {
-            maxHealthKey = "generic.maxHealth";
-            movementSpeedKey = "generic.movementSpeed";
-        }
-        ProtocolLibrary.getProtocolManager().addPacketListener(this);
-    }
+public class SprintglitchListener extends SimplePacketListenerAbstract {
 
     @Override
-    public void onPacketSending(PacketEvent event) {
-        PacketContainer packet = event.getPacket();
-        int i = 0;
-        for (List<WrappedAttribute> list : packet.getAttributeCollectionModifier().getValues()) {
-            if (list.stream().anyMatch(attribute -> attribute.getAttributeKey().equals(maxHealthKey))
-                    && list.removeIf(attribute -> attribute.getAttributeKey().equals(movementSpeedKey)))
-                packet.getAttributeCollectionModifier().write(i, list);
-            i++;
-        }
+    public void onPacketPlaySend(PacketPlaySendEvent event) {
+        if (!event.getPacketType().equals(PacketType.Play.Server.UPDATE_ATTRIBUTES)) return;
+        final WrapperPlayServerUpdateAttributes packet = new WrapperPlayServerUpdateAttributes(event);
+        final List<WrapperPlayServerUpdateAttributes.Property> list = new ArrayList<>(packet.getProperties());
+        if (list.stream().anyMatch(attribute -> attribute.getAttribute().equals(Attributes.MAX_HEALTH))
+                && list.removeIf(attribute -> attribute.getAttribute().equals(Attributes.MOVEMENT_SPEED)))
+            packet.setProperties(list);
     }
 
 }

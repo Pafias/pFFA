@@ -1,12 +1,11 @@
 package me.pafias.pffa.commands.commands;
 
-import me.pafias.pffa.commands.ICommand;
+import me.pafias.pffa.commands.BaseFFACommand;
 import me.pafias.pffa.commands.subcommands.*;
 import me.pafias.pffa.commands.subcommands.KillCommand;
 import me.pafias.pffa.commands.subcommands.SpawnCommand;
 import me.pafias.pffa.commands.subcommands.StatsCommand;
-import me.pafias.pffa.pFFA;
-import me.pafias.pffa.util.CC;
+import me.pafias.putils.CC;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -17,14 +16,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class FFACommand implements CommandExecutor, TabExecutor {
 
-    private final pFFA plugin;
-
-    public FFACommand(pFFA plugin) {
-        this.plugin = plugin;
+    public FFACommand() {
         commands.add(new EditstatsCommand());
         commands.add(new StatsCommand());
         commands.add(new SetlobbyCommand());
@@ -35,30 +30,19 @@ public class FFACommand implements CommandExecutor, TabExecutor {
         commands.add(new SavespawnCommand());
         commands.add(new SpawnCommand());
         commands.add(new ArmorstandCommand());
-        commands.add(new SettingsCommand());
         commands.add(new ToggleProtectionCommand());
+        commands.add(new ReloadCommand());
+        commands.add(new ConvertCommand());
+        commands.add(new NpcCommand());
     }
 
-    private Set<ICommand> commands = new HashSet<>();
+    private final Set<BaseFFACommand> commands = new HashSet<>();
 
     private boolean help(CommandSender sender, String label) {
         sender.sendMessage(CC.t("&f-------------------- &bFFA &f--------------------"));
-        commands.forEach(command -> {
+        for (BaseFFACommand command : commands)
             if (command.getPermission() == null || sender.hasPermission(command.getPermission()))
-                sender.sendMessage(CC.t(String.format("&3/%s %s %s &9- %s", label, command.getName(), command.getArgs(), command.getDescription())));
-        });
-        /*
-        sender.sendMessage(CC.translate("&3/" + label + " help &9- Shows this menu"));
-        sender.sendMessage(CC.translate("&3/" + label + " editstats &9- Edit a player's statistics"));
-        sender.sendMessage(CC.translate("&3/" + label + " stats [player] &9- See a player's statistics"));
-        sender.sendMessage(CC.translate("&3/" + label + " setlobby &9-Set the lobby"));
-        sender.sendMessage(CC.translate("&3/" + label + " lobby &9-Go to the lobby"));
-        sender.sendMessage(CC.translate("&3/" + label + " kill &9-Kill yourself"));
-        sender.sendMessage(CC.translate("&3/" + label + " savekit <name> &9-Save a kit"));
-        sender.sendMessage(CC.translate("&3/" + label + " kit <name> &9-Get a kit"));
-        sender.sendMessage(CC.translate("&3/" + label + " savespawn <name> &9-Save a spawn"));
-        sender.sendMessage(CC.translate("&3/" + label + " spawn <name> &9-Teleport to a spawn"));
-         */
+                sender.sendMessage(CC.tf("&3/%s %s %s &9- %s", label, command.getName(), command.getArgs(), command.getDescription()));
         return true;
     }
 
@@ -66,7 +50,9 @@ public class FFACommand implements CommandExecutor, TabExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (args.length == 0) return help(sender, label);
         else {
-            ICommand cmd = commands.stream().filter(c -> c.getName().equalsIgnoreCase(args[0]) || c.getAliases().contains(args[0])).findFirst().orElse(null);
+            final BaseFFACommand cmd = commands.stream()
+                    .filter(c -> c.getName().equalsIgnoreCase(args[0]) || c.getAliases().contains(args[0]))
+                    .findFirst().orElse(null);
             if (cmd == null) return help(sender, label);
             if (cmd.getPermission() != null && !sender.hasPermission(cmd.getPermission())) {
                 cmd.noPermission(sender);
@@ -78,12 +64,17 @@ public class FFACommand implements CommandExecutor, TabExecutor {
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
         if (args.length == 0) return null;
         if (args.length == 1)
-            return commands.stream().map(ICommand::getName).filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase())).collect(Collectors.toList());
+            return commands.stream()
+                    .map(BaseFFACommand::getName)
+                    .filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase()))
+                    .toList();
         else {
-            ICommand cmd = commands.stream().filter(c -> c.getName().equalsIgnoreCase(args[0]) || c.getAliases().contains(args[0])).findFirst().orElse(null);
+            final BaseFFACommand cmd = commands.stream()
+                    .filter(c -> c.getName().equalsIgnoreCase(args[0]) || c.getAliases().contains(args[0]))
+                    .findFirst().orElse(null);
             if (cmd == null) return null;
             if (cmd.getPermission() != null && !sender.hasPermission(cmd.getPermission()))
                 return Collections.emptyList();

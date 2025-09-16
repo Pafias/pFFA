@@ -1,12 +1,15 @@
 package me.pafias.pffa.commands.subcommands;
 
-import me.pafias.pffa.commands.ICommand;
+import me.pafias.pffa.commands.BaseFFACommand;
 import me.pafias.pffa.objects.Kit;
-import me.pafias.pffa.util.CC;
+import me.pafias.putils.CC;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -14,7 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class ArmorstandCommand extends ICommand {
+public class ArmorstandCommand extends BaseFFACommand {
 
     public ArmorstandCommand() {
         super("armorstand", "ffa.armorstand", "as");
@@ -32,20 +35,20 @@ public class ArmorstandCommand extends ICommand {
 
     @Override
     public void execute(String mainCommand, CommandSender sender, String[] args) {
-        if (!(sender instanceof Player)) {
+        if (!(sender instanceof Player player)) {
             sender.sendMessage(CC.t("&cOnly players."));
             return;
         }
-        // ffa armorstand Beast
         if (args.length < 2) {
             sender.sendMessage(CC.t("&c/" + mainCommand + " " + getName() + " " + getArgs()));
             return;
         }
-        String name = CC.t(String.join(" ", Arrays.copyOfRange(args, 1, args.length)));
-        Player player = (Player) sender;
+        final Component name = CC.a(String.join(" ", Arrays.copyOfRange(args, 1, args.length)));
         ArmorStand armorstand = null;
         if (player.getWorld().getEntities().stream().anyMatch(e -> (e instanceof ArmorStand) && e.getLocation().getBlock() == player.getLocation().getBlock())) {
-            armorstand = (ArmorStand) player.getWorld().getEntities().stream().filter(e -> (e instanceof ArmorStand) && e.getLocation().getBlock() == player.getLocation().getBlock()).findAny().orElse(null);
+            armorstand = (ArmorStand) player.getWorld().getEntities().stream()
+                    .filter(e -> (e instanceof ArmorStand) && e.getLocation().getBlock() == player.getLocation().getBlock())
+                    .findAny().orElse(null);
         }
         if (armorstand == null) {
             armorstand = player.getWorld().spawn(player.getLocation(), ArmorStand.class);
@@ -65,18 +68,36 @@ public class ArmorstandCommand extends ICommand {
                 .collect(Collectors.toList());
     }
 
-    private void prepAs(ArmorStand as, String name) {
+    private void prepAs(ArmorStand as, Component name) {
         as.setBasePlate(false);
         as.setArms(true);
         as.setCustomNameVisible(true);
-        as.setCustomName(name);
-        Kit kit = plugin.getSM().getKitManager().getKit(name);
+        as.customName(name);
+        final Kit kit = plugin.getSM().getKitManager().getKit(PlainTextComponentSerializer.plainText().serialize(name));
         if (kit != null) {
-            as.setItemInHand(kit.getItems().get(0));
-            as.setHelmet(kit.getItems().get(39));
-            as.setChestplate(kit.getItems().get(38));
-            as.setLeggings(kit.getItems().get(37));
-            as.setBoots(kit.getItems().get(36));
+            final ItemStack mainHand = kit.getItems().get(0);
+            if (mainHand != null)
+                as.getEquipment().setItemInMainHand(mainHand);
+
+            final ItemStack offHand = kit.getItems().get(40);
+            if (offHand != null)
+                as.getEquipment().setItemInOffHand(offHand);
+
+            final ItemStack helmet = kit.getItems().get(39);
+            if (helmet != null)
+                as.getEquipment().setHelmet(helmet);
+
+            final ItemStack chestplate = kit.getItems().get(38);
+            if (chestplate != null)
+                as.getEquipment().setChestplate(chestplate);
+
+            final ItemStack leggings = kit.getItems().get(37);
+            if (leggings != null)
+                as.getEquipment().setLeggings(leggings);
+
+            final ItemStack boots = kit.getItems().get(36);
+            if (boots != null)
+                as.getEquipment().setBoots(boots);
         }
     }
 

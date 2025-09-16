@@ -1,7 +1,7 @@
 package me.pafias.pffa.commands.subcommands;
 
-import me.pafias.pffa.commands.ICommand;
-import me.pafias.pffa.util.CC;
+import me.pafias.pffa.commands.BaseFFACommand;
+import me.pafias.putils.CC;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -10,11 +10,11 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ToggleProtectionCommand extends ICommand {
+public class ToggleProtectionCommand extends BaseFFACommand {
 
     public ToggleProtectionCommand() {
         super("toggleprotection", "ffa.toggleprotection");
-        config = plugin.getSM().getVariables().worldProtection;
+        config = plugin.getConfig().getConfigurationSection("world_protection");
     }
 
     private final ConfigurationSection config;
@@ -42,8 +42,8 @@ public class ToggleProtectionCommand extends ICommand {
             return;
         }
         if(args.length == 2) {
-            boolean oldState = config.getBoolean(args[1]);
-            boolean newState = !config.getBoolean(args[1]);
+            final boolean oldState = config.getBoolean(args[1]);
+            final boolean newState = !config.getBoolean(args[1]);
             plugin.getConfig().set(config.getCurrentPath() + "." + args[1], newState);
             plugin.saveConfig();
             config.set(args[1], newState);
