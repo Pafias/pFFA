@@ -1,5 +1,7 @@
-package me.pafias.pffa.objects;
+package me.pafias.pffa.objects.gui;
 
+import lombok.Getter;
+import lombok.Setter;
 import me.pafias.pffa.pFFA;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -11,6 +13,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,10 +23,17 @@ public abstract class GuiMenu implements Listener {
     public final pFFA plugin = pFFA.get();
 
     public Player player;
-    private Inventory inventory;
-    private String title;
-    private int size;
-    private List<ItemStack> items;
+
+    @Getter
+    private final Inventory inventory;
+
+    @Getter
+    private final String title;
+
+    private final int size;
+    private final List<ItemStack> items;
+
+    @Setter
     private boolean closeOnClick = true;
 
     public GuiMenu(Player player, String title, int size) {
@@ -36,15 +46,7 @@ public abstract class GuiMenu implements Listener {
         this.size = size;
         this.items = items;
         inventory = plugin.getServer().createInventory(null, size, title);
-        items.forEach(item -> inventory.addItem(item));
-    }
-
-    public Inventory getInventory() {
-        return inventory;
-    }
-
-    public String getTitle() {
-        return title;
+        items.forEach(inventory::addItem);
     }
 
     public void open() {
@@ -63,11 +65,7 @@ public abstract class GuiMenu implements Listener {
         HandlerList.unregisterAll(this);
     }
 
-    public void setCloseOnClick(boolean closeOnClick) {
-        this.closeOnClick = closeOnClick;
-    }
-
-    public abstract void clickHandler(ItemStack item, int slot);
+    public abstract void clickHandler(@Nullable ItemStack item, int slot);
 
     @EventHandler
     public void onClick(InventoryClickEvent event) {
@@ -84,7 +82,7 @@ public abstract class GuiMenu implements Listener {
     @EventHandler
     public void onClose(InventoryCloseEvent event) {
         // if (event.getInventory() == inventory)
-            // close();
+        // close();
     }
 
 }

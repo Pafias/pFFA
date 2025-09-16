@@ -11,7 +11,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class SpawnCommand implements CommandExecutor, TabExecutor {
 
@@ -31,19 +30,16 @@ public class SpawnCommand implements CommandExecutor, TabExecutor {
         return true;
     }
 
-    // Copied from subcommands/LobbyCommand.java
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (args.length >= 2) return Collections.emptyList();
         if (args.length == 1 && sender.hasPermission("ffa.lobby.others"))
             return plugin.getServer().getOnlinePlayers()
                     .stream()
                     .filter(p -> ((Player) sender).canSee(p))
                     .map(Player::getName)
                     .filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase()))
-                    .collect(Collectors.toList());
-        else
-            return Collections.emptyList();
+                    .toList();
+        return Collections.emptyList();
     }
 
 }

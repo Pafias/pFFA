@@ -1,7 +1,8 @@
 package me.pafias.pffa.listeners;
 
-import me.pafias.pffa.pFFA;
 import me.pafias.pffa.objects.User;
+import me.pafias.pffa.pFFA;
+import me.pafias.pffa.services.ArmorstandManager;
 import org.bukkit.GameMode;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
@@ -10,38 +11,47 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 
+import java.util.Set;
+
 public class ArmorstandListener implements Listener {
 
     private final pFFA plugin;
 
-    public ArmorstandListener(pFFA plugin) {
+    private final ArmorstandManager armorstandManager;
+
+    public ArmorstandListener(pFFA plugin, ArmorstandManager armorstandManager) {
         this.plugin = plugin;
+        this.armorstandManager = armorstandManager;
+
+        ffaWorlds = Set.copyOf(plugin.getConfig().getStringList("ffa_worlds"));
     }
+
+    private final Set<String> ffaWorlds;
 
     @EventHandler
     public void onInteract(PlayerInteractAtEntityEvent event) {
-        if (!(event.getRightClicked() instanceof ArmorStand)) return;
-        if (event.getPlayer().getGameMode() != null && event.getPlayer().getGameMode().equals(GameMode.CREATIVE))
+        if (event.getPlayer().getGameMode() == GameMode.CREATIVE)
             return;
-        User user = plugin.getSM().getUserManager().getUser(event.getPlayer());
+        if (!(event.getRightClicked() instanceof ArmorStand armorStand)) return;
+        if (!ffaWorlds.contains(event.getPlayer().getWorld().getName())) return;
+        final User user = plugin.getSM().getUserManager().getUser(event.getPlayer());
         if (user == null) return;
-        if (!user.isInFFAWorld()) return;
         event.setCancelled(true);
-        plugin.getSM().getArmorstandManager().trigger((ArmorStand) event.getRightClicked(), user, false);
+        armorstandManager.trigger(armorStand, user, false);
     }
 
     @EventHandler
     public void onClick(EntityDamageByEntityEvent event) {
-        if (!(event.getDamager() instanceof Player)) return;
-        if (!(event.getEntity() instanceof ArmorStand)) return;
-        if (((Player) event.getDamager()).getGameMode() != null && ((Player) event.getDamager()).getGameMode().equals(GameMode.CREATIVE))
+        if (!(event.getDamager() instanceof Player damager)) return;
+        if (damager.getGameMode() == GameMode.CREATIVE)
             return;
-        User user = plugin.getSM().getUserManager().getUser((Player) event.getDamager());
+        if (!(event.getEntity() instanceof ArmorStand armorStand)) return;
+        if (!ffaWorlds.contains(damager.getWorld().getName())) return;
+        final User user = plugin.getSM().getUserManager().getUser(damager);
         if (user == null) return;
-        if (!user.isInFFAWorld()) return;
         event.setCancelled(true);
         event.setDamage(0);
-        plugin.getSM().getArmorstandManager().trigger((ArmorStand) event.getEntity(), user, true);
+        armorstandManager.trigger(armorStand, user, true);
     }
 
 }

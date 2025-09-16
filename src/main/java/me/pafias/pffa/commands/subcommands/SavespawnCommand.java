@@ -1,8 +1,8 @@
 package me.pafias.pffa.commands.subcommands;
 
-import me.pafias.pffa.commands.ICommand;
+import me.pafias.pffa.commands.BaseFFACommand;
 import me.pafias.pffa.services.SpawnManager;
-import me.pafias.pffa.util.CC;
+import me.pafias.putils.CC;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
-public class SavespawnCommand extends ICommand {
+public class SavespawnCommand extends BaseFFACommand {
 
     public SavespawnCommand() {
         super("savespawn", "ffa.savespawn", "spawnsave", "addspawn", "spawnadd");
@@ -22,7 +22,7 @@ public class SavespawnCommand extends ICommand {
     @NotNull
     @Override
     public String getArgs() {
-        return "<name>";
+        return "<name> [permission]";
     }
 
     @NotNull
@@ -33,7 +33,7 @@ public class SavespawnCommand extends ICommand {
 
     @Override
     public void execute(String mainCommand, CommandSender sender, String[] args) {
-        if (!(sender instanceof Player)) {
+        if (!(sender instanceof Player player)) {
             sender.sendMessage(CC.t("&cOnly players."));
             return;
         }
@@ -41,15 +41,15 @@ public class SavespawnCommand extends ICommand {
             sender.sendMessage(CC.t("&c/" + mainCommand + " " + getName() + " " + getArgs()));
             return;
         }
-        Player player = (Player) sender;
-        String name = args[1];
-        SpawnManager spawnManager = plugin.getSM().getSpawnManager();
-        if (player.getItemInHand() == null || player.getItemInHand().getType().equals(Material.AIR)) {
+        if (player.getInventory().getItemInMainHand().getType().equals(Material.AIR)) {
             sender.sendMessage(CC.t("&cYou have to have an item in your hand (will be the gui item)"));
             return;
         }
+        final String name = args[1];
+        final String permission = args.length >= 3 ? args[2] : null;
+        final SpawnManager spawnManager = plugin.getSM().getSpawnManager();
         try {
-            spawnManager.saveNewSpawn(player, name);
+            spawnManager.saveNewSpawn(player, name, permission);
         } catch (IOException e) {
             e.printStackTrace();
             sender.sendMessage(CC.t("&cFailed to save spawn."));

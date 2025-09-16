@@ -2,18 +2,20 @@ package me.pafias.pffa.services;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import lombok.Getter;
 import me.pafias.pffa.objects.Spawn;
 import me.pafias.pffa.pFFA;
-import me.pafias.pffa.util.CC;
-import me.pafias.pffa.util.SpawnUtils;
+import me.pafias.pffa.util.Serializer;
+import me.pafias.putils.CC;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.logging.Level;
 
 public class SpawnManager {
@@ -22,20 +24,24 @@ public class SpawnManager {
 
     public SpawnManager(pFFA plugin) {
         this.plugin = plugin;
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                loadSpawns();
-            }
-        }.runTaskAsynchronously(plugin);
+        loadSpawns();
     }
 
+    @Getter
     private final LinkedHashMap<String, Spawn> spawns = new LinkedHashMap<>();
 
-    private Spawn defaultSpawn;
-
-    public LinkedHashMap<String, Spawn> getSpawns() {
-        return spawns;
+    /**
+     * Get all spawns that the player has permission to.
+     *
+     * @param player The player to check permissions for. If null, all spawns are returned.
+     * @return A map of spawn names to Spawn objects, filtered by permission.
+     */
+    public Map<String, Spawn> getSpawns(@Nullable Player player) {
+        if (player == null)
+            return spawns;
+        return spawns.entrySet().stream()
+                .filter(entry -> !entry.getValue().hasPermission() || player.hasPermission(entry.getValue().getPermission()))
+                .collect(LinkedHashMap::new, (map, entry) -> map.put(entry.getKey(), entry.getValue()), LinkedHashMap::putAll);
     }
 
     public boolean exists(String name) {
@@ -52,39 +58,39 @@ public class SpawnManager {
         return spawn;
     }
 
-    public Spawn getSpawn(ItemStack guiItem) {
-        return spawns.values().stream().filter(spawn -> spawn.getGUIItem().equals(guiItem)).findAny().orElse(null);
-    }
-
     public Spawn getDefaultSpawn() {
-        return defaultSpawn;
+        return spawns.values().stream().findFirst().orElse(null);
     }
 
-    public void saveNewSpawn(Player player, String name) throws IOException {
+    public void saveNewSpawn(Player player, String name, String permission) throws IOException {
         if (exists(name)) return;
         File file = new File(plugin.getDataFolder() + "/spawns", name + ".json");
         if (file.exists()) return;
         file.createNewFile();
         JsonObject json = new JsonObject();
         json.addProperty("name", name);
-        json.add("gui_item", SpawnUtils.guiItemToJson(player.getItemInHand()));
-        json.add("location", SpawnUtils.locationToJson(player.getLocation()));
+        if (permission != null && !permission.isEmpty())
+            json.addProperty("permission", permission);
+        json.add("gui_item", Serializer.guiItemToJson(player.getInventory().getItemInMainHand()));
+        json.add("location", Serializer.locationToJson(player.getLocation()));
         FileWriter writer = new FileWriter(file);
         writer.write(json.toString());
         writer.close();
-        Spawn spawn = loadSpawn(file);
-        if (defaultSpawn == null)
-            defaultSpawn = spawn;
+        loadSpawn(file);
     }
 
     public Spawn loadSpawn(File file) {
         try {
             String jsonText = readAll(new FileReader(file));
-            JsonObject json = new JsonParser().parse(jsonText).getAsJsonObject();
+            JsonObject json = JsonParser.parseString(jsonText).getAsJsonObject();
             String name = json.get("name").getAsString();
-            ItemStack gui_item = SpawnUtils.jsonToGuiItem(json.get("gui_item").getAsJsonObject());
-            Location location = SpawnUtils.jsonToLocation(json.get("location").getAsJsonObject());
-            Spawn spawn = new Spawn(name, gui_item, location);
+            String permission = json.has("permission") ?
+                    json.get("permission").getAsString() : null;
+            ItemStack gui_item = Serializer.jsonToGuiItem(json.get("gui_item").getAsJsonObject());
+            Location location = Serializer.jsonToLocation(json.get("location").getAsJsonObject());
+            double playerDetectionRadius = json.has("player_detection_radius") ?
+                    json.get("player_detection_radius").getAsDouble() : 20;
+            Spawn spawn = new Spawn(name, permission, gui_item, location, playerDetectionRadius);
             spawns.put(name.toLowerCase(), spawn);
             return spawn;
         } catch (IOException ex) {
@@ -97,6 +103,7 @@ public class SpawnManager {
     }
 
     public void loadSpawns() {
+        spawns.clear();
         File dir = new File(plugin.getDataFolder() + "/spawns");
         if (!dir.exists())
             dir.mkdirs();
@@ -107,7 +114,6 @@ public class SpawnManager {
             if (!file.isDirectory())
                 loadSpawn(file);
         }
-        defaultSpawn = spawns.get(spawns.keySet().iterator().next());
     }
 
     private static String readAll(Reader rd) throws IOException {

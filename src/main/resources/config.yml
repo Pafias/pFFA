@@ -1,27 +1,34 @@
-preferred_db_type: 'file'
-mongo:
-  host: 'localhost'
-  port: 27017
-  database: 'minecraft'
-  collection: 'ffa'
-  username: 'root'
-  password: ''
-  options: '?authSource=minecraft'
-mysql:
-  setup_on_start: true
-  host: '127.0.0.1'
-  port: 3306
-  database: 'minecraft'
-  table: 'ffa_players'
-  username: 'root'
-  password: ''
-  ssl: false
+# Do not change the config version
+config_version: '1.0'
 
+database:
+  # Available options: 'file', 'mongo', 'mysql'
+  type: 'file'
+  mongo:
+    host: 'localhost'
+    port: 27017
+    database: 'minecraft'
+    collection: 'ffa'
+    username: 'root'
+    password: ''
+    options: '?authSource=minecraft'
+  mysql:
+    setup_on_start: true
+    host: '127.0.0.1'
+    port: 3306
+    database: 'minecraft'
+    username: 'root'
+    password: ''
+    ssl: false
+
+# The interval in minutes to save the player data to the database
 data_save_interval_minutes: 5
 
+# The ffa worlds in which the plugin should allow/deny certain actions
 ffa_worlds:
   - world
 
+# Various settings to do with (players) interacting with the world
 world_protection:
   bypass_with_gm_creative: true
   prevent_doors: false
@@ -38,56 +45,87 @@ world_protection:
   prevent_custom:
     - REPEATER
 
+# This will bounce the players back if they try standing afk in an armorstand
 prevent_players_blocking_armorstands: true
+
+# This will delete the shot arrows after they've landed somewhere
 clean_arrows: true
 
-death_message_suffix: "&7(&c%s ❤&7)"
+death:
+  heal_killer: true # Whether to heal the killer when they kill someone
+  killstreak_broadcasts:
+    enabled: true
+    # Here you can specify at what amount of kills the messages will be triggered at, and what those messages will be.
+    data:
+      25:
+        - "&b%s &7has reached a kill streak of 25 kills!"
+      50:
+        - ''
+        - "&b%s &eis on fire with a kill streak of 50 kills!"
+        - ''
+      100:
+        - ''
+        - "&b&l%s is absolutely dominating with a kill streak of 100 kills!"
+        - ''
+  quick_respawn:
+    enabled: true
+    # The permission required to receive and use the quick respawn feature/item
+    # Players have the 'ffa.quickrespawn' permission set to true by default
+    permission: 'ffa.quickrespawn'
+    # Left click will respawn the player with their last chosen kit and spawn
+    # Right click will respawn the player with the default kit and spawn
+    # If you change single_action to true, then right click will do the same as left-click: use the last chosen kit and spawn
+    single_action: false
+    item:
+      material: 'FEATHER'
+      name: '&bQuick Respawn &7&o(Check lore for info)'
+      # Remember to change the lore for the right-click if you changed single_action
+      lore:
+        - ''
+        - '&7Left-click to respawn with &l&nlast chosen&r &7kit & spawn'
+        - '&7Right-click to respawn with &l&ndefault&r &7kit & spawn'
+        - ''
 
-heal_on_kill: true
-disable_falldamage: false
+commands:
+  override_spawn_command: true
+  override_stats_command: true
+  override_kill_command: true
+  override_spectate_command: true
+  kill_command_cooldown: 5
 
-override_spawn_command: true
-override_stats_command: true
-override_kill_command: true
-kill_command_cooldown: 5
-
+# This will make players get a little velocity boost when they step on a pressure plate
+# This only happens with pressure plates within the lobby/spawn area
 interactive_pressureplates: true
-quick_respawn: true
-quick_respawn_single_action: false
 
-killstreak_broadcasts:
-  enabled: true
-  data:
-    25:
-      - "&b%s &7has reached a kill streak of 25 kills!"
-    50:
-      - ''
-      - "&b%s &eis on fire with a kill streak of 50 kills!"
-      - ''
-    100:
-      - ''
-      - "&b&l%s is absolutely dominating with a kill streak of 100 kills!"
-      - ''
-
+# Set any of the combatlog messages to empty to disable them and/or that feature
 combatlog:
   enabled: true
   duration: 10
+  logout_broadcast: '&b%s &clogged out while in combat!'
   display:
-    action_bar: true
+    action_bar: '&aYou are in combat. &cDo not log out!'
     exp_bar: true
     level: true
+  attacker_message: '&aYou attacked &b%s&c. Do not log out'
+  victim_message: '&cYou got attacked by &b%s&c. Do not log out'
 
-lobby_detection: ycoord
-
+# Config options related to the lobby/spawn
+# The detection mode can be 'ycoord' or 'bounds' or something else for a more automatic detection.
+# The latter barely works so i suggest using either ycoord or bounds.
+# Use y coord if your lobby/spawn is above the map.
+# Use bounds if otherwise, and manually specify the square bounds.
+# Use none if you want to disable the lobby/spawn detection.
 lobby:
-  world: 'world'
-  x: 50.5
-  y: 70.5
-  z: 50.5
-  yaw: 0.0
-  pitch: 0.0
-  hradius: 20
-  vradius: 6
-  xbounds: '40.0,60.0'
-  ybounds: '60.0,80.0'
-  zbounds: '40.0,60.0'
+  detection_mode: ycoord
+  spawn:
+    world: 'world'
+    x: 50.5
+    y: 70.5
+    z: 50.5
+    yaw: 0.0
+    pitch: 0.0
+  x_bounds: '40.0,60.0' # x-min, x-max
+  y_bounds: '60.0,80.0' # y-min, y-max
+  z_bounds: '40.0,60.0' # z-min, z-max
+  h_radius: 20 # horizontal distance between the center of the lobby/spawn to the edge
+  v_radius: 6 # vertical distance from the spawn point to the top of the lobby/spawn
