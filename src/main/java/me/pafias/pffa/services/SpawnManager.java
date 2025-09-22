@@ -25,7 +25,11 @@ public class SpawnManager {
     public SpawnManager(pFFA plugin) {
         this.plugin = plugin;
         loadSpawns();
+
+        showUnallowedSpawns = plugin.getConfig().getBoolean("guis.show_unallowed_spawns", false);
     }
+
+    private final boolean showUnallowedSpawns;
 
     @Getter
     private final LinkedHashMap<String, Spawn> spawns = new LinkedHashMap<>();
@@ -37,7 +41,7 @@ public class SpawnManager {
      * @return A map of spawn names to Spawn objects, filtered by permission.
      */
     public Map<String, Spawn> getSpawns(@Nullable Player player) {
-        if (player == null)
+        if (player == null || showUnallowedSpawns)
             return spawns;
         return spawns.entrySet().stream()
                 .filter(entry -> !entry.getValue().hasPermission() || player.hasPermission(entry.getValue().getPermission()))

@@ -27,7 +27,11 @@ public class KitManager {
     public KitManager(pFFA plugin) {
         this.plugin = plugin;
         loadKits();
+
+        showUnallowedKits = plugin.getConfig().getBoolean("guis.show_unallowed_kits", false);
     }
+
+    private final boolean showUnallowedKits;
 
     @Getter
     private final LinkedHashMap<String, Kit> kits = new LinkedHashMap<>();
@@ -39,7 +43,7 @@ public class KitManager {
      * @return A map of kit names to Kit objects, filtered by permission.
      */
     public Map<String, Kit> getKits(@Nullable Player player) {
-        if (player == null)
+        if (player == null || showUnallowedKits)
             return kits;
         return kits.entrySet().stream()
                 .filter(entry -> !entry.getValue().hasPermission() || player.hasPermission(entry.getValue().getPermission()))
