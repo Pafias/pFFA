@@ -4,6 +4,7 @@ import me.pafias.pffa.commands.commands.*;
 import me.pafias.pffa.listeners.*;
 import me.pafias.pffa.tasks.ArmorstandBlockingTask;
 import me.pafias.pffa.tasks.AutoUpdaterTask;
+import me.pafias.pffa.util.Reflection;
 import me.pafias.pffa.util.Serializer;
 import me.pafias.putils.pUtils;
 import org.bukkit.Location;
@@ -29,23 +30,17 @@ public final class pFFA extends JavaPlugin {
     }
 
     @Override
-    public void onLoad() {
+    public void onEnable() {
         plugin = this;
         pUtils.setPlugin(plugin);
 
-        // Services Manager
-        servicesManager = new ServicesManager(plugin);
-        servicesManager.onLoad();
-    }
-
-    @Override
-    public void onEnable() {
         try {
             new AutoUpdaterTask(plugin).run();
         } catch (Throwable t) {
             t.printStackTrace();
         }
 
+        servicesManager = new ServicesManager(plugin);
         servicesManager.onEnable();
         register();
 
@@ -60,8 +55,13 @@ public final class pFFA extends JavaPlugin {
     public void register() {
         // Listeners
         PluginManager pm = getServer().getPluginManager();
-        pm.registerEvents(new JoinQuitListener(plugin), plugin);
-        pm.registerEvents(new ProtectionListener(plugin), plugin);
+        if (parseVersion() >= 8) {
+            pm.registerEvents(new JoinQuitListener1_8(plugin), plugin);
+            pm.registerEvents(new ProtectionListener1_8(plugin), plugin);
+        } else {
+            pm.registerEvents(new JoinQuitListener(plugin), plugin);
+            pm.registerEvents(new ProtectionListener(plugin), plugin);
+        }
         pm.registerEvents(new DeathListener(plugin), plugin);
         pm.registerEvents(new MiscListener(plugin), plugin);
         pm.registerEvents(new DeathMessagesHandler(plugin), plugin);
@@ -85,6 +85,10 @@ public final class pFFA extends JavaPlugin {
     @Override
     public void onDisable() {
         servicesManager.onDisable();
+    }
+
+    public double parseVersion() {
+        return Reflection.getServerVersion();
     }
 
 }

@@ -7,7 +7,6 @@ import me.pafias.pffa.objects.FfaData;
 import me.pafias.pffa.objects.UserData;
 import org.bson.Document;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.UUID;
 
@@ -31,7 +30,7 @@ public class MongoUserDataStorage implements UserDataStorage {
         );
     }
 
-    public Document toDocument(@UnknownNullability UserData userData) {
+    public Document toDocument(UserData userData) {
         if (userData == null) return null;
         return new Document("_id", userData.getUniqueId().toString())
                 .append("kills", userData.getFfaData().getKills())

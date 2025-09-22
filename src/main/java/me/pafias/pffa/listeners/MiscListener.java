@@ -4,7 +4,7 @@ import me.pafias.pffa.objects.Kit;
 import me.pafias.pffa.objects.Spawn;
 import me.pafias.pffa.objects.User;
 import me.pafias.pffa.pFFA;
-import me.pafias.putils.CC;
+import me.pafias.putils.LCC;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
@@ -41,15 +41,18 @@ public class MiscListener implements Listener {
 
     static {
         for (Material material : Material.values())
-            if (material.name().endsWith("_PRESSURE_PLATE"))
+            if (material.name().endsWith("_PLATE"))
                 PLATES.add(material);
     }
 
-    private boolean cleanArrows, interactivePlates;
+    private final boolean cleanArrows;
+    private final boolean interactivePlates;
 
-    private boolean quickRespawnSingleAction, quickRespawnEnabled;
-    private String quickRespawnPermission, quickRespawnName;
-    private Material quickRespawnMaterial;
+    private final boolean quickRespawnSingleAction;
+    private final boolean quickRespawnEnabled;
+    private final String quickRespawnPermission;
+    private final String quickRespawnName;
+    private final Material quickRespawnMaterial;
 
     @EventHandler
     public void onProjectileHit(ProjectileHitEvent event) {
@@ -79,7 +82,7 @@ public class MiscListener implements Listener {
         if (!event.getPlayer().hasPermission(quickRespawnPermission)) return;
         if (event.getItem().getType() != quickRespawnMaterial)
             return;
-        if (!meta.displayName().equals(CC.a(quickRespawnName)))
+        if (!meta.getDisplayName().equals(LCC.t(quickRespawnName)))
             return;
         final User user = plugin.getSM().getUserManager().getUser(event.getPlayer());
         if (user == null) return;
@@ -87,7 +90,7 @@ public class MiscListener implements Listener {
         // Right click = respawn with default kit and spawn unless the config option for single action is true
         final Kit kit;
         final Spawn spawn;
-        if (event.getAction().isRightClick() && !quickRespawnSingleAction) {
+        if ((event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) && !quickRespawnSingleAction) {
             kit = plugin.getSM().getKitManager().getDefaultKit();
             spawn = plugin.getSM().getSpawnManager().getDefaultSpawn();
         } else {

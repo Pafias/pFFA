@@ -48,6 +48,9 @@ world_protection:
 # This will bounce the players back if they try standing afk in an armorstand
 prevent_players_blocking_armorstands: true
 
+# This will disable the fall damage
+disable_fall_damage: true
+
 # This will delete the shot arrows after they've landed somewhere
 clean_arrows: true
 

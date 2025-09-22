@@ -1,8 +1,7 @@
 name: pFFA
 version: '${project.version}'
 main: me.pafias.pffa.pFFA
-api-version: 1.17
-softdepend: [ packetevents, PlaceholderAPI, Citizens ]
+softdepend: [ ProtocolLib, PlaceholderAPI, Citizens ]
 author: Pafias
 description: The best FFA plugin!
 commands:

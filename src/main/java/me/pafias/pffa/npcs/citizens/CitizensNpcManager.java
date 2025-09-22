@@ -9,7 +9,7 @@ import me.pafias.pffa.objects.gui.SpawnMenu;
 import me.pafias.pffa.pFFA;
 import me.pafias.pffa.services.KitManager;
 import me.pafias.pffa.services.SpawnManager;
-import me.pafias.putils.CC;
+import me.pafias.putils.LCC;
 import me.pafias.putils.Tasks;
 import net.citizensnpcs.Citizens;
 import net.citizensnpcs.api.CitizensAPI;
@@ -23,11 +23,10 @@ import net.citizensnpcs.api.trait.trait.Equipment;
 import net.citizensnpcs.api.util.YamlStorage;
 import net.citizensnpcs.trait.CurrentLocation;
 import net.citizensnpcs.trait.SkinTrait;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -64,13 +63,12 @@ public class CitizensNpcManager implements NpcManager {
     private NPCDataStore npcDataStore;
 
     @Override
-    public void createNpc(Component npcName, String npcSkinPlayerName, Location location, @Nullable Kit kit) {
-        final String name = PlainTextComponentSerializer.plainText().serializeOrNull(npcName);
-        if (name == null || name.isEmpty())
+    public void createNpc(String npcName, String npcSkinPlayerName, Location location, @Nullable Kit kit) {
+        if (npcName == null || npcName.isEmpty())
             throw new IllegalArgumentException("NPC name cannot be null or empty.");
         if (location == null || location.getWorld() == null)
             throw new IllegalArgumentException("Location cannot be null or in an invalid world.");
-        final NPC npc = npcRegistry.createNPC(EntityType.PLAYER, name);
+        final NPC npc = npcRegistry.createNPC(EntityType.PLAYER, npcName);
         npc.spawn(location, SpawnReason.CREATE);
         final CurrentLocation currentLocation = npc.getOrAddTrait(CurrentLocation.class);
         currentLocation.setLocation(location);
@@ -87,14 +85,14 @@ public class CitizensNpcManager implements NpcManager {
     }
 
     public void createNpc(String npcName, Location location, @Nullable Kit kit) {
-        createNpc(CC.a(npcName), npcName, location, kit);
+        createNpc(LCC.t(npcName), npcName, location, kit);
     }
 
     public void removeNpc(Location location) {
         if (location == null || location.getWorld() == null)
             throw new IllegalArgumentException("Location cannot be null or in an invalid world.");
-        final Entity entity = location.getWorld().getNearbyEntities(location, 2, 2, 2).stream()
-                .filter(e -> e.hasMetadata("NPC"))
+        final Entity entity = location.getWorld().getEntities().stream()
+                .filter(e -> e.hasMetadata("NPC") && e.getLocation().distanceSquared(location) <= Math.exp(4))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("No NPC found at the specified location."));
         final NPC npc = npcRegistry.getNPC(entity);
@@ -105,7 +103,7 @@ public class CitizensNpcManager implements NpcManager {
     }
 
     @Override
-    public boolean trigger(@Nullable Entity entity, String entityName, User user, boolean leftClick) {
+    public boolean trigger(@Nullable LivingEntity entity, String entityName, User user, boolean leftClick) {
         assert entity != null;
         if (!entity.hasMetadata("NPC")) return false;
         final NPC npc = npcRegistry.getNPC(entity);
@@ -142,10 +140,10 @@ public class CitizensNpcManager implements NpcManager {
 
     @Override
     public <T> boolean exists(T npc) {
-        if (npc instanceof NPC var)
-            return var.getOwningRegistry().equals(npcRegistry);
-        else if (npc instanceof Entity entity) {
-            final NPC npcEntity = npcRegistry.getNPC(entity);
+        if (npc instanceof NPC)
+            return ((NPC) npc).getOwningRegistry().equals(npcRegistry);
+        else if (npc instanceof Entity) {
+            final NPC npcEntity = npcRegistry.getNPC((Entity) npc);
             return npcEntity != null && npcEntity.getOwningRegistry().equals(npcRegistry);
         }
         return false;

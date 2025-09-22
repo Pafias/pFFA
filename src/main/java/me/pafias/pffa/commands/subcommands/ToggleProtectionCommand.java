@@ -1,7 +1,7 @@
 package me.pafias.pffa.commands.subcommands;
 
 import me.pafias.pffa.commands.BaseFFACommand;
-import me.pafias.putils.CC;
+import me.pafias.putils.LCC;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -34,11 +34,11 @@ public class ToggleProtectionCommand extends BaseFFACommand {
     @Override
     public void execute(String mainCommand, CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(CC.tf("&c/%s %s <protection>", mainCommand, args[0]));
+            sender.sendMessage(LCC.tf("&c/%s %s <protection>", mainCommand, args[0]));
             return;
         }
         if (!config.contains(args[1])) {
-            sender.sendMessage(CC.t("&cInvalid protection option!"));
+            sender.sendMessage(LCC.t("&cInvalid protection option!"));
             return;
         }
         if(args.length == 2) {
@@ -47,12 +47,12 @@ public class ToggleProtectionCommand extends BaseFFACommand {
             plugin.getConfig().set(config.getCurrentPath() + "." + args[1], newState);
             plugin.saveConfig();
             config.set(args[1], newState);
-            sender.sendMessage(CC.tf("&aChanged &b%s &ato: &b%s", args[1], newState));
+            sender.sendMessage(LCC.tf("&aChanged &b%s &ato: &b%s", args[1], newState));
         } else {
             plugin.getConfig().set(config.getCurrentPath() + "." + args[1], args[2]);
             plugin.saveConfig();
             config.set(args[1], args[2]);
-            sender.sendMessage(CC.tf("&aChanged &b%s &ato: &b%s", args[1], args[2]));
+            sender.sendMessage(LCC.tf("&aChanged &b%s &ato: &b%s", args[1], args[2]));
         }
     }
 

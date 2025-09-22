@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class StatsCommand implements CommandExecutor, TabExecutor {
 
@@ -42,7 +43,7 @@ public class StatsCommand implements CommandExecutor, TabExecutor {
                     .map(OfflinePlayer::getName)
                     .filter(Objects::nonNull)
                     .filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase()))
-                    .toList();
+                    .collect(Collectors.toList());
         }
         return Collections.emptyList();
     }

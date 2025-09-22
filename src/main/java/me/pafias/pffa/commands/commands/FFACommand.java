@@ -5,7 +5,7 @@ import me.pafias.pffa.commands.subcommands.*;
 import me.pafias.pffa.commands.subcommands.KillCommand;
 import me.pafias.pffa.commands.subcommands.SpawnCommand;
 import me.pafias.pffa.commands.subcommands.StatsCommand;
-import me.pafias.putils.CC;
+import me.pafias.putils.LCC;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class FFACommand implements CommandExecutor, TabExecutor {
 
@@ -39,10 +40,10 @@ public class FFACommand implements CommandExecutor, TabExecutor {
     private final Set<BaseFFACommand> commands = new HashSet<>();
 
     private boolean help(CommandSender sender, String label) {
-        sender.sendMessage(CC.t("&f-------------------- &bFFA &f--------------------"));
+        sender.sendMessage(LCC.t("&f-------------------- &bFFA &f--------------------"));
         for (BaseFFACommand command : commands)
             if (command.getPermission() == null || sender.hasPermission(command.getPermission()))
-                sender.sendMessage(CC.tf("&3/%s %s %s &9- %s", label, command.getName(), command.getArgs(), command.getDescription()));
+                sender.sendMessage(LCC.tf("&3/%s %s %s &9- %s", label, command.getName(), command.getArgs(), command.getDescription()));
         return true;
     }
 
@@ -70,7 +71,7 @@ public class FFACommand implements CommandExecutor, TabExecutor {
             return commands.stream()
                     .map(BaseFFACommand::getName)
                     .filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase()))
-                    .toList();
+                    .collect(Collectors.toList());
         else {
             final BaseFFACommand cmd = commands.stream()
                     .filter(c -> c.getName().equalsIgnoreCase(args[0]) || c.getAliases().contains(args[0]))

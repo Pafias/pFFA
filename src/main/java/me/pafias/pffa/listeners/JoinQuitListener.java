@@ -9,11 +9,10 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 
 public class JoinQuitListener implements Listener {
 
-    private final pFFA plugin;
+    protected final pFFA plugin;
 
     public JoinQuitListener(pFFA plugin) {
         this.plugin = plugin;
@@ -46,11 +45,9 @@ public class JoinQuitListener implements Listener {
         event.getPlayer().setHealth(event.getPlayer().getMaxHealth());
         event.getPlayer().setFoodLevel(20);
         event.getPlayer().setSaturation(0);
-    }
 
-    @EventHandler
-    public void onSpawn(PlayerSpawnLocationEvent event) {
-        event.setSpawnLocation(plugin.getLobbySpawn());
+        // 1.7-specific
+        event.getPlayer().teleport(plugin.getLobbySpawn());
         event.getPlayer().setGameMode(GameMode.ADVENTURE);
     }
 

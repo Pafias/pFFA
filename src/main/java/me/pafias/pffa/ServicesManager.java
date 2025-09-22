@@ -23,12 +23,6 @@ public class ServicesManager {
         this.plugin = plugin;
     }
 
-    public void onLoad() {
-        plugin.getLogger().info("Loading Config Manager...");
-        configManager = new ConfigManager(plugin);
-        plugin.getLogger().info("Config Manager loaded.");
-    }
-
     public void onEnable() {
         FileConfiguration config = plugin.getConfig();
 
@@ -121,7 +115,7 @@ public class ServicesManager {
                 plugin.getLogger().info("Loading Citizens NPC Manager...");
                 npcManager = new CitizensNpcManager(plugin, kitManager, spawnManager);
                 plugin.getLogger().info("Citizens NPC Manager loaded.");
-            } else if (plugin.getServer().getPluginManager().isPluginEnabled("packetevents")) {
+            } else if (plugin.parseVersion() < 8 || plugin.getServer().getPluginManager().isPluginEnabled("ProtocolLib")) {
                 plugin.getLogger().info("Loading Local NPC Manager...");
                 npcManager = new LocalNpcManager(plugin, kitManager, spawnManager);
                 plugin.getLogger().info("Local NPC Manager loaded.");
@@ -151,13 +145,13 @@ public class ServicesManager {
         }
 
         // Protocol listener initialization
-        if (plugin.getServer().getPluginManager().isPluginEnabled("packetevents")) {
-            plugin.getLogger().info("packetevents found, registering packet listeners...");
+        if (plugin.getServer().getPluginManager().isPluginEnabled("ProtocolLib")) {
+            plugin.getLogger().info("ProtocolLib found, registering packet listeners...");
             protocolListener = new ProtocolListener(plugin);
             plugin.getLogger().info("Packet listeners registered.");
         } else {
             protocolListener = null;
-            plugin.getLogger().info("packetevents not found, skipping packet listener registration.");
+            plugin.getLogger().info("ProtocolLib not found, skipping packet listener registration.");
         }
     }
 
@@ -217,8 +211,6 @@ public class ServicesManager {
             }
         }
     }
-
-    private ConfigManager configManager;
 
     private MongoManager mongoManager;
     private MysqlManager mysqlManager;

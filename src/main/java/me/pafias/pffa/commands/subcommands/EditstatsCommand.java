@@ -5,7 +5,7 @@ import me.pafias.pffa.objects.FfaData;
 import me.pafias.pffa.objects.User;
 import me.pafias.pffa.objects.UserData;
 import me.pafias.putils.BukkitPlayerManager;
-import me.pafias.putils.CC;
+import me.pafias.putils.LCC;
 import me.pafias.putils.Tasks;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -42,9 +42,9 @@ public class EditstatsCommand extends BaseFFACommand {
             final EditstatsListener el = new EditstatsListener((Player) sender);
             plugin.getServer().getPluginManager().registerEvents(el, plugin);
             sender.sendMessage(" ");
-            sender.sendMessage(CC.t("&6You can cancel this operation at any time by typing 'cancel', 'exit', or 'abort'"));
+            sender.sendMessage(LCC.t("&6You can cancel this operation at any time by typing 'cancel', 'exit', or 'abort'"));
             sender.sendMessage(" ");
-            sender.sendMessage(CC.t("&6Type the name/uuid of the player"));
+            sender.sendMessage(LCC.t("&6Type the name/uuid of the player"));
             sender.sendMessage(" ");
         }
     }
@@ -75,25 +75,25 @@ public class EditstatsCommand extends BaseFFACommand {
             if (event.getMessage().equalsIgnoreCase("exit") || event.getMessage().equalsIgnoreCase("cancel")
                     || event.getMessage().equalsIgnoreCase("abort")) {
                 cleanup();
-                event.getPlayer().sendMessage(CC.t("&cYou cancelled the operation."));
+                event.getPlayer().sendMessage(LCC.t("&cYou cancelled the operation."));
                 return;
             }
             if (player == null) {
-                event.getPlayer().sendMessage(CC.t("&6Fetching player..."));
+                event.getPlayer().sendMessage(LCC.t("&6Fetching player..."));
                 final String target = event.getMessage().trim();
                 CompletableFuture.supplyAsync(() -> BukkitPlayerManager.getOfflinePlayerByInput(target))
                         .thenAccept(offlinePlayer -> {
                             Tasks.runSync(() -> {
                                 if (offlinePlayer == null)
-                                    event.getPlayer().sendMessage(CC.t("&cPlayer not found! Try again."));
+                                    event.getPlayer().sendMessage(LCC.t("&cPlayer not found! Try again."));
                                 else {
                                     player = offlinePlayer;
                                     event.getPlayer().sendMessage(" ");
-                                    event.getPlayer().sendMessage(CC.tf("&aPlayer set: &7%s", player.getName()));
+                                    event.getPlayer().sendMessage(LCC.tf("&aPlayer set: &7%s", player.getName()));
                                     event.getPlayer().sendMessage(" ");
                                     event.getPlayer().performCommand("ffa stats " + player.getUniqueId());
                                     event.getPlayer().sendMessage(" ");
-                                    event.getPlayer().sendMessage(CC.t("&6Now type the amount of &dkills &6to set to the player."));
+                                    event.getPlayer().sendMessage(LCC.t("&6Now type the amount of &dkills &6to set to the player."));
                                 }
                             });
                         });
@@ -103,37 +103,37 @@ public class EditstatsCommand extends BaseFFACommand {
                 try {
                     kills = Integer.parseInt(event.getMessage().trim());
                 } catch (NumberFormatException ex) {
-                    event.getPlayer().sendMessage(CC.t("&cIncorrect value. Try again."));
+                    event.getPlayer().sendMessage(LCC.t("&cIncorrect value. Try again."));
                     return;
                 }
                 event.getPlayer().sendMessage(" ");
-                event.getPlayer().sendMessage(CC.tf("&aKills set: &7%d", kills));
+                event.getPlayer().sendMessage(LCC.tf("&aKills set: &7%d", kills));
                 event.getPlayer().sendMessage(" ");
-                event.getPlayer().sendMessage(CC.t("&6Now type the amount of &ddeaths &6to set to the player."));
+                event.getPlayer().sendMessage(LCC.t("&6Now type the amount of &ddeaths &6to set to the player."));
                 return;
             }
             if (deaths == -1) {
                 try {
                     deaths = Integer.parseInt(event.getMessage().trim());
                 } catch (NumberFormatException ex) {
-                    event.getPlayer().sendMessage(CC.t("&cIncorrect value. Try again."));
+                    event.getPlayer().sendMessage(LCC.t("&cIncorrect value. Try again."));
                     return;
                 }
                 event.getPlayer().sendMessage(" ");
-                event.getPlayer().sendMessage(CC.tf("&aDeaths set: &7", deaths));
+                event.getPlayer().sendMessage(LCC.tf("&aDeaths set: &7", deaths));
                 event.getPlayer().sendMessage(" ");
-                event.getPlayer().sendMessage(CC.t("&6Now type the value of &dbest killstreak &6to set to the player."));
+                event.getPlayer().sendMessage(LCC.t("&6Now type the value of &dbest killstreak &6to set to the player."));
                 return;
             }
             if (killstreak == -1) {
                 try {
                     killstreak = Integer.parseInt(event.getMessage().trim());
                 } catch (NumberFormatException ex) {
-                    event.getPlayer().sendMessage(CC.t("&cIncorrect value. Try again."));
+                    event.getPlayer().sendMessage(LCC.t("&cIncorrect value. Try again."));
                     return;
                 }
                 event.getPlayer().sendMessage(" ");
-                event.getPlayer().sendMessage(CC.tf("&aBest killstreak set: &7", killstreak));
+                event.getPlayer().sendMessage(LCC.tf("&aBest killstreak set: &7", killstreak));
                 event.getPlayer().sendMessage(" ");
                 if (player != null && kills != -1 && deaths != -1 && killstreak != -1) {
                     final User user = plugin.getSM().getUserManager().getUser(player.getUniqueId());
@@ -148,16 +148,16 @@ public class EditstatsCommand extends BaseFFACommand {
                             plugin.getSM().getUserDataStorage().setUserData(userData);
                         } catch (Exception ex) {
                             ex.printStackTrace();
-                            event.getPlayer().sendMessage(CC.t("&cSomething went wrong while saving: " + ex.getMessage()));
-                            event.getPlayer().sendMessage(CC.t("&cOperation cancelled."));
+                            event.getPlayer().sendMessage(LCC.t("&cSomething went wrong while saving: " + ex.getMessage()));
+                            event.getPlayer().sendMessage(LCC.t("&cOperation cancelled."));
                             cleanup();
                         }
                     }
-                    event.getPlayer().sendMessage(CC.t("&aAll set."));
+                    event.getPlayer().sendMessage(LCC.t("&aAll set."));
                     cleanup();
                 } else {
-                    event.getPlayer().sendMessage(CC.t("&cError: One or more values are null or invalid."));
-                    event.getPlayer().sendMessage(CC.t("&cOperation cancelled."));
+                    event.getPlayer().sendMessage(LCC.t("&cError: One or more values are null or invalid."));
+                    event.getPlayer().sendMessage(LCC.t("&cOperation cancelled."));
                     cleanup();
                 }
             }

@@ -2,7 +2,7 @@ package me.pafias.pffa.commands.subcommands;
 
 import me.pafias.pffa.commands.BaseFFACommand;
 import me.pafias.pffa.objects.User;
-import me.pafias.putils.CC;
+import me.pafias.putils.LCC;
 import org.bukkit.GameMode;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class LobbyCommand extends BaseFFACommand {
 
@@ -39,31 +40,32 @@ public class LobbyCommand extends BaseFFACommand {
             }
             final String targetName = args[1];
             if (plugin.getServer().getPlayer(targetName) == null) {
-                sender.sendMessage(CC.t("&cTarget not online."));
+                sender.sendMessage(LCC.t("&cTarget not online."));
                 return;
             }
             try {
                 plugin.getServer().getPlayer(targetName).teleport(plugin.getLobbySpawn());
             } catch (NullPointerException ex) {
                 ex.printStackTrace();
-                sender.sendMessage(CC.t("&cUnable to teleport: Lobby not set."));
+                sender.sendMessage(LCC.t("&cUnable to teleport: Lobby not set."));
             }
         } else {
-            if (!(sender instanceof Player player)) {
-                sender.sendMessage(CC.t("&cOnly players."));
+            if (!(sender instanceof Player)) {
+                sender.sendMessage(LCC.t("&cOnly players."));
                 return;
             }
+            final Player player = (Player) sender;
             final User user = plugin.getSM().getUserManager().getUser(player);
             if (plugin.getConfig().getStringList("ffa_worlds").contains(player.getWorld().getName()) && !user.isInSpawn()
                     && (!player.getGameMode().equals(GameMode.CREATIVE) && !player.getGameMode().equals(GameMode.SPECTATOR))) {
-                sender.sendMessage(CC.t("&cYou cannot do that here."));
+                sender.sendMessage(LCC.t("&cYou cannot do that here."));
                 return;
             }
             try {
                 player.teleport(plugin.getLobbySpawn());
             } catch (NullPointerException ex) {
                 ex.printStackTrace();
-                player.sendMessage(CC.t("&cUnable to teleport: Lobby not set."));
+                player.sendMessage(LCC.t("&cUnable to teleport: Lobby not set."));
             }
         }
     }
@@ -76,7 +78,7 @@ public class LobbyCommand extends BaseFFACommand {
                     .filter(p -> ((Player) sender).canSee(p))
                     .map(Player::getName)
                     .filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
-                    .toList();
+                    .collect(Collectors.toList());
         return Collections.emptyList();
     }
 

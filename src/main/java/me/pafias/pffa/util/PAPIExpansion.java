@@ -34,15 +34,23 @@ public class PAPIExpansion extends PlaceholderExpansion {
         if (player == null) return "";
         User user = plugin.getSM().getUserManager().getUser(player);
         if (user == null) return "";
-        return switch (params) {
-            case "name" -> user.getName();
-            case "kills" -> String.valueOf(user.getKills());
-            case "deaths" -> String.valueOf(user.getDeaths());
-            case "killstreak", "currentkillstreak" -> String.valueOf(user.getCurrentKillstreak());
-            case "bestkillstreak" -> String.valueOf(user.getBestKillstreak());
-            case "kdr" -> String.format("%.2f", user.getKDR());
-            default -> null;
-        };
+        switch (params) {
+            case "name":
+                return user.getName();
+            case "kills":
+                return String.valueOf(user.getKills());
+            case "deaths":
+                return String.valueOf(user.getDeaths());
+            case "killstreak":
+            case "currentkillstreak":
+                return String.valueOf(user.getCurrentKillstreak());
+            case "bestkillstreak":
+                return String.valueOf(user.getBestKillstreak());
+            case "kdr":
+                return String.format("%.2f", user.getKDR());
+            default:
+                return null;
+        }
     }
 
 }

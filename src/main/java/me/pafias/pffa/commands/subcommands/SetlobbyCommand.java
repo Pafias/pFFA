@@ -2,7 +2,7 @@ package me.pafias.pffa.commands.subcommands;
 
 import me.pafias.pffa.commands.BaseFFACommand;
 import me.pafias.pffa.util.Serializer;
-import me.pafias.putils.CC;
+import me.pafias.putils.LCC;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -32,19 +32,20 @@ public class SetlobbyCommand extends BaseFFACommand {
 
     @Override
     public void execute(String mainCommand, CommandSender sender, String[] args) {
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage(CC.t("&cOnly players."));
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(LCC.t("&cOnly players."));
             return;
         }
+        final Player player = (Player) sender;
         final Location location = player.getLocation().clone();
-        location.set(player.getLocation().getBlockX() + 0.5,
-                player.getLocation().getBlockY() + 0.1,
-                player.getLocation().getBlockZ() + 0.5);
+        location.setX(player.getLocation().getBlockX() + 0.5);
+        location.setY(player.getLocation().getBlockY() + 0.1);
+        location.setZ(player.getLocation().getBlockZ() + 0.5);
         location.setPitch(player.getLocation().getPitch() > 10 || player.getLocation().getPitch() < -10 ? 0 : player.getLocation().getPitch());
 
         plugin.getConfig().set("lobby", Serializer.locationToConfig("spawn", location));
         plugin.saveConfig();
-        sender.sendMessage(CC.t("&aLobby set."));
+        sender.sendMessage(LCC.t("&aLobby set."));
     }
 
     @Override

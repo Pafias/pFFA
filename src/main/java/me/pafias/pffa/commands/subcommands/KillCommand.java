@@ -2,7 +2,7 @@ package me.pafias.pffa.commands.subcommands;
 
 import me.pafias.pffa.commands.BaseFFACommand;
 import me.pafias.pffa.objects.User;
-import me.pafias.putils.CC;
+import me.pafias.putils.LCC;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -34,7 +34,7 @@ public class KillCommand extends BaseFFACommand {
     public void execute(String mainCommand, CommandSender sender, String[] args) {
         if (args.length == 1) {
             if (!(sender instanceof Player)) {
-                sender.sendMessage(CC.t("&cOnly players."));
+                sender.sendMessage(LCC.t("&cOnly players."));
                 return;
             }
             final User user = plugin.getSM().getUserManager().getUser((Player) sender);
@@ -42,11 +42,11 @@ public class KillCommand extends BaseFFACommand {
                 return;
             final long killCooldownMillis = plugin.getConfig().getLong("commands.kill_command_cooldown") * 1000L;
             if (System.currentTimeMillis() - user.lastKillMillis < killCooldownMillis) {
-                sender.sendMessage(CC.t("&cPlease wait until using this command again"));
+                sender.sendMessage(LCC.t("&cPlease wait until using this command again"));
                 return;
             }
             if (plugin.getSM().getCombatLogManager().isInCombat(user.getPlayer())) {
-                sender.sendMessage(CC.t("&cYou cannot do this while in combat"));
+                sender.sendMessage(LCC.t("&cYou cannot do this while in combat"));
                 return;
             }
             user.getPlayer().setHealth(0);
@@ -54,11 +54,11 @@ public class KillCommand extends BaseFFACommand {
         } else if (args.length > 1 && sender.hasPermission("ffa.kill.others")) {
             final Player target = plugin.getServer().getPlayer(args[1]);
             if (target == null) {
-                sender.sendMessage(CC.t("&cPlayer not found."));
+                sender.sendMessage(LCC.t("&cPlayer not found."));
                 return;
             }
             target.setHealth(0);
-            sender.sendMessage(CC.t("&aKilled &b" + target.getName()));
+            sender.sendMessage(LCC.t("&aKilled &b" + target.getName()));
         }
     }
 

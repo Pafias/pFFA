@@ -5,7 +5,7 @@ import me.pafias.pffa.objects.FfaData;
 import me.pafias.pffa.objects.User;
 import me.pafias.pffa.objects.UserData;
 import me.pafias.putils.BukkitPlayerManager;
-import me.pafias.putils.CC;
+import me.pafias.putils.LCC;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 public class StatsCommand extends BaseFFACommand {
 
@@ -39,7 +40,7 @@ public class StatsCommand extends BaseFFACommand {
     @Override
     public void execute(String mainCommand, CommandSender sender, String[] args) {
         if (args.length == 1 && !(sender instanceof Player)) {
-            sender.sendMessage(CC.t("&cOnly players."));
+            sender.sendMessage(LCC.t("&cOnly players."));
             return;
         }
         final String targetName;
@@ -47,45 +48,45 @@ public class StatsCommand extends BaseFFACommand {
             targetName = args[1];
         else
             targetName = sender.getName();
-        sender.sendMessage(CC.t("&6Fetching data..."));
+        sender.sendMessage(LCC.t("&6Fetching data..."));
         CompletableFuture.supplyAsync(() -> BukkitPlayerManager.getOfflinePlayerByInput(targetName))
                 .thenAccept(offlinePlayer -> {
                     if (offlinePlayer == null) {
-                        sender.sendMessage(CC.t("&cPlayer not found!"));
+                        sender.sendMessage(LCC.t("&cPlayer not found!"));
                         return;
                     }
                     if (offlinePlayer.isOnline()) {
                         User user = plugin.getSM().getUserManager().getUser(offlinePlayer.getUniqueId());
                         if (user == null) {
-                            sender.sendMessage(CC.t("&cPlayer not found!"));
+                            sender.sendMessage(LCC.t("&cPlayer not found!"));
                             return;
                         }
-                        sender.sendMessage(CC.multiLine(
+                        sender.sendMessage(new String[]{
                                 "",
-                                CC.af("&3---------- &9FFA Stats for &d%s &3----------", user.getName()),
-                                CC.af("&6Kills: &7%d", user.getKills()),
-                                CC.af("&6Deaths: &7%d", user.getDeaths()),
-                                CC.af("&6KDR: &7%.2f", user.getKDR()),
-                                CC.af("&6Current killstreak: &7%d", user.getCurrentKillstreak()),
-                                CC.af("&6Best killstreak: &7%d", user.getBestKillstreak()),
+                                LCC.tf("&3---------- &9FFA Stats for &d%s &3----------", user.getName()),
+                                LCC.tf("&6Kills: &7%d", user.getKills()),
+                                LCC.tf("&6Deaths: &7%d", user.getDeaths()),
+                                LCC.tf("&6KDR: &7%.2f", user.getKDR()),
+                                LCC.tf("&6Current killstreak: &7%d", user.getCurrentKillstreak()),
+                                LCC.tf("&6Best killstreak: &7%d", user.getBestKillstreak()),
                                 ""
-                        ));
+                        });
                     } else {
                         UserData userData = plugin.getSM().getUserDataStorage().getUserData(offlinePlayer.getUniqueId().toString());
                         if (userData == null) {
-                            sender.sendMessage(CC.t("&cNo data found on this player."));
+                            sender.sendMessage(LCC.t("&cNo data found on this player."));
                             return;
                         }
                         FfaData ffaData = userData.getFfaData();
-                        sender.sendMessage(CC.multiLine(
+                        sender.sendMessage(new String[]{
                                 "",
-                                CC.af("&3---------- &9FFA Stats for &d%s &3----------", offlinePlayer.getName()),
-                                CC.af("&6Kills: &7%d", ffaData.getKills()),
-                                CC.af("&6Deaths: &7%d", ffaData.getDeaths()),
-                                CC.af("&6KDR: &7%.2f", ffaData.getKDR()),
-                                CC.af("&6Best killstreak: &7%d", ffaData.getKillstreak()),
+                                LCC.tf("&3---------- &9FFA Stats for &d%s &3----------", offlinePlayer.getName()),
+                                LCC.tf("&6Kills: &7%d", ffaData.getKills()),
+                                LCC.tf("&6Deaths: &7%d", ffaData.getDeaths()),
+                                LCC.tf("&6KDR: &7%.2f", ffaData.getKDR()),
+                                LCC.tf("&6Best killstreak: &7%d", ffaData.getKillstreak()),
                                 ""
-                        ));
+                        });
                     }
                 });
     }
@@ -99,7 +100,7 @@ public class StatsCommand extends BaseFFACommand {
                     .map(OfflinePlayer::getName)
                     .filter(Objects::nonNull)
                     .filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
-                    .toList();
+                    .collect(Collectors.toList());
         }
         return Collections.emptyList();
     }

@@ -8,7 +8,7 @@ import me.pafias.pffa.objects.UserData;
 import me.pafias.pffa.objects.exceptions.UserLoadingException;
 import me.pafias.pffa.pFFA;
 import me.pafias.pffa.storage.UserDataStorage;
-import me.pafias.putils.CC;
+import me.pafias.putils.LCC;
 import me.pafias.putils.Tasks;
 import org.bukkit.entity.Player;
 
@@ -120,7 +120,7 @@ public class UserManager {
     }
 
     private void saveData(final User user, boolean async) {
-        if (user.getUserData().isTemp()) return;
+        if (user == null || user.getUserData() == null || user.getUserData().isTemp()) return;
         try {
             if (async)
                 executor.submit(() -> userDataStorage.setUserData(user.getUserData()));
@@ -129,7 +129,7 @@ public class UserManager {
             savingQueue.remove(user);
         } catch (Exception e) {
             if (user.getPlayer().isOnline())
-                user.getPlayer().sendMessage(CC.t("&cFailed to save player data: Your statistics will revert when you rejoin."));
+                user.getPlayer().sendMessage(LCC.t("&cFailed to save player data: Your statistics will revert when you rejoin."));
             e.printStackTrace();
         }
     }

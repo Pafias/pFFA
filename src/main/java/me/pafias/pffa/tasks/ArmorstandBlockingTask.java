@@ -16,10 +16,13 @@ public class ArmorstandBlockingTask extends BukkitRunnable {
 
     @Override
     public void run() {
+        if (plugin.parseVersion() < 8)
+            return;
         plugin.getServer().getOnlinePlayers().forEach(p -> {
             try {
                 for (Entity nearby : p.getNearbyEntities(0.1, 0.1, 0.1)) {
-                    if (nearby instanceof ArmorStand as) {
+                    if (nearby instanceof ArmorStand) {
+                        final ArmorStand as = (ArmorStand) nearby;
                         if (as.isCustomNameVisible() && as.getCustomName() != null && (plugin.getSM().getKitManager().exists(as.getCustomName()) || plugin.getSM().getSpawnManager().exists(as.getCustomName()))) {
                             Vector vector = nearby.getLocation().toVector().subtract(p.getLocation().toVector()).normalize().multiply(-0.5);
                             p.setVelocity(vector);
