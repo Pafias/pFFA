@@ -29,6 +29,7 @@ public class SpawnMenu extends GuiMenu {
         this.user = user;
         this.kit = kit;
 
+        int slot = 0;
         for (final Spawn spawn : spawns) {
             final ItemStack guiItem = spawn.getGuiItem().clone();
             final ItemMeta meta = guiItem.getItemMeta();
@@ -54,12 +55,13 @@ public class SpawnMenu extends GuiMenu {
                 guiItem.setItemMeta(meta);
             }
 
-            mapping.put(guiItem, spawn);
-            getInventory().addItem(guiItem);
+            mapping.put(slot, spawn);
+            getInventory().setItem(slot, guiItem);
+            slot++;
         }
     }
 
-    private final Map<ItemStack, Spawn> mapping = new HashMap<>();
+    private final Map<Integer, Spawn> mapping = new HashMap<>();
 
     @Override
     public void clickHandler(@Nullable ItemStack item, int slot) {
@@ -67,8 +69,13 @@ public class SpawnMenu extends GuiMenu {
             setCloseOnClick(false);
             return;
         }
-        final Spawn spawn = mapping.get(item);
+        final Spawn spawn = mapping.get(slot);
         if (spawn == null) {
+            setCloseOnClick(false);
+            return;
+        }
+        if (spawn.hasPermission() && !player.hasPermission(spawn.getPermission())) {
+            player.sendMessage(CC.t("&cYou don't have permission to spawn here!"));
             setCloseOnClick(false);
             return;
         }

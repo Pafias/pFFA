@@ -45,6 +45,10 @@ world_protection:
   prevent_custom:
     - REPEATER
 
+guis:
+  show_unallowed_spawns: false
+  show_unallowed_kits: false
+
 # This will bounce the players back if they try standing afk in an armorstand
 prevent_players_blocking_armorstands: true
 

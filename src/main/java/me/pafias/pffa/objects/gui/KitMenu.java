@@ -23,13 +23,15 @@ public class KitMenu extends GuiMenu {
         this.user = user;
         this.spawn = spawn;
 
+        int slot = 0;
         for (Kit kit : kits) {
-            mapping.put(kit.getGuiItem(), kit);
-            getInventory().addItem(kit.getGuiItem());
+            mapping.put(slot, kit);
+            getInventory().setItem(slot, kit.getGuiItem());
+            slot++;
         }
     }
 
-    private final Map<ItemStack, Kit> mapping = new HashMap<>();
+    private final Map<Integer, Kit> mapping = new HashMap<>();
 
     @Override
     public void clickHandler(@Nullable ItemStack item, int slot) {
@@ -37,8 +39,13 @@ public class KitMenu extends GuiMenu {
             setCloseOnClick(false);
             return;
         }
-        final Kit kit = mapping.get(item);
+        final Kit kit = mapping.get(slot);
         if (kit == null) {
+            setCloseOnClick(false);
+            return;
+        }
+        if (kit.hasPermission() && !player.hasPermission(kit.getPermission())) {
+            player.sendMessage(CC.t("&cYou don't have permission to use this kit!"));
             setCloseOnClick(false);
             return;
         }
