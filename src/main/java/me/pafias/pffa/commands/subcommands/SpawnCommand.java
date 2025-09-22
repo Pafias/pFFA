@@ -21,7 +21,7 @@ public class SpawnCommand extends BaseFFACommand {
     @NotNull
     @Override
     public String getArgs() {
-        return "<name>";
+        return "<spawn>";
     }
 
     @NotNull
@@ -32,18 +32,23 @@ public class SpawnCommand extends BaseFFACommand {
 
     @Override
     public void execute(String mainCommand, CommandSender sender, String[] args) {
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage(CC.t("&cOnly players."));
-            return;
-        }
         if (args.length < 2) {
             sender.sendMessage(CC.t("&c/" + mainCommand + " " + getName() + " " + getArgs() + (sender.hasPermission(getPermission() + ".others") ? " [player]" : "")));
             return;
         }
         final String name = args[1];
-        Player target = player;
-        if (args.length >= 3 && sender.hasPermission(getPermission() + ".others"))
+        Player target;
+        if (args.length >= 3) {
+            if (!sender.hasPermission(getPermission() + ".others"))
+                return;
             target = plugin.getServer().getPlayer(args[2]);
+        } else {
+            if (!(sender instanceof Player)) {
+                sender.sendMessage(CC.t("&cYou must specify a player when using this command from console: /" + mainCommand + " " + getName() + " " + getArgs() + " [player]"));
+                return;
+            }
+            target = (Player) sender;
+        }
         if (target == null) {
             sender.sendMessage(CC.t("&cPlayer not found."));
             return;
@@ -65,7 +70,7 @@ public class SpawnCommand extends BaseFFACommand {
                     .stream()
                     .filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
                     .toList();
-        else if (args.length == 3)
+        else if (args.length == 3 && sender.hasPermission(getPermission() + ".others"))
             return plugin.getServer().getOnlinePlayers()
                     .stream()
                     .filter(p -> ((Player) sender).canSee(p))
