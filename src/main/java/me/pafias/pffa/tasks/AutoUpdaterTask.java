@@ -26,10 +26,9 @@ public class AutoUpdaterTask extends BukkitRunnable {
 
     @Override
     public void run() {
-        try {
-            CloseableHttpClient closeableHttpClient = HttpClientBuilder.create().build();
+        try (CloseableHttpClient closeableHttpClient = HttpClientBuilder.create().build()) {
             HttpGet httpGet = new HttpGet();
-            if (plugin.serverVersion() < 17)
+            if (plugin.parseVersion() < 17)
                 httpGet.setURI(new URI("https://pafias.me/minecraft/pFFA/legacy/pFFA.jar"));
             else
                 httpGet.setURI(new URI("https://pafias.me/minecraft/pFFA/latest/pFFA.jar"));

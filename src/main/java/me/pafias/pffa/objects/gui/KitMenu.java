@@ -3,8 +3,8 @@ package me.pafias.pffa.objects.gui;
 import me.pafias.pffa.objects.Kit;
 import me.pafias.pffa.objects.Spawn;
 import me.pafias.pffa.objects.User;
-import me.pafias.putils.CC;
 import me.pafias.putils.InventoryUtils;
+import me.pafias.putils.LCC;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,18 +18,20 @@ public class KitMenu extends GuiMenu {
     private final Spawn spawn;
 
     public KitMenu(User user, Spawn spawn, Collection<Kit> kits) {
-        super(user.getPlayer(), CC.t("&6Kit selection"), InventoryUtils.parseSizeToInvSize(kits.size()));
+        super(user.getPlayer(), LCC.t("&6Kit selection"), InventoryUtils.parseSizeToInvSize(kits.size()));
 
         this.user = user;
         this.spawn = spawn;
 
+        int slot = 0;
         for (Kit kit : kits) {
-            mapping.put(kit.getGuiItem(), kit);
-            getInventory().addItem(kit.getGuiItem());
+            mapping.put(slot, kit);
+            getInventory().setItem(slot, kit.getGuiItem());
+            slot++;
         }
     }
 
-    private final Map<ItemStack, Kit> mapping = new HashMap<>();
+    private final Map<Integer, Kit> mapping = new HashMap<>();
 
     @Override
     public void clickHandler(@Nullable ItemStack item, int slot) {
@@ -37,7 +39,7 @@ public class KitMenu extends GuiMenu {
             setCloseOnClick(false);
             return;
         }
-        final Kit kit = mapping.get(item);
+        final Kit kit = mapping.get(slot);
         if (kit == null) {
             setCloseOnClick(false);
             return;

@@ -6,6 +6,7 @@ import me.pafias.pffa.objects.UserData;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 
@@ -17,15 +18,13 @@ public class MysqlUserDataStorage implements UserDataStorage {
         this.dataSource = dataSource;
         try (Connection conn = dataSource.getConnection()) {
             PreparedStatement ps = conn.prepareStatement(
-                    """
-                            CREATE TABLE IF NOT EXISTS ffa (
-                                                        uuid varchar(36) NOT NULL,
-                                                        kills INT DEFAULT 0 NOT NULL,
-                                                        deaths INT DEFAULT 0 NOT NULL,
-                                                        killstreak INT DEFAULT 0 NOT NULL,
-                                                        PRIMARY KEY (uuid)
-                                                        );
-                            """
+                    "CREATE TABLE IF NOT EXISTS ffa (" +
+                            "uuid varchar(36) NOT NULL, " +
+                            "kills INT DEFAULT 0 NOT NULL, " +
+                            "deaths INT DEFAULT 0 NOT NULL, " +
+                            "killstreak INT DEFAULT 0 NOT NULL, " +
+                            "PRIMARY KEY (uuid)" +
+                            ");"
             );
             ps.execute();
         } catch (SQLException e) {
@@ -36,9 +35,9 @@ public class MysqlUserDataStorage implements UserDataStorage {
     @Override
     public UserData getUserData(String uuid) {
         try (Connection connection = dataSource.getConnection()) {
-            var statement = connection.prepareStatement("SELECT * FROM ffa WHERE uuid = ?;");
+            PreparedStatement statement = connection.prepareStatement("SELECT * FROM ffa WHERE uuid = ?;");
             statement.setString(1, uuid);
-            var resultSet = statement.executeQuery();
+            ResultSet resultSet = statement.executeQuery();
 
             if (resultSet.next()) {
                 UUID u = UUID.fromString(resultSet.getString("uuid"));
@@ -58,12 +57,11 @@ public class MysqlUserDataStorage implements UserDataStorage {
     @Override
     public void setUserData(UserData userData) {
         try (Connection connection = dataSource.getConnection()) {
-            var statement = connection.prepareStatement(
-                    """
-                            INSERT INTO ffa (uuid, kills, deaths, killstreak)
-                            VALUES (?, ?, ?, ?)
-                            ON DUPLICATE KEY UPDATE kills = ?, deaths = ?, killstreak = ?;
-                            """);
+            PreparedStatement statement = connection.prepareStatement(
+                    "INSERT INTO ffa (uuid, kills, deaths, killstreak) " +
+                            "VALUES (?, ?, ?, ?) " +
+                            "ON DUPLICATE KEY UPDATE kills = ?, deaths = ?, killstreak = ?;"
+            );
             statement.setString(1, userData.getUniqueId().toString());
             statement.setInt(2, userData.getFfaData().getKills());
             statement.setInt(3, userData.getFfaData().getDeaths());

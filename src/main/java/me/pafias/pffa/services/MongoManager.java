@@ -6,6 +6,7 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 import lombok.Getter;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
@@ -22,12 +23,12 @@ public class MongoManager {
             String password,
             String database,
             String options
-    ) {
+    ) throws UnsupportedEncodingException {
         client = MongoClients.create(
                 new ConnectionString(
                         String.format("mongodb://%s:%s@%s:%d/%s%s",
-                                URLEncoder.encode(username, StandardCharsets.UTF_8),
-                                URLEncoder.encode(password, StandardCharsets.UTF_8),
+                                URLEncoder.encode(username, StandardCharsets.UTF_8.name()),
+                                URLEncoder.encode(password, StandardCharsets.UTF_8.name()),
                                 host,
                                 port,
                                 database,

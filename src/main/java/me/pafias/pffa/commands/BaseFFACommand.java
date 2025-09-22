@@ -2,7 +2,7 @@ package me.pafias.pffa.commands;
 
 import lombok.Getter;
 import me.pafias.pffa.pFFA;
-import me.pafias.putils.CC;
+import me.pafias.putils.LCC;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
@@ -45,7 +45,7 @@ public abstract class BaseFFACommand {
     public abstract List<String> tabComplete(CommandSender sender, Command command, String alias, String[] args);
 
     public void noPermission(CommandSender sender) {
-        sender.sendMessage(CC.t("&cNo permission."));
+        sender.sendMessage(LCC.t("&cNo permission."));
     }
 
 }

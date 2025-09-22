@@ -69,8 +69,8 @@ public abstract class GuiMenu implements Listener {
 
     @EventHandler
     public void onClick(InventoryClickEvent event) {
-        if (event.getClickedInventory() == null) return;
-        if (!event.getClickedInventory().equals(inventory)) return;
+        if (event.getInventory() == null) return;
+        if (!event.getInventory().equals(inventory)) return;
         if (event.getSlotType() == InventoryType.SlotType.OUTSIDE) return;
         event.setCancelled(true);
         event.setResult(Event.Result.DENY);

@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SpawnCommand implements CommandExecutor, TabExecutor {
 
@@ -38,7 +39,7 @@ public class SpawnCommand implements CommandExecutor, TabExecutor {
                     .filter(p -> ((Player) sender).canSee(p))
                     .map(Player::getName)
                     .filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase()))
-                    .toList();
+                    .collect(Collectors.toList());
         return Collections.emptyList();
     }
 

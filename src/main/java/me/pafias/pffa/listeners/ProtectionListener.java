@@ -11,7 +11,6 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
@@ -19,24 +18,22 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.*;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public class ProtectionListener implements Listener {
 
-    private final pFFA plugin;
+    protected final pFFA plugin;
 
     public ProtectionListener(pFFA plugin) {
         this.plugin = plugin;
-        this.ffaWorlds = Set.copyOf(plugin.getConfig().getStringList("ffa_worlds"));
+        ffaWorlds = new HashSet<>(plugin.getConfig().getStringList("ffa_worlds"));
+        disableFallDamage = plugin.getConfig().getBoolean("disable_fall_damage");
     }
 
-    private final Set<String> ffaWorlds;
+    protected final Set<String> ffaWorlds;
 
-    @EventHandler(ignoreCancelled = true)
-    public void onItem(PlayerItemDamageEvent event) {
-        if (!ffaWorlds.contains(event.getPlayer().getWorld().getName())) return;
-        event.setCancelled(true);
-    }
+    private final boolean disableFallDamage;
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onHunger(FoodLevelChangeEvent event) {
@@ -63,26 +60,30 @@ public class ProtectionListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onPickup(EntityPickupItemEvent event) {
-        if (!(event.getEntity() instanceof Player player)) return;
-        if (player.getGameMode() == GameMode.CREATIVE) return;
+    public void onPickup(PlayerPickupItemEvent event) {
+        if (event.getPlayer().getGameMode() == GameMode.CREATIVE) return;
         event.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onDamage(EntityDamageEvent event) {
-        if (!(event.getEntity() instanceof Player player)) return;
+        if (!(event.getEntity() instanceof Player)) return;
+        final Player player = (Player) event.getEntity();
         if (!ffaWorlds.contains(player.getWorld().getName())) return;
         final User user = plugin.getSM().getUserManager().getUser(player);
         if (user == null) return;
         if (user.isInSpawn()) event.setCancelled(true);
+
+        // Fall damage
+        if (event.getCause() == EntityDamageEvent.DamageCause.FALL && disableFallDamage)
+            event.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onFish(PlayerFishEvent event) {
-        if (event.getHook().getHookedEntity().getType() != EntityType.ARMOR_STAND) return;
+        if (event.getCaught().getType() != EntityType.ARMOR_STAND) return;
         if (!ffaWorlds.contains(event.getPlayer().getWorld().getName())) return;
-        event.getHook().setHookedEntity(event.getPlayer());
+        event.setCancelled(true);
     }
 
     // World protections
@@ -131,9 +132,9 @@ public class ProtectionListener implements Listener {
             shouldPrevent = plugin.getConfig().getBoolean("world_protection.prevent_vehicles");
         }
         if (!shouldPrevent) return;
-        if (event instanceof EntityDamageByEntityEvent e
-                && e.getDamager() instanceof Player damager
-                && damager.getGameMode() == GameMode.CREATIVE
+        if (event instanceof EntityDamageByEntityEvent
+                && ((EntityDamageByEntityEvent) event).getDamager() instanceof Player
+                && ((Player) ((EntityDamageByEntityEvent) event).getDamager()).getGameMode() == GameMode.CREATIVE
                 && plugin.getConfig().getBoolean("world_protection.bypass_with_gm_creative"))
             return;
         event.setCancelled(true);
@@ -144,7 +145,7 @@ public class ProtectionListener implements Listener {
         Entity damager = null;
         if (event instanceof HangingBreakByEntityEvent)
             damager = ((HangingBreakByEntityEvent) event).getRemover();
-        if (damager instanceof Player player && player.getGameMode().equals(GameMode.CREATIVE) && plugin.getConfig().getBoolean("world_protection.bypass_with_gm_creative"))
+        if (damager instanceof Player && ((Player) damager).getGameMode().equals(GameMode.CREATIVE) && plugin.getConfig().getBoolean("world_protection.bypass_with_gm_creative"))
             return;
         if (event.getEntity() instanceof ItemFrame && plugin.getConfig().getBoolean("world_protection.prevent_itemframes"))
             event.setCancelled(true);
@@ -152,7 +153,7 @@ public class ProtectionListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onInventoryMove(InventoryClickEvent event) {
-        if (event.getClickedInventory() == null) return;
+        if (event.getInventory() == null) return;
         if (event.getView().getTopInventory().getType() != InventoryType.PLAYER && event.getView().getTopInventory().getType() != InventoryType.CRAFTING) {
             final Player player = (Player) event.getWhoClicked();
             if (!ffaWorlds.contains(player.getWorld().getName())) return;

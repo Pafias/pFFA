@@ -6,7 +6,7 @@ import lombok.Getter;
 import me.pafias.pffa.objects.Spawn;
 import me.pafias.pffa.pFFA;
 import me.pafias.pffa.util.Serializer;
-import me.pafias.putils.CC;
+import me.pafias.putils.LCC;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -71,7 +71,7 @@ public class SpawnManager {
         json.addProperty("name", name);
         if (permission != null && !permission.isEmpty())
             json.addProperty("permission", permission);
-        json.add("gui_item", Serializer.guiItemToJson(player.getInventory().getItemInMainHand()));
+        json.add("gui_item", Serializer.guiItemToJson(player.getInventory().getItemInHand()));
         json.add("location", Serializer.locationToJson(player.getLocation()));
         FileWriter writer = new FileWriter(file);
         writer.write(json.toString());
@@ -82,7 +82,7 @@ public class SpawnManager {
     public Spawn loadSpawn(File file) {
         try {
             String jsonText = readAll(new FileReader(file));
-            JsonObject json = JsonParser.parseString(jsonText).getAsJsonObject();
+            JsonObject json = new JsonParser().parse(jsonText).getAsJsonObject();
             String name = json.get("name").getAsString();
             String permission = json.has("permission") ?
                     json.get("permission").getAsString() : null;
@@ -96,7 +96,7 @@ public class SpawnManager {
         } catch (IOException ex) {
             ex.printStackTrace();
             plugin.getServer().getLogger().log(Level.WARNING, "");
-            plugin.getServer().getLogger().log(Level.WARNING, CC.t("&cUnable to parse spawn json. Read stacktrace above."));
+            plugin.getServer().getLogger().log(Level.WARNING, LCC.t("&cUnable to parse spawn json. Read stacktrace above."));
             plugin.getServer().getLogger().log(Level.WARNING, "");
             return null;
         }

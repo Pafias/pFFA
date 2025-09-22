@@ -2,13 +2,12 @@ package me.pafias.pffa.util;
 
 import com.google.gson.*;
 import me.pafias.pffa.pFFA;
-import me.pafias.putils.CC;
-import net.kyori.adventure.text.Component;
+import me.pafias.putils.LCC;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -36,8 +35,8 @@ public class Serializer {
                         continue;
                     }
                     final JsonObject enchantmentJson = enchantmentJsonElement.getAsJsonObject();
-                    final Enchantment enchantment = enchantmentJson.has("key") ?
-                            Enchantment.getByKey(NamespacedKey.fromString(enchantmentJson.get("key").getAsString())) :
+                    final Enchantment enchantment = enchantmentJson.has("id") && plugin.parseVersion() < 13 ?
+                            Enchantment.getById(enchantmentJson.get("id").getAsInt()) :
                             Enchantment.getByName(enchantmentJson.get("name").getAsString());
                     if (enchantment == null) {
                         plugin.getLogger().warning("Invalid enchantment found. Skipping it.");
@@ -64,7 +63,8 @@ public class Serializer {
             for (Enchantment enchantment : item.getEnchantments().keySet()) {
                 final JsonObject json2 = new JsonObject();
                 int level = item.getEnchantments().get(enchantment);
-                json2.addProperty("key", enchantment.getKey().toString());
+                if (plugin.parseVersion() < 13)
+                    json2.addProperty("id", enchantment.getId());
                 json2.addProperty("name", enchantment.getName());
                 json2.addProperty("level", level);
                 array.add(json2);
@@ -110,14 +110,14 @@ public class Serializer {
             final ItemStack is = new ItemStack(material);
             final ItemMeta meta = is.getItemMeta();
             if (json.has("displayname"))
-                meta.displayName(CC.a(json.get("displayname").getAsString()));
+                meta.setDisplayName(LCC.t(json.get("displayname").getAsString()));
             if (json.has("lore")) {
-                final List<Component> lore = new ArrayList<>();
+                final List<String> lore = new ArrayList<>();
                 for (final JsonElement loreElement : json.getAsJsonArray("lore")) {
                     if (!loreElement.isJsonPrimitive()) continue;
-                    lore.add(CC.a(loreElement.getAsString()));
+                    lore.add(LCC.t(loreElement.getAsString()));
                 }
-                meta.lore(lore);
+                meta.setLore(lore);
             }
             is.setItemMeta(meta);
             return is;
@@ -132,9 +132,9 @@ public class Serializer {
             final JsonObject json = new JsonObject();
             json.addProperty("material", item.getType().name());
             if (item.getItemMeta().hasDisplayName())
-                json.addProperty("displayname", CC.serialize(item.getItemMeta().displayName()));
+                json.addProperty("displayname", item.getItemMeta().getDisplayName());
             if (item.getItemMeta().hasLore())
-                json.add("lore", JsonParser.parseString(new GsonBuilder().create().toJson(item.getItemMeta().lore().stream().map(CC::serialize).toList())));
+                json.add("lore", new JsonParser().parse(new GsonBuilder().create().toJson(item.getItemMeta().getLore())));
             return json;
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -145,13 +145,17 @@ public class Serializer {
     // Config
 
     public static Location parseConfigLocation(String path) {
+        return parseConfigLocation(plugin.getConfig(), path);
+    }
+
+    public static Location parseConfigLocation(FileConfiguration config, String path) {
         if (path == null) return null;
-        final String worldName = plugin.getConfig().getString(path + ".world");
-        final double x = plugin.getConfig().getDouble(path + ".x");
-        final double y = plugin.getConfig().getDouble(path + ".y");
-        final double z = plugin.getConfig().getDouble(path + ".z");
-        final float yaw = (float) plugin.getConfig().getDouble(path + ".yaw");
-        final float pitch = (float) plugin.getConfig().getDouble(path + ".pitch");
+        final String worldName = config.getString(path + ".world");
+        final double x = config.getDouble(path + ".x");
+        final double y = config.getDouble(path + ".y");
+        final double z = config.getDouble(path + ".z");
+        final float yaw = (float) config.getDouble(path + ".yaw");
+        final float pitch = (float) config.getDouble(path + ".pitch");
         World world = null;
         if (worldName != null)
             world = plugin.getServer().getWorld(worldName);

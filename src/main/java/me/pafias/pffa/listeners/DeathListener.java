@@ -3,9 +3,9 @@ package me.pafias.pffa.listeners;
 import me.clip.placeholderapi.PlaceholderAPI;
 import me.pafias.pffa.objects.User;
 import me.pafias.pffa.pFFA;
-import me.pafias.putils.CC;
+import me.pafias.putils.LCC;
 import me.pafias.putils.Tasks;
-import me.pafias.putils.builders.ItemBuilder;
+import me.pafias.putils.builders.LegacyItemBuilder;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.EventHandler;
@@ -16,10 +16,7 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class DeathListener implements Listener {
 
@@ -28,7 +25,7 @@ public class DeathListener implements Listener {
     public DeathListener(pFFA plugin) {
         this.plugin = plugin;
 
-        ffaWorlds = Set.copyOf(plugin.getConfig().getStringList("ffa_worlds"));
+        ffaWorlds = new HashSet<>(plugin.getConfig().getStringList("ffa_worlds"));
         healKillerOnDeath = plugin.getConfig().getBoolean("death.heal_killer");
 
         killstreakBroadcasts = new HashMap<>();
@@ -57,9 +54,9 @@ public class DeathListener implements Listener {
             final ConfigurationSection config = plugin.getConfig().getConfigurationSection("death.quick_respawn");
             quickRespawnEnabled = config.getBoolean("enabled");
             quickRespawnPermission = config.getString("permission");
-            quickRespawnItem = new ItemBuilder(Material.getMaterial(config.getString("item.material")))
-                    .setName(CC.a(config.getString("item.name")))
-                    .setLore(CC.af(config.getStringList("item.lore")))
+            quickRespawnItem = new LegacyItemBuilder(Material.getMaterial(config.getString("item.material")))
+                    .setName(LCC.t(config.getString("item.name")))
+                    .setLore(LCC.tf(config.getStringList("item.lore")))
                     .build();
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -77,7 +74,7 @@ public class DeathListener implements Listener {
             return;
         for (String message : messages) {
             message = PlaceholderAPI.setPlaceholders(user.getPlayer(), message);
-            plugin.getServer().broadcast(CC.af(message, user.getName()));
+            plugin.getServer().broadcastMessage(LCC.tf(message, user.getName()));
         }
     }
 
@@ -88,7 +85,19 @@ public class DeathListener implements Listener {
         if (!ffaWorlds.contains(event.getEntity().getLocation().getWorld().getName()))
             return;
         event.getDrops().clear();
-        event.getEntity().teleport(plugin.getLobbySpawn());
+
+        if(plugin.parseVersion() < 11) {
+            // Immediate respawn for versions without the gamerule
+            if (event.getEntity().getWorld().getGameRuleValue("doImmediateRespawn") == null)
+                event.getEntity().setHealth(event.getEntity().getMaxHealth());
+            Tasks.runLaterSync(2, () -> {
+                event.getEntity().teleport(plugin.getLobbySpawn());
+            });
+        } else {
+            event.getEntity().setHealth(event.getEntity().getMaxHealth());
+            event.getEntity().teleport(plugin.getLobbySpawn());
+        }
+
         event.getEntity().getInventory().clear();
         for (PotionEffect pe : event.getEntity().getActivePotionEffects())
             event.getEntity().removePotionEffect(pe.getType());

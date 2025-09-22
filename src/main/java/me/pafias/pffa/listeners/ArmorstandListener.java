@@ -11,6 +11,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public class ArmorstandListener implements Listener {
@@ -23,7 +24,7 @@ public class ArmorstandListener implements Listener {
         this.plugin = plugin;
         this.armorstandManager = armorstandManager;
 
-        ffaWorlds = Set.copyOf(plugin.getConfig().getStringList("ffa_worlds"));
+        ffaWorlds = new HashSet<>(plugin.getConfig().getStringList("ffa_worlds"));
     }
 
     private final Set<String> ffaWorlds;
@@ -32,26 +33,26 @@ public class ArmorstandListener implements Listener {
     public void onInteract(PlayerInteractAtEntityEvent event) {
         if (event.getPlayer().getGameMode() == GameMode.CREATIVE)
             return;
-        if (!(event.getRightClicked() instanceof ArmorStand armorStand)) return;
+        if (!(event.getRightClicked() instanceof ArmorStand)) return;
         if (!ffaWorlds.contains(event.getPlayer().getWorld().getName())) return;
         final User user = plugin.getSM().getUserManager().getUser(event.getPlayer());
         if (user == null) return;
         event.setCancelled(true);
-        armorstandManager.trigger(armorStand, user, false);
+        armorstandManager.trigger((ArmorStand) event.getRightClicked(), user, false);
     }
 
     @EventHandler
     public void onClick(EntityDamageByEntityEvent event) {
-        if (!(event.getDamager() instanceof Player damager)) return;
-        if (damager.getGameMode() == GameMode.CREATIVE)
+        if (!(event.getDamager() instanceof Player)) return;
+        if (((Player) event.getDamager()).getGameMode() == GameMode.CREATIVE)
             return;
-        if (!(event.getEntity() instanceof ArmorStand armorStand)) return;
-        if (!ffaWorlds.contains(damager.getWorld().getName())) return;
-        final User user = plugin.getSM().getUserManager().getUser(damager);
+        if (!(event.getEntity() instanceof ArmorStand)) return;
+        if (!ffaWorlds.contains(event.getDamager().getWorld().getName())) return;
+        final User user = plugin.getSM().getUserManager().getUser(((Player) event.getDamager()));
         if (user == null) return;
         event.setCancelled(true);
         event.setDamage(0);
-        armorstandManager.trigger(armorStand, user, true);
+        armorstandManager.trigger((ArmorStand) event.getEntity(), user, true);
     }
 
 }

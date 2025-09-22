@@ -1,21 +1,20 @@
 package me.pafias.pffa.npcs.local;
 
-import com.destroystokyo.paper.profile.PlayerProfile;
-import com.github.retrooper.packetevents.protocol.player.Equipment;
-import com.github.retrooper.packetevents.protocol.player.EquipmentSlot;
-import io.github.retrooper.packetevents.util.SpigotConversionUtil;
 import lombok.Getter;
 import me.pafias.pffa.npcs.local.packets.PacketHandler;
+import me.pafias.pffa.npcs.local.profile.GameProfile;
+import me.pafias.pffa.npcs.local.wrapper.ItemSlot;
 import me.pafias.pffa.objects.Kit;
+import me.pafias.pffa.pFFA;
 import me.pafias.putils.Tasks;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Queue;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,23 +26,24 @@ public class FakeNpc {
     private final PacketHandler packetHandler;
 
     @Getter
-    private final PlayerProfile profile;
+    private final GameProfile profile;
     @Getter
-    private final Component nametag;
+    private final String nametag;
     @Getter
     private final Location location;
     @Getter
     private final Kit kit;
 
     @Getter
-    private final int entityId = new Random().nextInt(100000) + 2000;
+    private final int entityId;
 
     @Getter
     private final Set<Player> viewers = ConcurrentHashMap.newKeySet();
 
     private final ExecutorService executor;
 
-    public FakeNpc(ExecutorService executor, PacketHandler packetHandler, PlayerProfile profile, Component nametag, Location location, Kit kit) {
+    public FakeNpc(ExecutorService executor, PacketHandler packetHandler, int entityId, GameProfile profile, String nametag, Location location, Kit kit) {
+        this.entityId = entityId;
         this.executor = executor;
         this.packetHandler = packetHandler;
         this.profile = profile;
@@ -63,19 +63,38 @@ public class FakeNpc {
 
             packetHandler.addToTab(player, this);
             packetHandler.spawnNpc(player, this);
+
             if (kit != null) {
-                Equipment[] equipment = new Equipment[4];
+                Map<ItemSlot, ItemStack> equipment = new ConcurrentHashMap<>();
                 int i = 0;
-                for (EquipmentSlot equipmentSlot : new EquipmentSlot[]{EquipmentSlot.HELMET, EquipmentSlot.CHEST_PLATE, EquipmentSlot.LEGGINGS, EquipmentSlot.BOOTS}) {
+                for (ItemSlot equipmentSlot : new ItemSlot[]{ItemSlot.HEAD, ItemSlot.CHEST, ItemSlot.LEGS, ItemSlot.FEET}) {
                     ItemStack item = kit.getArmor()[i];
-                    equipment[i] = new Equipment(
-                            equipmentSlot,
-                            SpigotConversionUtil.fromBukkitItemStack(item)
-                    );
+                    equipment.put(equipmentSlot, item);
                     i++;
                 }
-                packetHandler.changeEquipment(player, this, equipment);
+                final ItemStack mainHand = kit.getItems().get(0);
+                if (mainHand != null)
+                    equipment.put(ItemSlot.MAINHAND, mainHand);
+
+                final double version = pFFA.get().parseVersion();
+
+                final ItemStack offHand = kit.getItems().get(40);
+                if (offHand != null && version >= 9)
+                    equipment.put(ItemSlot.OFFHAND, offHand);
+
+                if (version >= 16)
+                    // On 1.16 and above we can send all equipment at once
+                    packetHandler.changeEquipment(player, this, equipment);
+                else {
+                    // Before that we have to send each piece of equipment separately
+                    for (Map.Entry<ItemSlot, ItemStack> entry : equipment.entrySet()) {
+                        Map<ItemSlot, ItemStack> singleEquipment = new HashMap<>();
+                        singleEquipment.put(entry.getKey(), entry.getValue());
+                        packetHandler.changeEquipment(player, this, singleEquipment);
+                    }
+                }
             }
+
             Tasks.runLaterSync(60, () -> {
                 packetHandler.removeFromTab(player, this);
             });

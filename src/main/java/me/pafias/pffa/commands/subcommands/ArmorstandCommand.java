@@ -2,9 +2,7 @@ package me.pafias.pffa.commands.subcommands;
 
 import me.pafias.pffa.commands.BaseFFACommand;
 import me.pafias.pffa.objects.Kit;
-import me.pafias.putils.CC;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import me.pafias.putils.LCC;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.ArmorStand;
@@ -35,15 +33,17 @@ public class ArmorstandCommand extends BaseFFACommand {
 
     @Override
     public void execute(String mainCommand, CommandSender sender, String[] args) {
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage(CC.t("&cOnly players."));
+        if(plugin.parseVersion() < 8) return;
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(LCC.t("&cOnly players."));
             return;
         }
         if (args.length < 2) {
-            sender.sendMessage(CC.t("&c/" + mainCommand + " " + getName() + " " + getArgs()));
+            sender.sendMessage(LCC.t("&c/" + mainCommand + " " + getName() + " " + getArgs()));
             return;
         }
-        final Component name = CC.a(String.join(" ", Arrays.copyOfRange(args, 1, args.length)));
+        final Player player = (Player) sender;
+        final String name = LCC.t(String.join(" ", Arrays.copyOfRange(args, 1, args.length)));
         ArmorStand armorstand = null;
         if (player.getWorld().getEntities().stream().anyMatch(e -> (e instanceof ArmorStand) && e.getLocation().getBlock() == player.getLocation().getBlock())) {
             armorstand = (ArmorStand) player.getWorld().getEntities().stream()
@@ -68,20 +68,22 @@ public class ArmorstandCommand extends BaseFFACommand {
                 .collect(Collectors.toList());
     }
 
-    private void prepAs(ArmorStand as, Component name) {
+    private void prepAs(ArmorStand as, String name) {
         as.setBasePlate(false);
         as.setArms(true);
         as.setCustomNameVisible(true);
-        as.customName(name);
-        final Kit kit = plugin.getSM().getKitManager().getKit(PlainTextComponentSerializer.plainText().serialize(name));
+        as.setCustomName(name);
+        final Kit kit = plugin.getSM().getKitManager().getKit(name);
         if (kit != null) {
             final ItemStack mainHand = kit.getItems().get(0);
             if (mainHand != null)
-                as.getEquipment().setItemInMainHand(mainHand);
+                as.setItemInHand(mainHand);
 
-            final ItemStack offHand = kit.getItems().get(40);
-            if (offHand != null)
-                as.getEquipment().setItemInOffHand(offHand);
+            if (plugin.parseVersion() >= 9) {
+                final ItemStack offHand = kit.getItems().get(40);
+                if (offHand != null)
+                    as.getEquipment().setItemInOffHand(offHand);
+            }
 
             final ItemStack helmet = kit.getItems().get(39);
             if (helmet != null)

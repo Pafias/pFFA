@@ -1,9 +1,9 @@
 package me.pafias.pffa.combatlog;
 
 import me.pafias.pffa.pFFA;
-import me.pafias.putils.CC;
+import me.pafias.pffa.util.Reflection;
+import me.pafias.putils.LCC;
 import me.pafias.putils.Tasks;
-import net.kyori.adventure.text.Component;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -15,6 +15,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.bukkit.event.EventPriority.*;
 
@@ -47,7 +48,7 @@ public class CombatLogManager implements Listener {
                 combatLog.getPlayers().forEach(player -> {
                     String actionBar = combatlog.getString("display.action_bar");
                     if (actionBar != null && !actionBar.isEmpty())
-                        player.sendActionBar(CC.a(actionBar));
+                        Reflection.sendActionbar(player, LCC.t(actionBar));
                     if (combatlog.getBoolean("display.level"))
                         player.setLevel(secondsLeft);
                     if (combatlog.getBoolean("display.exp_bar"))
@@ -61,8 +62,8 @@ public class CombatLogManager implements Listener {
     public void onPlayerDamage(EntityDamageByEntityEvent event) {
         if (event.isCancelled()) return;
         if (!plugin.getConfig().getStringList("ffa_worlds").contains(event.getEntity().getWorld().getName())) return;
-        if (event.getEntity() instanceof Player victim && event.getDamager() instanceof Player attacker)
-            startCombat(attacker, victim);
+        if (event.getEntity() instanceof Player && event.getDamager() instanceof Player)
+            startCombat((Player) event.getDamager(), (Player) event.getEntity());
     }
 
     @EventHandler(priority = HIGH)
@@ -80,11 +81,11 @@ public class CombatLogManager implements Listener {
         CombatLog combatLog = getLastCombatLog(player);
         if (combatLog != null) {
             Player other = combatLog.getAttacker().equals(player) ? combatLog.getVictim() : combatLog.getAttacker();
-            player.setKiller(other);
+            Reflection.setKiller(player, other);
             player.setHealth(0);
             String logoutBroadcast = plugin.getConfig().getString("combatlog.logout_broadcast");
             if (logoutBroadcast != null && !logoutBroadcast.isEmpty())
-                plugin.getServer().broadcast(CC.af(logoutBroadcast, player.getName()));
+                plugin.getServer().broadcastMessage(LCC.tf(logoutBroadcast, player.getName()));
         }
         getCombatLogs(player).forEach(this::endCombat);
     }
@@ -98,12 +99,12 @@ public class CombatLogManager implements Listener {
             if (getCombatLogs(attacker).isEmpty()) {
                 String message = plugin.getConfig().getString("combatlog.attacker_message");
                 if (message != null && !message.isEmpty())
-                    attacker.sendMessage(CC.af(message, victim.getName()));
+                    attacker.sendMessage(LCC.tf(message, victim.getName()));
             }
             if (getCombatLogs(victim).isEmpty()) {
                 String message = plugin.getConfig().getString("combatlog.victim_message");
                 if (message != null && !message.isEmpty())
-                    victim.sendMessage(CC.af(message, attacker.getName()));
+                    victim.sendMessage(LCC.tf(message, attacker.getName()));
             }
             combatLogs.add(new CombatLog(attacker, victim, combatLogDurationInSeconds));
         } else
@@ -113,10 +114,10 @@ public class CombatLogManager implements Listener {
     private void endCombat(CombatLog combatLog) {
         combatLogs.remove(combatLog);
         for (Player player : combatLog.getPlayers()) {
-            player.sendActionBar(Component.empty());
+            Reflection.sendActionbar(player, "");
             player.setLevel(0);
             player.setExp(0);
-            player.sendMessage(CC.tf("&aYou are no longer in combat with %s", combatLog.getVictim() == player ? combatLog.getAttacker().getName() : combatLog.getVictim().getName()));
+            player.sendMessage(LCC.tf("&aYou are no longer in combat with %s", combatLog.getVictim() == player ? combatLog.getAttacker().getName() : combatLog.getVictim().getName()));
         }
     }
 
@@ -127,7 +128,7 @@ public class CombatLogManager implements Listener {
     public List<CombatLog> getCombatLogs(Player player) {
         return combatLogs.stream()
                 .filter(c -> c.getPlayers().contains(player))
-                .toList();
+                .collect(Collectors.toList());
     }
 
     public CombatLog getLastCombatLog(Player player) {

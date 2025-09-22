@@ -3,7 +3,7 @@ package me.pafias.pffa.commands.subcommands;
 import me.pafias.pffa.commands.BaseFFACommand;
 import me.pafias.pffa.objects.Kit;
 import me.pafias.pffa.services.KitManager;
-import me.pafias.putils.CC;
+import me.pafias.putils.LCC;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class KitCommand extends BaseFFACommand {
 
@@ -32,30 +33,30 @@ public class KitCommand extends BaseFFACommand {
 
     @Override
     public void execute(String mainCommand, CommandSender sender, String[] args) {
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage(CC.t("&cOnly players."));
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(LCC.t("&cOnly players."));
             return;
         }
         if (args.length < 2) {
-            sender.sendMessage(CC.t("&c/" + mainCommand + " " + getName() + " " + getArgs() + (sender.hasPermission(getPermission() + ".others") ? " [player]" : "")));
+            sender.sendMessage(LCC.t("&c/" + mainCommand + " " + getName() + " " + getArgs() + (sender.hasPermission(getPermission() + ".others") ? " [player]" : "")));
             return;
         }
         final String name = args[1];
-        Player target = player;
+        Player target = (Player) sender;
         if (args.length >= 3 && sender.hasPermission(getPermission() + ".others"))
             target = plugin.getServer().getPlayer(args[2]);
         if (target == null) {
-            sender.sendMessage(CC.t("&cPlayer not found."));
+            sender.sendMessage(LCC.t("&cPlayer not found."));
             return;
         }
         final KitManager kitManager = plugin.getSM().getKitManager();
         if (!kitManager.exists(name)) {
-            sender.sendMessage(CC.t("&cThat kit does not exist!"));
+            sender.sendMessage(LCC.t("&cThat kit does not exist!"));
             return;
         }
         final Kit kit = kitManager.getKit(name);
         kit.give(target);
-        sender.sendMessage(CC.t("&aKit given" + (sender != target ? " to " + target.getName() : "")));
+        sender.sendMessage(LCC.t("&aKit given" + (sender != target ? " to " + target.getName() : "")));
     }
 
     @Override
@@ -64,13 +65,13 @@ public class KitCommand extends BaseFFACommand {
             return plugin.getSM().getKitManager().getKits().keySet()
                     .stream()
                     .filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
-                    .toList();
+                    .collect(Collectors.toList());
         else if (args.length == 3)
             return plugin.getServer().getOnlinePlayers().stream()
                     .filter(p -> ((Player) sender).canSee(p))
                     .map(Player::getName)
                     .filter(s -> s.toLowerCase().startsWith(args[2].toLowerCase()))
-                    .toList();
+                    .collect(Collectors.toList());
         return Collections.emptyList();
     }
 

@@ -2,7 +2,7 @@ package me.pafias.pffa.commands.subcommands;
 
 import me.pafias.pffa.commands.BaseFFACommand;
 import me.pafias.pffa.services.SpawnManager;
-import me.pafias.putils.CC;
+import me.pafias.putils.LCC;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -33,16 +33,17 @@ public class SavespawnCommand extends BaseFFACommand {
 
     @Override
     public void execute(String mainCommand, CommandSender sender, String[] args) {
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage(CC.t("&cOnly players."));
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(LCC.t("&cOnly players."));
             return;
         }
         if (args.length < 2) {
-            sender.sendMessage(CC.t("&c/" + mainCommand + " " + getName() + " " + getArgs()));
+            sender.sendMessage(LCC.t("&c/" + mainCommand + " " + getName() + " " + getArgs()));
             return;
         }
-        if (player.getInventory().getItemInMainHand().getType().equals(Material.AIR)) {
-            sender.sendMessage(CC.t("&cYou have to have an item in your hand (will be the gui item)"));
+        final Player player = (Player) sender;
+        if (player.getInventory().getItemInHand().getType().equals(Material.AIR)) {
+            sender.sendMessage(LCC.t("&cYou have to have an item in your hand (will be the gui item)"));
             return;
         }
         final String name = args[1];
@@ -52,10 +53,10 @@ public class SavespawnCommand extends BaseFFACommand {
             spawnManager.saveNewSpawn(player, name, permission);
         } catch (IOException e) {
             e.printStackTrace();
-            sender.sendMessage(CC.t("&cFailed to save spawn."));
+            sender.sendMessage(LCC.t("&cFailed to save spawn."));
             return;
         }
-        sender.sendMessage(CC.t("&aSpawn saved."));
+        sender.sendMessage(LCC.t("&aSpawn saved."));
     }
 
     @Override

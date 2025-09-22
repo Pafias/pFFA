@@ -2,14 +2,13 @@ package me.pafias.pffa.npcs;
 
 import me.pafias.pffa.objects.Kit;
 import me.pafias.pffa.objects.User;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
-import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.jetbrains.annotations.Nullable;
 
 public interface NpcManager {
 
-    void createNpc(Component npcName, String npcSkinPlayerName, Location location, @Nullable Kit kit);
+    void createNpc(String npcName, String npcSkinPlayerName, Location location, @Nullable Kit kit);
 
     void removeNpc(Location location);
 
@@ -22,7 +21,7 @@ public interface NpcManager {
      * @param leftClick  Whether the click was a left-click (true) or right-click (false).
      * @return True if a valid NPC was clicked, and the calling event should be canceled, false otherwise.
      */
-    boolean trigger(@Nullable Entity entity, String entityName, User user, boolean leftClick);
+    boolean trigger(@Nullable LivingEntity entity, String entityName, User user, boolean leftClick);
 
     /**
      * Checks if the NPC exists in the registry.

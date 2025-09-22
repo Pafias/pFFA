@@ -1,8 +1,7 @@
 package me.pafias.pffa.listeners;
 
-import me.clip.placeholderapi.PlaceholderAPI;
 import me.pafias.pffa.pFFA;
-import me.pafias.putils.CC;
+import me.pafias.putils.LCC;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -18,7 +17,10 @@ import java.util.Random;
 
 public class DeathMessagesHandler implements Listener {
 
+    private final pFFA plugin;
+
     public DeathMessagesHandler(pFFA plugin) {
+        this.plugin = plugin;
         final File file = new File(plugin.getDataFolder(), "deathmessages.yml");
         plugin.saveResource("deathmessages.yml", !file.exists());
         final FileConfiguration config = YamlConfiguration.loadConfiguration(file);
@@ -42,8 +44,9 @@ public class DeathMessagesHandler implements Listener {
         var = var.replace("{killer}", killer.getName());
         final String healthFormat = "%." + healthDecimals + "f";
         var = var.replace("{health}", String.format(healthFormat, killer.getPlayer().getHealth() / 2d));
-        var = CC.t(var.trim());
-        var = PlaceholderAPI.setPlaceholders(player, var);
+        var = LCC.t(var.trim());
+        if (plugin.getServer().getPluginManager().isPluginEnabled("PlaceholderAPI"))
+            var = me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, var);
         return var;
     }
 
@@ -51,8 +54,9 @@ public class DeathMessagesHandler implements Listener {
         final List<String> list = messages.getStringList("without_killer." + string);
         String var = list.get(new Random().nextInt(list.size()));
         var = var.replace("{player}", player.getName());
-        var = CC.t(var.trim());
-        var = PlaceholderAPI.setPlaceholders(player, var);
+        var = LCC.t(var.trim());
+        if (plugin.getServer().getPluginManager().isPluginEnabled("PlaceholderAPI"))
+            var = me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, var);
         return var;
     }
 

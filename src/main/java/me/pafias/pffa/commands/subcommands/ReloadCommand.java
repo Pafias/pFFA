@@ -1,7 +1,7 @@
 package me.pafias.pffa.commands.subcommands;
 
 import me.pafias.pffa.commands.BaseFFACommand;
-import me.pafias.putils.CC;
+import me.pafias.putils.LCC;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.HandlerList;
@@ -32,22 +32,22 @@ public class ReloadCommand extends BaseFFACommand {
     @Override
     public void execute(String mainCommand, CommandSender sender, String[] args) {
         plugin.reloadConfig();
-        sender.sendMessage(CC.t("&aConfig reloaded. &7Some changes may require a server restart to take effect:"));
-        sender.sendMessage(CC.t("&7- Combatlog: Changing the 'enabled' option"));
-        sender.sendMessage(CC.t("&7- Death messages: Changing anything in deathmessages.yml"));
+        sender.sendMessage(LCC.t("&aConfig reloaded. &7Some changes may require a server restart to take effect:"));
+        sender.sendMessage(LCC.t("&7- Combatlog: Changing the 'enabled' option"));
+        sender.sendMessage(LCC.t("&7- Death messages: Changing anything in deathmessages.yml"));
         try {
             plugin.getSM().getKitManager().loadKits();
-            sender.sendMessage(CC.t("&aKits reloaded."));
+            sender.sendMessage(LCC.t("&aKits reloaded."));
         } catch (Exception ex) {
             ex.printStackTrace();
-            sender.sendMessage(CC.t("&cFailed to reload kits."));
+            sender.sendMessage(LCC.t("&cFailed to reload kits."));
         }
         try {
             plugin.getSM().getSpawnManager().loadSpawns();
-            sender.sendMessage(CC.t("&aSpawns reloaded."));
+            sender.sendMessage(LCC.t("&aSpawns reloaded."));
         } catch (Exception ex) {
             ex.printStackTrace();
-            sender.sendMessage(CC.t("&cFailed to reload spawns."));
+            sender.sendMessage(LCC.t("&cFailed to reload spawns."));
         }
         try {
             for (RegisteredListener listener : HandlerList.getRegisteredListeners(plugin)) {
@@ -56,7 +56,7 @@ public class ReloadCommand extends BaseFFACommand {
             plugin.register();
         } catch (Exception ex) {
             ex.printStackTrace();
-            sender.sendMessage(CC.t("&cFailed to reload listeners."));
+            sender.sendMessage(LCC.t("&cFailed to reload listeners."));
         }
     }
 
