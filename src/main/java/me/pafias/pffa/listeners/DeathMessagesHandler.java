@@ -1,6 +1,5 @@
 package me.pafias.pffa.listeners;
 
-import me.clip.placeholderapi.PlaceholderAPI;
 import me.pafias.pffa.pFFA;
 import me.pafias.putils.CC;
 import org.bukkit.configuration.ConfigurationSection;
@@ -43,7 +42,9 @@ public class DeathMessagesHandler implements Listener {
         final String healthFormat = "%." + healthDecimals + "f";
         var = var.replace("{health}", String.format(healthFormat, killer.getPlayer().getHealth() / 2d));
         var = CC.t(var.trim());
-        var = PlaceholderAPI.setPlaceholders(player, var);
+        try {
+            var = me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, var);
+        } catch (NoClassDefFoundError ignored){}
         return var;
     }
 
@@ -52,7 +53,9 @@ public class DeathMessagesHandler implements Listener {
         String var = list.get(new Random().nextInt(list.size()));
         var = var.replace("{player}", player.getName());
         var = CC.t(var.trim());
-        var = PlaceholderAPI.setPlaceholders(player, var);
+        try {
+            var = me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, var);
+        } catch (NoClassDefFoundError ignored){}
         return var;
     }
 
