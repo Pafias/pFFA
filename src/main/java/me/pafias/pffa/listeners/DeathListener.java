@@ -104,6 +104,8 @@ public class DeathListener implements Listener {
             if (killer != null) {
                 killer.addKill();
                 handleKillstreakBroadcast(killer);
+                if (killer.getLastKit() != null)
+                    killer.getLastKit().give(killer.getPlayer());
             }
         }
     }

@@ -34,9 +34,13 @@ public class SpectateCommand implements CommandExecutor, TabExecutor {
             sender.sendMessage(CC.t("&cYou cannot spectate while in combat."));
             return true;
         }
+        final User user = plugin.getSM().getUserManager().getUser(player);
+        if (!user.isSpectating() && !plugin.getConfig().getStringList("ffa_worlds").contains(player.getWorld().getName())) {
+            sender.sendMessage(CC.t("&cYou can only spectate in FFA worlds."));
+            return true;
+        }
         final Player targetPlayer = args.length == 1 ? plugin.getServer().getPlayer(args[0]) : null;
         final Location targetLocation = targetPlayer != null && player.canSee(targetPlayer) ? targetPlayer.getEyeLocation() : player.getEyeLocation();
-        final User user = plugin.getSM().getUserManager().getUser(player);
         if (user.isSpectating()) {
             player.teleport(plugin.getLobbySpawn());
             player.setGameMode(GameMode.ADVENTURE);

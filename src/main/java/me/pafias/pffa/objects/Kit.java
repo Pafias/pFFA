@@ -30,7 +30,7 @@ public class Kit {
         for (final Map.Entry<Integer, ItemStack> entry : items.entrySet()) {
             player.getInventory().setItem(entry.getKey(), entry.getValue());
         }
-        for(PotionEffect effect : potionEffects) {
+        for (PotionEffect effect : potionEffects) {
             player.addPotionEffect(effect, true);
         }
     }

@@ -5,12 +5,16 @@ import me.pafias.pffa.objects.Spawn;
 import me.pafias.pffa.objects.User;
 import me.pafias.pffa.pFFA;
 import me.pafias.putils.CC;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -26,6 +30,8 @@ public class MiscListener implements Listener {
     public MiscListener(pFFA plugin) {
         this.plugin = plugin;
 
+        ffaWorlds = Set.copyOf(plugin.getConfig().getStringList("ffa_worlds"));
+
         cleanArrows = plugin.getConfig().getBoolean("clean_arrows");
         interactivePlates = plugin.getConfig().getBoolean("interactive_pressureplates");
 
@@ -35,7 +41,11 @@ public class MiscListener implements Listener {
         quickRespawnMaterial = Material.getMaterial(quickRespawnConfig.getString("item.material"));
         quickRespawnName = quickRespawnConfig.getString("item.name");
         quickRespawnSingleAction = quickRespawnConfig.getBoolean("single_action");
+
+        preventDifferentKitPvp = plugin.getConfig().getBoolean("prevent_different_kit_pvp");
     }
+
+    private final Set<String> ffaWorlds;
 
     private static final Set<Material> PLATES = EnumSet.noneOf(Material.class);
 
@@ -98,6 +108,33 @@ public class MiscListener implements Listener {
         kit.give(user.getPlayer());
         spawn.teleport(user.getPlayer());
         user.heal(false);
+    }
+
+    private final boolean preventDifferentKitPvp;
+
+    @EventHandler
+    public void onDamage(EntityDamageByEntityEvent event){
+        if(!preventDifferentKitPvp) return;
+
+        if(!(event.getEntity() instanceof Player damaged)) return;
+        final User damagedUser = plugin.getSM().getUserManager().getUser(damaged);
+        if(damagedUser == null) return;
+
+        final User damagerUser;
+        if(event.getDamager() instanceof Player damager)
+            damagerUser = plugin.getSM().getUserManager().getUser(damager);
+        else if(event.getDamager() instanceof Projectile projectile && projectile.getShooter() instanceof Player shooter)
+            damagerUser = plugin.getSM().getUserManager().getUser(shooter);
+        else
+            damagerUser = null;
+        if(damagerUser == null) return;
+
+        if (!ffaWorlds.contains(event.getDamager().getWorld().getName())) return;
+
+        if(damagerUser.getLastKit() != damagedUser.getLastKit() && damagerUser.getPlayer().getGameMode() != GameMode.CREATIVE){
+            event.setCancelled(true);
+            damagerUser.getPlayer().sendMessage(CC.t("&cYou can only pvp with players using the same kit as you."));
+        }
     }
 
 }

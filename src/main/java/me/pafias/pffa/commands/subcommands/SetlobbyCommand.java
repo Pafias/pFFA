@@ -42,7 +42,7 @@ public class SetlobbyCommand extends BaseFFACommand {
                 player.getLocation().getBlockZ() + 0.5);
         location.setPitch(player.getLocation().getPitch() > 10 || player.getLocation().getPitch() < -10 ? 0 : player.getLocation().getPitch());
 
-        plugin.getConfig().set("lobby", Serializer.locationToConfig("spawn", location));
+        plugin.getConfig().set("lobby.spawn", Serializer.locationToConfig("spawn", location));
         plugin.saveConfig();
         sender.sendMessage(CC.t("&aLobby set."));
     }

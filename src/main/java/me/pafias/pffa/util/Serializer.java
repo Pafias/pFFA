@@ -12,6 +12,11 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.potion.PotionData;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.potion.PotionType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +52,35 @@ public class Serializer {
                 }
                 is.setItemMeta(meta);
             }
+            if(json.has("potion-effects")){
+                final JsonObject potionEffectsObject = json.getAsJsonObject("potion-effects");
+                final PotionMeta meta = (PotionMeta) is.getItemMeta();
+                final String typeString = potionEffectsObject.get("type").getAsString();
+                if(typeString != null) {
+                    final PotionType type = PotionType.valueOf(typeString);
+                    if(type != null){
+                        final boolean extended = potionEffectsObject.get("extended").getAsBoolean();
+                        final boolean upgraded = potionEffectsObject.get("upgraded").getAsBoolean();
+                        meta.setBasePotionData(new PotionData(type, extended, upgraded));
+                        final JsonArray potionEffectsArray = potionEffectsObject.getAsJsonArray("custom-effects");
+                        if (potionEffectsArray != null) {
+                            for (final JsonElement potionEffectJsonElement : potionEffectsArray) {
+                                String effectString = potionEffectJsonElement.getAsString();
+                                String[] splitPotions = effectString.split(":");
+                                String name = splitPotions[0];
+                                if (name != null) {
+                                    PotionEffectType potionType = PotionEffectType.getByName(name);
+                                    int amplifier = Integer.parseInt(splitPotions[1]);
+                                    int duration = Integer.parseInt(splitPotions[2]) * 20;
+                                    if (potionType != null)
+                                        meta.addCustomEffect(new PotionEffect(potionType, amplifier, duration), true);
+                                }
+                            }
+                        }
+                    }
+                }
+                is.setItemMeta(meta);
+            }
             return is;
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -60,16 +94,31 @@ public class Serializer {
             json.addProperty("slot", slot);
             json.addProperty("material", item.getType().name());
             json.addProperty("amount", item.getAmount());
-            final JsonArray array = new JsonArray();
+            final JsonArray enchantmentsArray = new JsonArray();
             for (Enchantment enchantment : item.getEnchantments().keySet()) {
                 final JsonObject json2 = new JsonObject();
                 int level = item.getEnchantments().get(enchantment);
                 json2.addProperty("key", enchantment.getKey().toString());
                 json2.addProperty("name", enchantment.getName());
                 json2.addProperty("level", level);
-                array.add(json2);
+                enchantmentsArray.add(json2);
             }
-            json.add("enchantments", array);
+            json.add("enchantments", enchantmentsArray);
+            if (item.getItemMeta() instanceof PotionMeta) {
+                final JsonObject potionEffectsObject = new JsonObject();
+                final PotionMeta meta = (PotionMeta) item.getItemMeta();
+                potionEffectsObject.addProperty("type", meta.getBasePotionData().getType().name());
+                potionEffectsObject.addProperty("extended", meta.getBasePotionData().isExtended());
+                potionEffectsObject.addProperty("upgraded", meta.getBasePotionData().isUpgraded());
+                final JsonArray customEffectsArray = new JsonArray();
+                for(final PotionEffect effect : meta.getCustomEffects()){
+                    final String effectString = effect.getType().getName() + ":" + effect.getAmplifier() + ":" + (effect.getDuration() / 20);
+                    customEffectsArray.add(effectString);
+                }
+                if(!customEffectsArray.isEmpty())
+                    potionEffectsObject.add("custom-effects", customEffectsArray);
+                json.add("potion-effects", potionEffectsObject);
+            }
             return json;
         } catch (Exception ex) {
             ex.printStackTrace();
