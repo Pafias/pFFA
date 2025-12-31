@@ -14,7 +14,7 @@ import java.util.List;
 public class ReloadCommand extends BaseFFACommand {
 
     public ReloadCommand() {
-        super("reload", "ffa.reload", "reloadconfig");
+        super("reload", "ffa.reload");
     }
 
     @NotNull
@@ -31,32 +31,36 @@ public class ReloadCommand extends BaseFFACommand {
 
     @Override
     public void execute(String mainCommand, CommandSender sender, String[] args) {
-        plugin.reloadConfig();
-        sender.sendMessage(CC.t("&aConfig reloaded. &7Some changes may require a server restart to take effect:"));
-        sender.sendMessage(CC.t("&7- Combatlog: Changing the 'enabled' option"));
-        sender.sendMessage(CC.t("&7- Death messages: Changing anything in deathmessages.yml"));
-        try {
-            plugin.getSM().getKitManager().loadKits();
-            sender.sendMessage(CC.t("&aKits reloaded."));
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            sender.sendMessage(CC.t("&cFailed to reload kits."));
-        }
-        try {
-            plugin.getSM().getSpawnManager().loadSpawns();
-            sender.sendMessage(CC.t("&aSpawns reloaded."));
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            sender.sendMessage(CC.t("&cFailed to reload spawns."));
-        }
+        boolean error = false;
         try {
             for (RegisteredListener listener : HandlerList.getRegisteredListeners(plugin)) {
                 HandlerList.unregisterAll(listener.getListener());
             }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            error = true;
+        }
+        try {
+            plugin.getSM().onLoad();
+            plugin.getSM().onEnable();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            error = true;
+        }
+        try {
             plugin.register();
         } catch (Exception ex) {
             ex.printStackTrace();
-            sender.sendMessage(CC.t("&cFailed to reload listeners."));
+            error = true;
+        }
+        plugin.getServer().getOnlinePlayers()
+                .stream()
+                .filter(p -> !p.hasMetadata("NPC"))
+                .forEach(p -> plugin.getSM().getUserManager().addUser(p));
+        if (error) {
+            sender.sendMessage(CC.t("&cSomething went wrong while reloading the plugin. Restarting the server is recommended to avoid issues."));
+        } else {
+            sender.sendMessage(CC.t("&aPlugin reloaded."));
         }
     }
 
