@@ -80,6 +80,7 @@ public class ProtectionListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onFish(PlayerFishEvent event) {
+        if(event.getHook().getHookedEntity() == null) return;
         if (event.getHook().getHookedEntity().getType() != EntityType.ARMOR_STAND) return;
         if (!ffaWorlds.contains(event.getPlayer().getWorld().getName())) return;
         event.getHook().setHookedEntity(event.getPlayer());

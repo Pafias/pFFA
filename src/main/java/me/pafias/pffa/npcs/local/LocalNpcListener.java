@@ -37,11 +37,10 @@ public class LocalNpcListener extends SimplePacketListenerAbstract implements Li
 
         final WrapperPlayClientInteractEntity packet = new WrapperPlayClientInteractEntity(event);
 
-        for (FakeNpc npc : npcManager.getNpcs().values()) {
-            if (npc.getEntityId() == packet.getEntityId()) {
-                final boolean leftClick = packet.getAction() == WrapperPlayClientInteractEntity.InteractAction.ATTACK;
-                Tasks.runSync(() -> npcManager.trigger(null, npc.getProfile().getName(), plugin.getSM().getUserManager().getUser(player), leftClick));
-            }
+        final FakeNpc npc = npcManager.getNpcs().get(packet.getEntityId());
+        if (npc != null) {
+            final boolean leftClick = packet.getAction() == WrapperPlayClientInteractEntity.InteractAction.ATTACK;
+            Tasks.runSync(() -> npcManager.trigger(null, npc.getProfile().getName(), plugin.getSM().getUserManager().getUser(player), leftClick));
         }
 
     }

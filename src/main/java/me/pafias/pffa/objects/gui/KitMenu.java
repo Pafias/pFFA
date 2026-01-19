@@ -1,5 +1,7 @@
 package me.pafias.pffa.objects.gui;
 
+import lombok.Getter;
+import lombok.Setter;
 import me.pafias.pffa.objects.Kit;
 import me.pafias.pffa.objects.Spawn;
 import me.pafias.pffa.objects.User;
@@ -15,16 +17,20 @@ import java.util.Map;
 public class KitMenu extends GuiMenu {
 
     private final User user;
-    private final Spawn spawn;
+    @Getter
+    @Setter
+    private Spawn spawn;
 
     public KitMenu(User user, Spawn spawn, Collection<Kit> kits) {
         super(user.getPlayer(), CC.t("&6Kit selection"), InventoryUtils.parseSizeToInvSize(kits.size()));
-
         this.user = user;
         this.spawn = spawn;
+        update(kits);
+    }
 
+    public void update(final Collection<Kit> kits) {
         int slot = 0;
-        for (Kit kit : kits) {
+        for (final Kit kit : kits) {
             mapping.put(slot, kit);
             getInventory().setItem(slot, kit.getGuiItem());
             slot++;

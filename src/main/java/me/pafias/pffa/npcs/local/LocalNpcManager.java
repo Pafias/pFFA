@@ -5,15 +5,16 @@ import com.destroystokyo.paper.profile.ProfileProperty;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.Getter;
 import me.pafias.pffa.npcs.NpcManager;
 import me.pafias.pffa.npcs.local.packets.*;
 import me.pafias.pffa.objects.Kit;
 import me.pafias.pffa.objects.Spawn;
 import me.pafias.pffa.objects.User;
-import me.pafias.pffa.objects.gui.KitMenu;
-import me.pafias.pffa.objects.gui.SpawnMenu;
 import me.pafias.pffa.pFFA;
+import me.pafias.pffa.services.GuiManager;
 import me.pafias.pffa.services.KitManager;
 import me.pafias.pffa.services.SpawnManager;
 import me.pafias.putils.BukkitPlayerManager;
@@ -32,7 +33,6 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -41,6 +41,7 @@ public class LocalNpcManager implements NpcManager {
     private final pFFA plugin;
     private final KitManager kitManager;
     private final SpawnManager spawnManager;
+    private final GuiManager guiManager;
 
     private LocalNpcListener listener;
     private VisibilityTask visibilityTask;
@@ -48,10 +49,11 @@ public class LocalNpcManager implements NpcManager {
 
     private final ExecutorService executor;
 
-    public LocalNpcManager(pFFA plugin, KitManager kitManager, SpawnManager spawnManager) throws Exception {
+    public LocalNpcManager(pFFA plugin, KitManager kitManager, SpawnManager spawnManager, GuiManager guiManager) throws Exception {
         this.plugin = plugin;
         this.kitManager = kitManager;
         this.spawnManager = spawnManager;
+        this.guiManager = guiManager;
 
         this.executor = Executors.newFixedThreadPool(2, new ThreadFactoryBuilder().setNameFormat("pFFA-LocalNpcManager-%d").build());
 
@@ -64,8 +66,10 @@ public class LocalNpcManager implements NpcManager {
             packetHandler = new PacketHandler1_19_3(); // 1.19.3 - 1.20.2
         else if (version.isOlderThan(ServerVersion.V_1_21_3))
             packetHandler = new PacketHandler1_20_2(); // 1.20.2 - 1.21.3
+        else if (version.isOlderThan(ServerVersion.V_1_21_9))
+            packetHandler = new PacketHandler1_21_3(); // 1.21.3 - 1.21.9
         else
-            packetHandler = new PacketHandler1_21_3(); // 1.21.3 - latest
+            packetHandler = new PacketHandler1_21_9(); // 1.21.9 - latest
 
         file = new File(plugin.getDataFolder(), "npcs.yml");
         if (!file.exists()) file.createNewFile();
@@ -107,7 +111,7 @@ public class LocalNpcManager implements NpcManager {
     private final File file;
     private final FileConfiguration config;
     @Getter
-    private final Map<UUID, FakeNpc> npcs = new ConcurrentHashMap<>();
+    private final Int2ObjectMap<FakeNpc> npcs = new Int2ObjectOpenHashMap<>();
 
     /**
      * Creates a new NPC with the proper name and skin.
@@ -148,7 +152,7 @@ public class LocalNpcManager implements NpcManager {
      */
     public void createNpc(PlayerProfile profile, Component nametag, Location location, @Nullable Kit kit, boolean save) {
         final FakeNpc npc = new FakeNpc(executor, packetHandler, profile, nametag, location, kit);
-        npcs.put(npc.getProfile().getId(), npc);
+        npcs.put(npc.getEntityId(), npc);
 
         if (save) {
             config.set(npc.getProfile().getId().toString() + ".name", npc.getProfile().getName());
@@ -197,8 +201,7 @@ public class LocalNpcManager implements NpcManager {
             // Clicked on Kit npc
             final Kit kit = kitManager.getKit(entityName);
             if (!leftClick) {
-                new SpawnMenu(user, kit, spawnManager.getSpawns(user.getPlayer()).values())
-                        .open();
+                guiManager.openSpawnGui(user, kit);
             } else {
                 kit.give(user.getPlayer());
                 spawnManager.getDefaultSpawn().teleport(user.getPlayer());
@@ -210,8 +213,7 @@ public class LocalNpcManager implements NpcManager {
             // Clicked on Spawn npc
             final Spawn spawn = spawnManager.getSpawn(entityName);
             if (!leftClick) {
-                new KitMenu(user, spawn, kitManager.getKits(user.getPlayer()).values())
-                        .open();
+                guiManager.openKitGui(user, spawn);
             } else {
                 kitManager.getDefaultKit().give(user.getPlayer());
                 user.heal(false);

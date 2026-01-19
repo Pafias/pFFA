@@ -1,5 +1,7 @@
 package me.pafias.pffa.objects.gui;
 
+import lombok.Getter;
+import lombok.Setter;
 import me.pafias.pffa.objects.Kit;
 import me.pafias.pffa.objects.Spawn;
 import me.pafias.pffa.objects.User;
@@ -7,7 +9,6 @@ import me.pafias.putils.CC;
 import me.pafias.putils.InventoryUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextReplacementConfig;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.Nullable;
@@ -16,19 +17,24 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 
 public class SpawnMenu extends GuiMenu {
 
     private final User user;
-    private final Kit kit;
+    @Getter
+    @Setter
+    private Kit kit;
+    private final Collection<Spawn> spawns;
 
     public SpawnMenu(User user, Kit kit, Collection<Spawn> spawns) {
         super(user.getPlayer(), CC.t("&6Spawn selection"), InventoryUtils.parseSizeToInvSize(spawns.size()));
-
         this.user = user;
         this.kit = kit;
+        this.spawns = spawns;
+        update(spawns);
+    }
 
+    public void update(final Collection<Spawn> spawns) {
         int slot = 0;
         for (final Spawn spawn : spawns) {
             final ItemStack guiItem = spawn.getGuiItem().clone();
@@ -36,8 +42,7 @@ public class SpawnMenu extends GuiMenu {
 
             // Set the nearby players in the lore, if applicable
             if (meta != null && meta.hasLore()) {
-                final Predicate<Player> predicate = p -> player.canSee(p) && !plugin.getSM().getUserManager().getUser(p).isInSpawn();
-                int nearby = spawn.getLocation().getNearbyPlayers(spawn.getPlayerDetectionRadius(), predicate).size();
+                int nearby = (int) spawn.getNearbyPlayers().stream().filter(p -> player.canSee(p)).count();
 
                 final TextReplacementConfig replacementConfig = TextReplacementConfig.builder()
                         .matchLiteral("{nearby}")
