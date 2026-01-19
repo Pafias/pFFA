@@ -45,10 +45,11 @@ public class UserManager {
     }
 
     public User getUser(String name) {
-        return users.values()
-                .stream()
-                .filter(user -> user.getName().equalsIgnoreCase(name) || user.getName().toLowerCase().startsWith(name.toLowerCase()))
-                .findFirst().orElse(null);
+        for (User user : users.values()) {
+            if (user.getName().equalsIgnoreCase(name) || user.getName().toLowerCase().startsWith(name.toLowerCase()))
+                return user;
+        }
+        return null;
     }
 
     private final Map<UUID, CompletableFuture<UserData>> preloadedData = new ConcurrentHashMap<>();

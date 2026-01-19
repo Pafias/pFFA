@@ -6,16 +6,13 @@ import me.pafias.pffa.objects.User;
 import me.pafias.pffa.objects.UserData;
 import me.pafias.putils.BukkitPlayerManager;
 import me.pafias.putils.CC;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 public class StatsCommand extends BaseFFACommand {
@@ -93,11 +90,9 @@ public class StatsCommand extends BaseFFACommand {
     @Override
     public List<String> tabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 2 && sender.hasPermission(getPermission() + ".others")) {
-            if (args[1].length() < 4)
-                return Collections.singletonList("Type at least 4 letters to auto-complete");
-            return Arrays.stream(plugin.getServer().getOfflinePlayers())
-                    .map(OfflinePlayer::getName)
-                    .filter(Objects::nonNull)
+            return plugin.getServer().getOnlinePlayers().stream()
+                    .filter(p -> ((Player) sender).canSee(p))
+                    .map(Player::getName)
                     .filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
                     .toList();
         }

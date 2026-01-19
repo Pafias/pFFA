@@ -12,13 +12,14 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class GuiMenu implements Listener {
+public abstract class GuiMenu implements Listener, InventoryHolder {
 
     public final pFFA plugin = pFFA.get();
 
@@ -45,18 +46,13 @@ public abstract class GuiMenu implements Listener {
         this.title = title;
         this.size = size;
         this.items = items;
-        inventory = plugin.getServer().createInventory(null, size, title);
+        inventory = plugin.getServer().createInventory(this, size, title);
         items.forEach(inventory::addItem);
     }
 
     public void open() {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         player.openInventory(inventory);
-    }
-
-    public void update() {
-        close();
-        open();
     }
 
     public void close() {

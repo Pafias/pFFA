@@ -6,7 +6,7 @@
 
     <groupId>me.pafias</groupId>
     <artifactId>pFFA</artifactId>
-    <version>2.4-SNAPSHOT</version>
+    <version>2.6-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>pFFA</name>
@@ -74,8 +74,8 @@
             <url>https://maven.citizensnpcs.co/repo</url>
         </repository>
         <repository>
-            <id>codemc-snapshots</id>
-            <url>https://repo.codemc.io/repository/maven-snapshots/</url>
+            <id>codemc-releases</id>
+            <url>https://repo.codemc.io/repository/maven-releases/</url>
         </repository>
         <repository>
             <id>pyr-snapshots</id>
@@ -88,14 +88,14 @@
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>1.17.1-R0.1-SNAPSHOT</version>
+            <version>1.21.11-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <!-- Plugins -->
         <dependency>
             <groupId>com.github.retrooper</groupId>
             <artifactId>packetevents-spigot</artifactId>
-            <version>2.9.5-SNAPSHOT</version>
+            <version>2.10.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -107,7 +107,7 @@
         <dependency>
             <groupId>net.citizensnpcs</groupId>
             <artifactId>citizens-main</artifactId>
-            <version>2.0.30-SNAPSHOT</version>
+            <version>2.0.38-SNAPSHOT</version>
             <type>jar</type>
             <scope>provided</scope>
         </dependency>

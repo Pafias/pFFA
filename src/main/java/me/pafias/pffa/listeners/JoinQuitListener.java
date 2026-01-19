@@ -1,13 +1,13 @@
 package me.pafias.pffa.listeners;
 
 import me.pafias.pffa.pFFA;
+import me.pafias.putils.CC;
 import org.bukkit.GameMode;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 
@@ -29,18 +29,16 @@ public class JoinQuitListener implements Listener {
         }
     }
 
-    @EventHandler
-    public void onLogin(PlayerLoginEvent event) {
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onJoin(PlayerJoinEvent event) {
         try {
             plugin.getSM().getUserManager().addUser(event.getPlayer());
         } catch (Exception ex) {
             ex.printStackTrace();
-            event.disallow(PlayerLoginEvent.Result.KICK_OTHER, "An error occurred while loading your player. Please try again later.");
+            event.getPlayer().kick(CC.a("An error occurred while loading your player. Please try again later."));
         }
-    }
 
-    @EventHandler(priority = EventPriority.HIGH)
-    public void onJoin(PlayerJoinEvent event) {
+        event.getPlayer().setGameMode(GameMode.ADVENTURE);
         event.getPlayer().getInventory().clear();
         event.getPlayer().getActivePotionEffects().forEach(pe -> event.getPlayer().removePotionEffect(pe.getType()));
         event.getPlayer().setHealth(event.getPlayer().getMaxHealth());
@@ -51,7 +49,6 @@ public class JoinQuitListener implements Listener {
     @EventHandler
     public void onSpawn(PlayerSpawnLocationEvent event) {
         event.setSpawnLocation(plugin.getLobbySpawn());
-        event.getPlayer().setGameMode(GameMode.ADVENTURE);
     }
 
     @EventHandler(priority = EventPriority.HIGH)

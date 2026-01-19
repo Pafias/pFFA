@@ -7,6 +7,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
+
 @Data
 @AllArgsConstructor
 public class Spawn {
@@ -21,6 +23,8 @@ public class Spawn {
     private Location location;
 
     private double playerDetectionRadius;
+
+    private Collection<Player> nearbyPlayers;
 
     public void teleport(Player player) {
         player.teleport(location);
