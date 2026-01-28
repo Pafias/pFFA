@@ -5,7 +5,7 @@ import me.pafias.pffa.objects.User;
 import me.pafias.pffa.pFFA;
 import me.pafias.putils.CC;
 import me.pafias.putils.Tasks;
-import me.pafias.putils.builders.ItemBuilder;
+import me.pafias.putils.builders.ModernItemBuilder;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.EventHandler;
@@ -57,7 +57,7 @@ public class DeathListener implements Listener {
             final ConfigurationSection config = plugin.getConfig().getConfigurationSection("death.quick_respawn");
             quickRespawnEnabled = config.getBoolean("enabled");
             quickRespawnPermission = config.getString("permission");
-            quickRespawnItem = new ItemBuilder(Material.getMaterial(config.getString("item.material")))
+            quickRespawnItem = new ModernItemBuilder(Material.getMaterial(config.getString("item.material")))
                     .setName(CC.a(config.getString("item.name")))
                     .setLore(CC.af(config.getStringList("item.lore")))
                     .build();
