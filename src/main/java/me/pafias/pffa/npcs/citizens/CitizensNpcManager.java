@@ -123,6 +123,7 @@ public class CitizensNpcManager implements NpcManager {
                 kit.give(user.getPlayer());
                 spawnManager.getDefaultSpawn().teleport(user.getPlayer());
                 user.heal(false);
+                user.setLastSpawn(spawnManager.getDefaultSpawn());
             }
             user.setLastKit(kit);
             return true;
@@ -136,8 +137,9 @@ public class CitizensNpcManager implements NpcManager {
                 guiManager.openKitGui(user, spawn);
             } else {
                 kitManager.getDefaultKit().give(user.getPlayer());
-                user.heal(false);
                 spawn.teleport(user.getPlayer());
+                user.heal(false);
+                user.setLastKit(kitManager.getDefaultKit());
             }
             user.setLastSpawn(spawn);
             return true;

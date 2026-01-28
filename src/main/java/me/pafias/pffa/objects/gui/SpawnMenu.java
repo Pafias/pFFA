@@ -24,17 +24,16 @@ public class SpawnMenu extends GuiMenu {
     @Getter
     @Setter
     private Kit kit;
-    private final Collection<Spawn> spawns;
 
     public SpawnMenu(User user, Kit kit, Collection<Spawn> spawns) {
         super(user.getPlayer(), CC.t("&6Spawn selection"), InventoryUtils.parseSizeToInvSize(spawns.size()));
         this.user = user;
         this.kit = kit;
-        this.spawns = spawns;
         update(spawns);
     }
 
     public void update(final Collection<Spawn> spawns) {
+        getInventory().clear();
         int slot = 0;
         for (final Spawn spawn : spawns) {
             final ItemStack guiItem = spawn.getGuiItem().clone();

@@ -53,8 +53,9 @@ public class SpawnManager {
 
         Map<String, Spawn> spawnsMap = new HashMap<>(spawns.size());
         for (Map.Entry<String, Spawn> entry : spawns.entrySet()) {
-            if (!entry.getValue().hasPermission() || player.hasPermission(entry.getValue().getPermission()))
-                spawnsMap.put(entry.getKey(), entry.getValue());
+            final Spawn spawn = entry.getValue();
+            if (!spawn.hasPermission() || player.hasPermission(spawn.getPermission()))
+                spawnsMap.put(entry.getKey(), spawn);
         }
         return spawnsMap;
     }

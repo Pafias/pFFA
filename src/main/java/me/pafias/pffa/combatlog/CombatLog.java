@@ -1,10 +1,10 @@
 package me.pafias.pffa.combatlog;
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 import lombok.Getter;
 import org.bukkit.entity.Player;
 
-import java.util.Set;
+import java.util.List;
 
 public class CombatLog {
 
@@ -26,8 +26,8 @@ public class CombatLog {
         reset(durationSeconds);
     }
 
-    public Set<Player> getPlayers() {
-        return ImmutableSet.of(attacker, victim);
+    public List<Player> getPlayers() {
+        return ImmutableList.of(attacker, victim);
     }
 
     public boolean isExpired() {
