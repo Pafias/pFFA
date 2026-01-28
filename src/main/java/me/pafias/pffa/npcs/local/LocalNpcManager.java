@@ -184,7 +184,7 @@ public class LocalNpcManager implements NpcManager {
         if (possibleNpcs.isEmpty()) throw new IllegalArgumentException("No NPC found near the specified location.");
         final FakeNpc npc = possibleNpcs.get(0);
         npc.destroyForAll();
-        npcs.remove(npc.getProfile().getId());
+        npcs.remove(npc.getEntityId());
 
         config.set(npc.getProfile().getId().toString(), null);
         try {
