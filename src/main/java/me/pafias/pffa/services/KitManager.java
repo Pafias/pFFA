@@ -48,8 +48,9 @@ public class KitManager {
 
         Map<String, Kit> kitsMap = new HashMap<>(kits.size());
         for (Map.Entry<String, Kit> entry : kits.entrySet()) {
-            if (!entry.getValue().hasPermission() || player.hasPermission(entry.getValue().getPermission()))
-                kitsMap.put(entry.getKey(), entry.getValue());
+            final Kit kit = entry.getValue();
+            if (!kit.hasPermission() || player.hasPermission(kit.getPermission()))
+                kitsMap.put(entry.getKey(), kit);
         }
         return kitsMap;
     }

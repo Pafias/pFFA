@@ -29,6 +29,7 @@ public class KitMenu extends GuiMenu {
     }
 
     public void update(final Collection<Kit> kits) {
+        getInventory().clear();
         int slot = 0;
         for (final Kit kit : kits) {
             mapping.put(slot, kit);

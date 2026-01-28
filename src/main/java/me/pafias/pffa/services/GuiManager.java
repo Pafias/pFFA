@@ -14,8 +14,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class GuiManager implements Listener {
 
@@ -26,8 +26,8 @@ public class GuiManager implements Listener {
         this.kitManager = kitManager;
         this.spawnManager = spawnManager;
 
-        kitInvCache = new HashMap<>();
-        spawnInvCache = new HashMap<>();
+        kitInvCache = new ConcurrentHashMap<>();
+        spawnInvCache = new ConcurrentHashMap<>();
 
         // Task to periodically update the GUIs
         Tasks.runRepeatingAsync(150, 150, () -> {
