@@ -11,6 +11,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -90,11 +91,15 @@ public class StatsCommand extends BaseFFACommand {
     @Override
     public List<String> tabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 2 && sender.hasPermission(getPermission() + ".others")) {
-            return plugin.getServer().getOnlinePlayers().stream()
-                    .filter(p -> ((Player) sender).canSee(p))
-                    .map(Player::getName)
-                    .filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
-                    .toList();
+            final List<String> list = new ArrayList<>();
+            for (final Player p : plugin.getServer().getOnlinePlayers()) {
+                if (!(sender instanceof Player player) || player.canSee(p)) {
+                    if (p.getName().toLowerCase().startsWith(args[1].toLowerCase())) {
+                        list.add(p.getName());
+                    }
+                }
+            }
+            return list;
         }
         return Collections.emptyList();
     }
