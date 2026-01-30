@@ -1,7 +1,6 @@
 package me.pafias.pffa.commands.commands;
 
 import me.pafias.pffa.pFFA;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -10,10 +9,9 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 public class StatsCommand implements CommandExecutor, TabExecutor {
 
@@ -36,13 +34,15 @@ public class StatsCommand implements CommandExecutor, TabExecutor {
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (args.length == 1 && sender.hasPermission("ffa.stats.others")) {
-            if (args[0].length() < 4)
-                return Collections.singletonList("Type at least 4 letters to auto-complete");
-            return Arrays.stream(plugin.getServer().getOfflinePlayers())
-                    .map(OfflinePlayer::getName)
-                    .filter(Objects::nonNull)
-                    .filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase()))
-                    .toList();
+            final List<String> list = new ArrayList<>();
+            for (final Player p : plugin.getServer().getOnlinePlayers()) {
+                if (!(sender instanceof Player player) || player.canSee(p)) {
+                    if (p.getName().toLowerCase().startsWith(args[0].toLowerCase())) {
+                        list.add(p.getName());
+                    }
+                }
+            }
+            return list;
         }
         return Collections.emptyList();
     }
