@@ -118,7 +118,7 @@ public class LocalNpcManager implements NpcManager {
      */
     @Override
     public void createNpc(Component npcName, String npcSkinPlayerName, Location location, @Nullable Kit kit) {
-        final OfflinePlayer skinPlayer = BukkitPlayerManager.getOfflinePlayerByName(npcSkinPlayerName);
+        final OfflinePlayer skinPlayer = BukkitPlayerManager.getOfflinePlayerByName(npcSkinPlayerName, false);
         final PlayerProfile skinProfile = new PlayerProfileBuilder()
                 .setUuid(skinPlayer.getUniqueId())
                 .setName(skinPlayer.getName())
