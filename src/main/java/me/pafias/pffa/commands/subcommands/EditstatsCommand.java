@@ -120,7 +120,7 @@ public class EditstatsCommand extends BaseFFACommand {
                     return;
                 }
                 event.getPlayer().sendMessage(" ");
-                event.getPlayer().sendMessage(CC.tf("&aDeaths set: &7", deaths));
+                event.getPlayer().sendMessage(CC.tf("&aDeaths set: &7%d", deaths));
                 event.getPlayer().sendMessage(" ");
                 event.getPlayer().sendMessage(CC.t("&6Now type the value of &dbest killstreak &6to set to the player."));
                 return;
@@ -133,7 +133,7 @@ public class EditstatsCommand extends BaseFFACommand {
                     return;
                 }
                 event.getPlayer().sendMessage(" ");
-                event.getPlayer().sendMessage(CC.tf("&aBest killstreak set: &7", killstreak));
+                event.getPlayer().sendMessage(CC.tf("&aBest killstreak set: &7%d", killstreak));
                 event.getPlayer().sendMessage(" ");
                 if (player != null && kills != -1 && deaths != -1 && killstreak != -1) {
                     final User user = plugin.getSM().getUserManager().getUser(player.getUniqueId());

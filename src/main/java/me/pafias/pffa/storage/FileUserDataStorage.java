@@ -1,5 +1,6 @@
 package me.pafias.pffa.storage;
 
+import me.pafias.pffa.commands.subcommands.LeaderboardCommand;
 import me.pafias.pffa.objects.FfaData;
 import me.pafias.pffa.objects.UserData;
 import me.pafias.pffa.services.FileManager;
@@ -7,7 +8,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
-import java.util.UUID;
+import java.util.*;
 
 public class FileUserDataStorage implements UserDataStorage {
 
@@ -50,4 +51,36 @@ public class FileUserDataStorage implements UserDataStorage {
             e.printStackTrace();
         }
     }
+
+    @Override
+    public List<UserData> getTopStatistic(LeaderboardCommand.Statistic statistic, int resultLimit) {
+        if (statistic == null || resultLimit <= 0)
+            return Collections.emptyList();
+
+        final File[] files = fileManager.getUserDataPath().toFile().listFiles((dir, name) -> name.endsWith(".yml"));
+        if (files == null || files.length == 0)
+            return Collections.emptyList();
+
+        final List<UserData> list = new ArrayList<>();
+        for (final File file : files) {
+            final String fileName = file.getName();
+            final String uuid = fileName.substring(0, fileName.length() - 4);
+
+            try {
+                list.add(fromFile(uuid, YamlConfiguration.loadConfiguration(file)));
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            }
+        }
+
+        final Comparator<UserData> comparator = switch (statistic) {
+            case KILLS -> Comparator.comparingInt(data -> data.getFfaData().getKills());
+            case DEATHS -> Comparator.comparingInt(data -> data.getFfaData().getDeaths());
+            case KILLSTREAK -> Comparator.comparingInt(data -> data.getFfaData().getKillstreak());
+        };
+
+        list.sort(comparator.reversed());
+        return list.stream().limit(resultLimit).toList();
+    }
+
 }
