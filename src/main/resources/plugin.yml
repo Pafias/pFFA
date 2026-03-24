@@ -27,6 +27,11 @@ commands:
     aliases: [ spec ]
     description: Spectate command
     permission: ffa.spectate
+  leaderboard:
+    usage: /leaderboard [kills/deaths/killstreak]
+    aliases: [ lb ]
+    description: Leaderboard command
+    permission: ffa.leaderboard
 permissions:
   ffa.kill.others:
     description: Permission to use the ffa's kill (sub)command on other players
@@ -92,3 +97,6 @@ permissions:
   ffa.spectate:
     default: true
     description: Permission to use the spectate command
+  ffa.leaderboard:
+    default: true
+    description: Permission to use the leaderboard command

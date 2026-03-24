@@ -41,6 +41,13 @@ public class ReloadCommand extends BaseFFACommand {
             error = true;
         }
         try {
+            plugin.getSM().onDisable();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            error = true;
+        }
+
+        try {
             plugin.getSM().onLoad();
             plugin.getSM().onEnable();
         } catch (Exception ex) {
