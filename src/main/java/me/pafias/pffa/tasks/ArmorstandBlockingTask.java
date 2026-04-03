@@ -3,8 +3,8 @@ package me.pafias.pffa.tasks;
 import me.pafias.pffa.pFFA;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.util.Vector;
 
 public class ArmorstandBlockingTask extends BukkitRunnable {
 
@@ -18,20 +18,18 @@ public class ArmorstandBlockingTask extends BukkitRunnable {
     public void run() {
         if (plugin.parseVersion() < 8)
             return;
-        plugin.getServer().getOnlinePlayers().forEach(p -> {
+        for (final Player player : plugin.getServer().getOnlinePlayers()) {
             try {
-                for (Entity nearby : p.getNearbyEntities(0.1, 0.1, 0.1)) {
+                for (final Entity nearby : player.getNearbyEntities(0.1, 0.1, 0.1)) {
                     if (nearby instanceof ArmorStand) {
-                        final ArmorStand as = (ArmorStand) nearby;
-                        if (as.isCustomNameVisible() && as.getCustomName() != null && (plugin.getSM().getKitManager().exists(as.getCustomName()) || plugin.getSM().getSpawnManager().exists(as.getCustomName()))) {
-                            Vector vector = nearby.getLocation().toVector().subtract(p.getLocation().toVector()).normalize().multiply(-0.5);
-                            p.setVelocity(vector);
+                        if (plugin.getSM().getKitManager().exists(nearby.getCustomName()) || plugin.getSM().getSpawnManager().exists(nearby.getCustomName())) {
+                            player.setVelocity(nearby.getLocation().toVector().subtract(player.getLocation().toVector()).normalize().multiply(-0.5));
                         }
                     }
                 }
             } catch (Exception ignored) {
             }
-        });
+        }
     }
 
 }

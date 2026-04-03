@@ -39,7 +39,7 @@ public class LocalNpcListener extends PacketAdapter implements Listener {
 
         final PacketContainer packet = event.getPacket();
 
-        int entityId = packet.getIntegers().read(0);
+        final int entityId = packet.getIntegers().read(0);
         boolean leftClick;
         if (plugin.parseVersion() < 8) {
             Object handle = packet.getHandle();
@@ -61,11 +61,10 @@ public class LocalNpcListener extends PacketAdapter implements Listener {
                 leftClick = packet.getSpecificModifier(Enum.class).read(0).name().equals("ATTACK");
             }
 
-        for (FakeNpc npc : npcManager.getNpcs().values()) {
-            if (npc.getEntityId() == entityId) {
-                boolean finalLeftClick = leftClick;
-                Tasks.runSync(() -> npcManager.trigger(null, npc.getProfile().getName(), plugin.getSM().getUserManager().getUser(player), finalLeftClick));
-            }
+        final FakeNpc npc = npcManager.getNpcs().get(entityId);
+        if (npc != null) {
+            boolean finalLeftClick = leftClick;
+            Tasks.runSync(() -> npcManager.trigger(null, npc.getProfile().getName(), plugin.getSM().getUserManager().getUser(player), finalLeftClick));
         }
     }
 

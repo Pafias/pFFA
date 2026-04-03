@@ -7,16 +7,18 @@ import me.pafias.pffa.objects.Spawn;
 import me.pafias.pffa.pFFA;
 import me.pafias.pffa.util.Serializer;
 import me.pafias.putils.LCC;
+import me.pafias.putils.Tasks;
 import org.bukkit.Location;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Predicate;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 public class SpawnManager {
 
@@ -25,6 +27,22 @@ public class SpawnManager {
     public SpawnManager(pFFA plugin) {
         this.plugin = plugin;
         loadSpawns();
+
+        // Nearby players update task
+        final Predicate<Player> predicate = p -> !plugin.getSM().getUserManager().getUser(p).isInSpawn();
+        Tasks.runRepeatingSync(60, 60, () -> {
+            for (final Spawn spawn : spawns.values()) {
+                final Collection<Entity> nearbyEntities = spawn.getLocation().getWorld().getNearbyEntities(spawn.getLocation(), spawn.getPlayerDetectionRadius(), spawn.getPlayerDetectionRadius(), spawn.getPlayerDetectionRadius());
+                spawn.setNearbyPlayers(
+                        nearbyEntities
+                                .stream()
+                                .filter(e -> e instanceof Player)
+                                .map(e -> (Player) e)
+                                .filter(predicate)
+                                .collect(Collectors.toList())
+                );
+            }
+        });
     }
 
     @Getter
@@ -39,27 +57,38 @@ public class SpawnManager {
     public Map<String, Spawn> getSpawns(@Nullable Player player) {
         if (player == null)
             return spawns;
-        return spawns.entrySet().stream()
-                .filter(entry -> !entry.getValue().hasPermission() || player.hasPermission(entry.getValue().getPermission()))
-                .collect(LinkedHashMap::new, (map, entry) -> map.put(entry.getKey(), entry.getValue()), LinkedHashMap::putAll);
+
+        Map<String, Spawn> spawnsMap = new HashMap<>(spawns.size());
+        for (Map.Entry<String, Spawn> entry : spawns.entrySet()) {
+            final Spawn spawn = entry.getValue();
+            if (!spawn.hasPermission() || player.hasPermission(spawn.getPermission()))
+                spawnsMap.put(entry.getKey(), spawn);
+        }
+        return spawnsMap;
     }
 
     public boolean exists(String name) {
-        boolean found = spawns.containsKey(name.toLowerCase());
-        if (!found)
-            found = spawns.keySet().stream().anyMatch(n -> name.toLowerCase().contains(n.toLowerCase()));
-        return found;
+        if (spawns.containsKey(name.toLowerCase()))
+            return true;
+        for (String spawnName : spawns.keySet()) {
+            if (name.toLowerCase().contains(spawnName.toLowerCase()))
+                return true;
+        }
+        return false;
     }
 
     public Spawn getSpawn(String name) {
         Spawn spawn = spawns.get(name.toLowerCase());
         if (spawn == null)
-            spawn = spawns.values().stream().filter(s -> name.toLowerCase().contains(s.getName().toLowerCase())).findAny().orElse(null);
+            for (Map.Entry<String, Spawn> entry : spawns.entrySet()) {
+                if (name.toLowerCase().contains(entry.getKey().toLowerCase()))
+                    spawn = entry.getValue();
+            }
         return spawn;
     }
 
     public Spawn getDefaultSpawn() {
-        return spawns.values().stream().findFirst().orElse(null);
+        return spawns.isEmpty() ? null : spawns.values().iterator().next();
     }
 
     public void saveNewSpawn(Player player, String name, String permission) throws IOException {
@@ -90,7 +119,7 @@ public class SpawnManager {
             Location location = Serializer.jsonToLocation(json.get("location").getAsJsonObject());
             double playerDetectionRadius = json.has("player_detection_radius") ?
                     json.get("player_detection_radius").getAsDouble() : 20;
-            Spawn spawn = new Spawn(name, permission, gui_item, location, playerDetectionRadius);
+            Spawn spawn = new Spawn(name, permission, gui_item, location, playerDetectionRadius, new HashSet<>());
             spawns.put(name.toLowerCase(), spawn);
             return spawn;
         } catch (IOException ex) {

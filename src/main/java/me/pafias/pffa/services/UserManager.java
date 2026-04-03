@@ -45,10 +45,11 @@ public class UserManager {
     }
 
     public User getUser(String name) {
-        return users.values()
-                .stream()
-                .filter(user -> user.getName().equalsIgnoreCase(name) || user.getName().toLowerCase().startsWith(name.toLowerCase()))
-                .findFirst().orElse(null);
+        for (User user : users.values()) {
+            if (user.getName().equalsIgnoreCase(name) || user.getName().toLowerCase().startsWith(name.toLowerCase()))
+                return user;
+        }
+        return null;
     }
 
     private final Map<UUID, CompletableFuture<UserData>> preloadedData = new ConcurrentHashMap<>();
@@ -153,9 +154,9 @@ public class UserManager {
         saveAllSync();
         executor.shutdown();
         try {
-            if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+            if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
                 executor.shutdownNow();
-                if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+                if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
                     plugin.getLogger().severe("UserManager executor did not terminate.");
                 }
             }

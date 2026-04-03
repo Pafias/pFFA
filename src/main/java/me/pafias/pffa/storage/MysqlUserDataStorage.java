@@ -1,6 +1,7 @@
 package me.pafias.pffa.storage;
 
 import com.zaxxer.hikari.HikariDataSource;
+import me.pafias.pffa.commands.subcommands.LeaderboardCommand;
 import me.pafias.pffa.objects.FfaData;
 import me.pafias.pffa.objects.UserData;
 
@@ -8,6 +9,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 public class MysqlUserDataStorage implements UserDataStorage {
@@ -75,4 +79,30 @@ public class MysqlUserDataStorage implements UserDataStorage {
             e.printStackTrace();
         }
     }
+
+    @Override
+    public List<UserData> getTopStatistic(LeaderboardCommand.Statistic statistic, int resultLimit) {
+        if (statistic == null || resultLimit <= 0)
+            return Collections.emptyList();
+
+        final List<UserData> list = new ArrayList<>();
+        try (final Connection connection = dataSource.getConnection()) {
+            final String query = "SELECT * FROM ffa ORDER BY " + statistic.getDbColumnName() + " DESC LIMIT " + resultLimit + ";";
+            final PreparedStatement statement = connection.prepareStatement(query);
+
+            final ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                final UUID uuid = UUID.fromString(resultSet.getString("uuid"));
+                final int kills = resultSet.getInt("kills");
+                final int deaths = resultSet.getInt("deaths");
+                final int killstreak = resultSet.getInt("killstreak");
+
+                list.add(new UserData(false, uuid, new FfaData(kills, deaths, killstreak)));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+    
 }

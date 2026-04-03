@@ -4,17 +4,17 @@ import me.pafias.pffa.listeners.ArmorstandListener;
 import me.pafias.pffa.objects.Kit;
 import me.pafias.pffa.objects.Spawn;
 import me.pafias.pffa.objects.User;
-import me.pafias.pffa.objects.gui.KitMenu;
-import me.pafias.pffa.objects.gui.SpawnMenu;
 import me.pafias.pffa.pFFA;
 import org.bukkit.entity.ArmorStand;
 
 public class ArmorstandManager {
 
     private final pFFA plugin;
+    private final GuiManager guiManager;
 
-    public ArmorstandManager(pFFA plugin) {
+    public ArmorstandManager(pFFA plugin, GuiManager guiManager) {
         this.plugin = plugin;
+        this.guiManager = guiManager;
         plugin.getServer().getPluginManager().registerEvents(new ArmorstandListener(plugin, this), plugin);
     }
 
@@ -23,8 +23,7 @@ public class ArmorstandManager {
             // Clicked on Kit armorstand
             final Kit kit = plugin.getSM().getKitManager().getKit(as.getCustomName());
             if (!leftclick) {
-                new SpawnMenu(user, kit, plugin.getSM().getSpawnManager().getSpawns(user.getPlayer()).values())
-                        .open();
+                guiManager.openSpawnGui(user, kit);
             } else {
                 kit.give(user.getPlayer());
                 final Spawn spawn = plugin.getSM().getSpawnManager().getDefaultSpawn();
@@ -37,8 +36,7 @@ public class ArmorstandManager {
             // Clicked on Spawn armorstand
             final Spawn spawn = plugin.getSM().getSpawnManager().getSpawn(as.getCustomName());
             if (!leftclick) {
-                new KitMenu(user, spawn, plugin.getSM().getKitManager().getKits(user.getPlayer()).values())
-                        .open();
+                guiManager.openKitGui(user, spawn);
             } else {
                 final Kit kit = plugin.getSM().getKitManager().getDefaultKit();
                 kit.give(user.getPlayer());

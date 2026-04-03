@@ -104,9 +104,21 @@ public class ServicesManager {
             return;
         }
 
+        // Gui manager initialization
+        try {
+            plugin.getLogger().info("Loading GUI Manager...");
+            guiManager = new GuiManager(plugin, kitManager, spawnManager);
+            plugin.getLogger().info("GUI Manager loaded.");
+        } catch (Exception ex) {
+            plugin.getLogger().severe("Failed to initialize the GuiManager. Disabling plugin.");
+            ex.printStackTrace();
+            plugin.getServer().getPluginManager().disablePlugin(plugin);
+            return;
+        }
+
         // Armorstand manager initialization; simple constructor, should never fail
         plugin.getLogger().info("Loading Armorstand Manager...");
-        armorstandManager = new ArmorstandManager(plugin);
+        armorstandManager = new ArmorstandManager(plugin, guiManager);
         plugin.getLogger().info("Armorstand Manager loaded.");
 
         // NPC Manager initialization
@@ -117,7 +129,7 @@ public class ServicesManager {
                 plugin.getLogger().info("Citizens NPC Manager loaded.");
             } else if (plugin.parseVersion() < 8 || plugin.getServer().getPluginManager().isPluginEnabled("ProtocolLib")) {
                 plugin.getLogger().info("Loading Local NPC Manager...");
-                npcManager = new LocalNpcManager(plugin, kitManager, spawnManager);
+                npcManager = new LocalNpcManager(plugin, kitManager, spawnManager, guiManager);
                 plugin.getLogger().info("Local NPC Manager loaded.");
             } else {
                 npcManager = null;
@@ -162,6 +174,15 @@ public class ServicesManager {
                 userManager.shutdown();
             } catch (Exception e) {
                 plugin.getLogger().severe("Failed to shutdown User Manager:");
+                e.printStackTrace();
+            }
+        }
+        if (guiManager != null) {
+            plugin.getLogger().info("Shutting down GUI Manager...");
+            try {
+                guiManager.shutdown();
+            } catch (Exception e) {
+                plugin.getLogger().severe("Failed to shutdown GUI Manager:");
                 e.printStackTrace();
             }
         }
@@ -221,6 +242,7 @@ public class ServicesManager {
     private UserManager userManager;
     private KitManager kitManager;
     private SpawnManager spawnManager;
+    private GuiManager guiManager;
     private ArmorstandManager armorstandManager;
     private NpcManager npcManager;
     private CombatLogManager combatLogManager;

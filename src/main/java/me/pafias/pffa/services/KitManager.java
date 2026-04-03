@@ -41,26 +41,37 @@ public class KitManager {
     public Map<String, Kit> getKits(@Nullable Player player) {
         if (player == null)
             return kits;
-        return kits.entrySet().stream()
-                .filter(entry -> !entry.getValue().hasPermission() || player.hasPermission(entry.getValue().getPermission()))
-                .collect(LinkedHashMap::new, (map, entry) -> map.put(entry.getKey(), entry.getValue()), LinkedHashMap::putAll);
+
+        Map<String, Kit> kitsMap = new HashMap<>(kits.size());
+        for (Map.Entry<String, Kit> entry : kits.entrySet()) {
+            final Kit kit = entry.getValue();
+            if (!kit.hasPermission() || player.hasPermission(kit.getPermission()))
+                kitsMap.put(entry.getKey(), kit);
+        }
+        return kitsMap;
     }
 
     public boolean exists(String name) {
-        boolean found = kits.containsKey(name.toLowerCase());
-        if (!found)
-            found = kits.keySet().stream().anyMatch(n -> name.toLowerCase().contains(n.toLowerCase()));
-        return found;
+        if (kits.containsKey(name.toLowerCase()))
+            return true;
+        for (String kitName : kits.keySet()) {
+            if (name.toLowerCase().contains(kitName.toLowerCase()))
+                return true;
+        }
+        return false;
     }
 
     public Kit getDefaultKit() {
-        return kits.values().stream().findFirst().orElse(null);
+        return kits.isEmpty() ? null : kits.values().iterator().next();
     }
 
     public Kit getKit(String name) {
         Kit kit = kits.get(name.toLowerCase());
         if (kit == null)
-            kit = kits.values().stream().filter(k -> name.toLowerCase().contains(k.getName().toLowerCase())).findAny().orElse(null);
+            for (Map.Entry<String, Kit> entry : kits.entrySet()) {
+                if (name.toLowerCase().contains(entry.getKey().toLowerCase()))
+                    kit = entry.getValue();
+            }
         return kit;
     }
 

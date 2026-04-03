@@ -14,6 +14,7 @@ import me.pafias.pffa.objects.User;
 import me.pafias.pffa.objects.gui.KitMenu;
 import me.pafias.pffa.objects.gui.SpawnMenu;
 import me.pafias.pffa.pFFA;
+import me.pafias.pffa.services.GuiManager;
 import me.pafias.pffa.services.KitManager;
 import me.pafias.pffa.services.SpawnManager;
 import me.pafias.pffa.util.Serializer;
@@ -41,6 +42,7 @@ public class LocalNpcManager implements NpcManager {
     private final pFFA plugin;
     private final KitManager kitManager;
     private final SpawnManager spawnManager;
+    private final GuiManager guiManager;
 
     private LocalNpcListener listener;
     private VisibilityTask visibilityTask;
@@ -48,10 +50,11 @@ public class LocalNpcManager implements NpcManager {
 
     private final ExecutorService executor;
 
-    public LocalNpcManager(pFFA plugin, KitManager kitManager, SpawnManager spawnManager) throws Exception {
+    public LocalNpcManager(pFFA plugin, KitManager kitManager, SpawnManager spawnManager, GuiManager guiManager) throws Exception {
         this.plugin = plugin;
         this.kitManager = kitManager;
         this.spawnManager = spawnManager;
+        this.guiManager = guiManager;
 
         this.executor = Executors.newFixedThreadPool(2, new ThreadFactoryBuilder().setNameFormat("pFFA-LocalNpcManager-%d").build());
 
@@ -112,14 +115,14 @@ public class LocalNpcManager implements NpcManager {
     private final File file;
     private final FileConfiguration config;
     @Getter
-    private final Map<UUID, FakeNpc> npcs = new ConcurrentHashMap<>();
+    private final Map<Integer, FakeNpc> npcs = new ConcurrentHashMap<>();
 
     /**
      * Creates a new NPC with the proper name and skin.
      */
     @Override
     public void createNpc(String npcName, String npcSkinPlayerName, Location location, @Nullable Kit kit) {
-        final OfflinePlayer skinPlayer = BukkitPlayerManager.getOfflinePlayerByName(npcSkinPlayerName);
+        final OfflinePlayer skinPlayer = BukkitPlayerManager.getOfflinePlayerByName(npcSkinPlayerName, false);
         final GameProfile skinProfile = new GameProfile(new GameProfileBuilder()
                 .setUuid(skinPlayer.getUniqueId())
                 .setName(skinPlayer.getName())
@@ -152,7 +155,7 @@ public class LocalNpcManager implements NpcManager {
      */
     public void createNpc(GameProfile profile, String nametag, Location location, @Nullable Kit kit, boolean save) {
         final FakeNpc npc = new FakeNpc(executor, packetHandler, packetHandler.getNextEntityId(), profile, nametag, location, kit);
-        npcs.put(npc.getProfile().getId(), npc);
+        npcs.put(npc.getEntityId(), npc);
 
         if (save) {
             config.set(npc.getProfile().getId().toString() + ".name", npc.getProfile().getName());
@@ -186,7 +189,7 @@ public class LocalNpcManager implements NpcManager {
         if (possibleNpcs.isEmpty()) throw new IllegalArgumentException("No NPC found near the specified location.");
         final FakeNpc npc = possibleNpcs.get(0);
         npc.destroyForAll();
-        npcs.remove(npc.getProfile().getId());
+        npcs.remove(npc.getEntityId());
 
         config.set(npc.getProfile().getId().toString(), null);
         try {
@@ -203,12 +206,12 @@ public class LocalNpcManager implements NpcManager {
             // Clicked on Kit npc
             final Kit kit = kitManager.getKit(entityName);
             if (!leftClick) {
-                new SpawnMenu(user, kit, spawnManager.getSpawns(user.getPlayer()).values())
-                        .open();
+                guiManager.openSpawnGui(user, kit);
             } else {
                 kit.give(user.getPlayer());
                 spawnManager.getDefaultSpawn().teleport(user.getPlayer());
                 user.heal(false);
+                user.setLastSpawn(spawnManager.getDefaultSpawn());
             }
             user.setLastKit(kit);
             return true;
@@ -216,12 +219,12 @@ public class LocalNpcManager implements NpcManager {
             // Clicked on Spawn npc
             final Spawn spawn = spawnManager.getSpawn(entityName);
             if (!leftClick) {
-                new KitMenu(user, spawn, kitManager.getKits(user.getPlayer()).values())
-                        .open();
+                guiManager.openKitGui(user, spawn);
             } else {
                 kitManager.getDefaultKit().give(user.getPlayer());
-                user.heal(false);
                 spawn.teleport(user.getPlayer());
+                user.heal(false);
+                user.setLastKit(kitManager.getDefaultKit());
             }
             user.setLastSpawn(spawn);
             return true;

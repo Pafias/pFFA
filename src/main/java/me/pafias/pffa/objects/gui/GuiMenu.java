@@ -54,11 +54,6 @@ public abstract class GuiMenu implements Listener {
         player.openInventory(inventory);
     }
 
-    public void update() {
-        close();
-        open();
-    }
-
     public void close() {
         if (player.getOpenInventory() != null && player.getOpenInventory().getTopInventory() == inventory)
             player.closeInventory();

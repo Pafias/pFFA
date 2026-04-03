@@ -1,5 +1,7 @@
 package me.pafias.pffa.objects.gui;
 
+import lombok.Getter;
+import lombok.Setter;
 import me.pafias.pffa.objects.Kit;
 import me.pafias.pffa.objects.Spawn;
 import me.pafias.pffa.objects.User;
@@ -15,7 +17,9 @@ import java.util.Map;
 public class KitMenu extends GuiMenu {
 
     private final User user;
-    private final Spawn spawn;
+    @Getter
+    @Setter
+    private Spawn spawn;
 
     public KitMenu(User user, Spawn spawn, Collection<Kit> kits) {
         super(user.getPlayer(), LCC.t("&6Kit selection"), InventoryUtils.parseSizeToInvSize(kits.size()));
@@ -23,8 +27,13 @@ public class KitMenu extends GuiMenu {
         this.user = user;
         this.spawn = spawn;
 
+        update(kits);
+    }
+
+    public void update(final Collection<Kit> kits) {
+        getInventory().clear();
         int slot = 0;
-        for (Kit kit : kits) {
+        for (final Kit kit : kits) {
             mapping.put(slot, kit);
             getInventory().setItem(slot, kit.getGuiItem());
             slot++;
@@ -44,6 +53,11 @@ public class KitMenu extends GuiMenu {
             setCloseOnClick(false);
             return;
         }
+        if (kit.hasPermission() && !player.hasPermission(kit.getPermission())) {
+            player.sendMessage(LCC.t("&cYou don't have permission to use this kit!"));
+            setCloseOnClick(false);
+            return;
+        }
         user.heal(false);
         kit.give(user.getPlayer());
         if (spawn != null)
@@ -51,5 +65,6 @@ public class KitMenu extends GuiMenu {
         user.setLastSpawn(spawn);
         user.setLastKit(kit);
     }
+
 
 }

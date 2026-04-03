@@ -9,7 +9,6 @@ import me.pafias.putils.builders.LegacyItemBuilder;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
@@ -80,7 +79,7 @@ public class DeathListener implements Listener {
 
     private final boolean healKillerOnDeath;
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler
     public void onDeath(PlayerDeathEvent event) {
         if (!ffaWorlds.contains(event.getEntity().getLocation().getWorld().getName()))
             return;
@@ -113,6 +112,8 @@ public class DeathListener implements Listener {
             if (killer != null) {
                 killer.addKill();
                 handleKillstreakBroadcast(killer);
+                if (killer.getLastKit() != null)
+                    killer.getLastKit().give(killer.getPlayer());
             }
         }
     }
@@ -121,7 +122,7 @@ public class DeathListener implements Listener {
     private String quickRespawnPermission;
     private ItemStack quickRespawnItem = null;
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler
     public void onRespawn(PlayerRespawnEvent event) {
         if (!ffaWorlds.contains(event.getPlayer().getLocation().getWorld().getName()))
             return;

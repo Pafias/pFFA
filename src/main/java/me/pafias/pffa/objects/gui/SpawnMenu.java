@@ -1,5 +1,7 @@
 package me.pafias.pffa.objects.gui;
 
+import lombok.Getter;
+import lombok.Setter;
 import me.pafias.pffa.objects.Kit;
 import me.pafias.pffa.objects.Spawn;
 import me.pafias.pffa.objects.User;
@@ -20,7 +22,9 @@ import java.util.stream.Collectors;
 public class SpawnMenu extends GuiMenu {
 
     private final User user;
-    private final Kit kit;
+    @Getter
+    @Setter
+    private Kit kit;
 
     public SpawnMenu(User user, Kit kit, Collection<Spawn> spawns) {
         super(user.getPlayer(), LCC.t("&6Spawn selection"), InventoryUtils.parseSizeToInvSize(spawns.size()));
@@ -28,6 +32,11 @@ public class SpawnMenu extends GuiMenu {
         this.user = user;
         this.kit = kit;
 
+        update(spawns);
+    }
+
+    public void update(final Collection<Spawn> spawns) {
+        getInventory().clear();
         int slot = 0;
         for (final Spawn spawn : spawns) {
             final ItemStack guiItem = spawn.getGuiItem().clone();
@@ -71,6 +80,11 @@ public class SpawnMenu extends GuiMenu {
         }
         final Spawn spawn = mapping.get(slot);
         if (spawn == null) {
+            setCloseOnClick(false);
+            return;
+        }
+        if (spawn.hasPermission() && !player.hasPermission(spawn.getPermission())) {
+            player.sendMessage(LCC.t("&cYou don't have permission to spawn here!"));
             setCloseOnClick(false);
             return;
         }
