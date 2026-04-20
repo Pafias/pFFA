@@ -11,11 +11,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.bukkit.event.EventPriority.*;
 
@@ -35,26 +33,40 @@ public class CombatLogManager implements Listener {
 
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
 
+        logoutBroadcast = combatlog.getString("logout_broadcast");
+        combatLogDurationInSeconds = combatlog.getInt("duration");
+        attackerMessage = combatlog.getString("attacker_message");
+        if (attackerMessage == null || attackerMessage.isEmpty()) attackerMessage = null;
+        victimMessage = combatlog.getString("victim_message");
+        if (victimMessage == null || victimMessage.isEmpty()) victimMessage = null;
+
+
+        final String actionBarString = combatlog.getString("display.action_bar");
+        @Nullable final Component actionBar = actionBarString != null && !actionBarString.isEmpty()
+                ? CC.a(actionBarString)
+                : null;
+        final boolean displayLevel = combatlog.getBoolean("display.level");
+        final boolean displayExpbar = combatlog.getBoolean("display.exp_bar");
         Tasks.runRepeatingSync(2, 10, () -> {
             for (final Iterator<CombatLog> iterator = combatLogs.iterator(); iterator.hasNext(); ) {
                 final CombatLog combatLog = iterator.next();
 
                 if (combatLog.isExpired()) {
                     iterator.remove();
-                    endCombat(combatLog);
+                    endCombat(combatLog, false);
                     continue;
                 }
 
                 final int secondsLeft = combatLog.getTimeLeftSeconds() + 1;
-                combatLog.getPlayers().forEach(player -> {
-                    final String actionBar = combatlog.getString("display.action_bar");
-                    if (actionBar != null && !actionBar.isEmpty())
-                        player.sendActionBar(CC.a(actionBar));
-                    if (combatlog.getBoolean("display.level"))
+                final float timeLeft = Math.min(1.0f, Math.max(0.0f, secondsLeft / (float) combatLog.getDurationSeconds()));
+                for (Player player : combatLog.getPlayers()) {
+                    if (actionBar != null)
+                        player.sendActionBar(actionBar);
+                    if (displayLevel)
                         player.setLevel(secondsLeft);
-                    if (combatlog.getBoolean("display.exp_bar"))
-                        player.setExp(Math.min(1.0f, Math.max(0.0f, secondsLeft / (float) combatLog.getDurationSeconds())));
-                });
+                    if (displayExpbar)
+                        player.setExp(timeLeft);
+                }
             }
         });
     }
@@ -77,6 +89,8 @@ public class CombatLogManager implements Listener {
         getCombatLogs(event.getEntity()).forEach(this::endCombat);
     }
 
+    private String logoutBroadcast;
+
     @EventHandler(priority = LOW)
     public void onPlayerQuit(PlayerQuitEvent event) {
         if (!ffaWorlds.contains(event.getPlayer().getWorld().getName())) return;
@@ -86,7 +100,6 @@ public class CombatLogManager implements Listener {
             final Player other = combatLog.getAttacker().equals(player) ? combatLog.getVictim() : combatLog.getAttacker();
             player.setKiller(other);
             player.setHealth(0);
-            final String logoutBroadcast = plugin.getConfig().getString("combatlog.logout_broadcast");
             if (logoutBroadcast != null && !logoutBroadcast.isEmpty())
                 plugin.getServer().broadcast(CC.af(logoutBroadcast, player.getName()));
         }
@@ -94,28 +107,35 @@ public class CombatLogManager implements Listener {
     }
 
     private final List<CombatLog> combatLogs = new ArrayList<>();
+    private final Map<UUID, List<CombatLog>> playerMap = new HashMap<>();
+
+    private int combatLogDurationInSeconds;
+    private String attackerMessage, victimMessage;
 
     private void startCombat(Player attacker, Player victim) {
         final CombatLog combatLog = getCombatLog(attacker, victim);
-        int combatLogDurationInSeconds = plugin.getConfig().getInt("combatlog.duration");
         if (combatLog == null) {
-            if (getCombatLogs(attacker).isEmpty()) {
-                final String message = plugin.getConfig().getString("combatlog.attacker_message");
-                if (message != null && !message.isEmpty())
-                    attacker.sendMessage(CC.af(message, victim.getName()));
-            }
-            if (getCombatLogs(victim).isEmpty()) {
-                final String message = plugin.getConfig().getString("combatlog.victim_message");
-                if (message != null && !message.isEmpty())
-                    victim.sendMessage(CC.af(message, attacker.getName()));
-            }
-            combatLogs.add(new CombatLog(attacker, victim, combatLogDurationInSeconds));
+            if (!isInCombat(attacker) && attackerMessage != null)
+                attacker.sendMessage(CC.af(attackerMessage, victim.getName()));
+            if (!isInCombat(victim) && victimMessage != null)
+                victim.sendMessage(CC.af(victimMessage, attacker.getName()));
+
+            final CombatLog log = new CombatLog(attacker, victim, combatLogDurationInSeconds);
+            combatLogs.add(log);
+            indexCombatLog(log);
         } else
             combatLog.reset(combatLogDurationInSeconds);
     }
 
     private void endCombat(CombatLog combatLog) {
-        combatLogs.remove(combatLog);
+        endCombat(combatLog, true);
+    }
+
+    private void endCombat(CombatLog combatLog, boolean removeFromCombatLogs) {
+        if (removeFromCombatLogs)
+            combatLogs.remove(combatLog);
+        unindexCombatLog(combatLog);
+
         for (final Player player : combatLog.getPlayers()) {
             player.sendActionBar(Component.empty());
             player.setLevel(0);
@@ -124,31 +144,47 @@ public class CombatLogManager implements Listener {
         }
     }
 
+    private void indexCombatLog(CombatLog combatLog) {
+        for (final Player player : combatLog.getPlayers()) {
+            playerMap.computeIfAbsent(player.getUniqueId(), ignored -> new ArrayList<>()).add(combatLog);
+        }
+    }
+
+    private void unindexCombatLog(CombatLog combatLog) {
+        for (final Player player : combatLog.getPlayers()) {
+            final List<CombatLog> logs = playerMap.get(player.getUniqueId());
+            if (logs == null) continue;
+            logs.remove(combatLog);
+            if (logs.isEmpty()) playerMap.remove(player.getUniqueId());
+        }
+    }
+
     public boolean isInCombat(Player player) {
-        return !getCombatLogs(player).isEmpty();
+        final List<CombatLog> logs = playerMap.get(player.getUniqueId());
+        return logs != null && !logs.isEmpty();
     }
 
     public List<CombatLog> getCombatLogs(Player player) {
-        final List<CombatLog> list = new ArrayList<>();
-        for (final CombatLog combatLog : combatLogs) {
-            if (combatLog.getPlayers().contains(player)) {
-                list.add(combatLog);
-            }
-        }
-        return list;
+        final List<CombatLog> logs = playerMap.get(player.getUniqueId());
+        return logs != null ? new ArrayList<>(logs) : new ArrayList<>();
     }
 
     public CombatLog getLastCombatLog(Player player) {
-        final List<CombatLog> list = getCombatLogs(player);
-        if (list.isEmpty()) return null;
-        return list.getLast();
+        final List<CombatLog> logs = playerMap.get(player.getUniqueId());
+        if (logs == null || logs.isEmpty()) return null;
+        return logs.getLast();
     }
 
     public CombatLog getCombatLog(Player player1, Player player2) {
-        for (final CombatLog combatLog : combatLogs) {
-            if (combatLog.getPlayers().contains(player1) && combatLog.getPlayers().contains(player2))
-                return combatLog;
+        final List<CombatLog> logs = playerMap.get(player1.getUniqueId());
+        if (logs == null) return null;
+
+        for (final CombatLog log : logs) {
+            if (log.getAttacker() == player2 || log.getVictim() == player2) {
+                return log;
+            }
         }
+
         return null;
     }
 

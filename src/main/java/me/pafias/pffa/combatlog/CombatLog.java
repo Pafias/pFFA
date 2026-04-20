@@ -1,6 +1,5 @@
 package me.pafias.pffa.combatlog;
 
-import com.google.common.collect.ImmutableList;
 import lombok.Getter;
 import org.bukkit.entity.Player;
 
@@ -27,7 +26,7 @@ public class CombatLog {
     }
 
     public List<Player> getPlayers() {
-        return ImmutableList.of(attacker, victim);
+        return List.of(attacker, victim);
     }
 
     public boolean isExpired() {
