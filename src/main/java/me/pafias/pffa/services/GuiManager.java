@@ -1,5 +1,7 @@
 package me.pafias.pffa.services;
 
+import it.unimi.dsi.fastutil.objects.Object2LongArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import me.pafias.pffa.objects.Kit;
 import me.pafias.pffa.objects.Spawn;
 import me.pafias.pffa.objects.User;
@@ -28,9 +30,10 @@ public class GuiManager implements Listener {
 
         kitInvCache = new ConcurrentHashMap<>();
         spawnInvCache = new ConcurrentHashMap<>();
+        rateLimitCache = new Object2LongArrayMap<>();
 
         // Task to periodically update the GUIs
-        Tasks.runRepeatingAsync(150, 150, () -> {
+        Tasks.runRepeatingAsync(60, 200, () -> {
             for (Map.Entry<Player, SpawnMenu> entry : spawnInvCache.entrySet()) {
                 final Player player = entry.getKey();
                 final SpawnMenu spawnMenu = entry.getValue();
@@ -48,8 +51,20 @@ public class GuiManager implements Listener {
 
     private final Map<Player, KitMenu> kitInvCache;
     private final Map<Player, SpawnMenu> spawnInvCache;
+    private final Object2LongMap<Player> rateLimitCache;
+
+    public boolean isRateLimited(Player player) {
+        final long now = System.currentTimeMillis();
+        final long lastOpen = rateLimitCache.getOrDefault(player, 0L);
+        if (now - lastOpen < 2000) // 2 seconds
+            return true;
+        rateLimitCache.put(player, now);
+        return false;
+    }
 
     public void openKitGui(User user, Spawn spawn) {
+        if (isRateLimited(user.getPlayer()))
+            return;
         KitMenu kitMenu = kitInvCache.get(user.getPlayer());
         if (kitMenu == null) {
             kitMenu = new KitMenu(user, spawn, kitManager.getKits(user.getPlayer()).values());
@@ -60,6 +75,8 @@ public class GuiManager implements Listener {
     }
 
     public void openSpawnGui(User user, Kit kit) {
+        if (isRateLimited(user.getPlayer()))
+            return;
         SpawnMenu spawnMenu = spawnInvCache.get(user.getPlayer());
         if (spawnMenu == null) {
             spawnMenu = new SpawnMenu(user, kit, spawnManager.getSpawns(user.getPlayer()).values());
@@ -73,16 +90,18 @@ public class GuiManager implements Listener {
     public void onQuit(PlayerQuitEvent event) {
         kitInvCache.remove(event.getPlayer());
         spawnInvCache.remove(event.getPlayer());
+        rateLimitCache.remove(event.getPlayer());
     }
 
     public void shutdown() {
         for (final Player player : Bukkit.getOnlinePlayers()) {
             final Inventory inventory = player.getOpenInventory().getTopInventory();
-            if (inventory instanceof KitMenu || inventory instanceof SpawnMenu)
+            if (inventory.getHolder() instanceof KitMenu || inventory.getHolder() instanceof SpawnMenu)
                 player.closeInventory();
         }
         kitInvCache.clear();
         spawnInvCache.clear();
+        rateLimitCache.clear();
     }
 
 }

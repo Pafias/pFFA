@@ -19,28 +19,23 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.*;
 
-import java.util.Set;
-
 public class ProtectionListener implements Listener {
 
     private final pFFA plugin;
 
     public ProtectionListener(pFFA plugin) {
         this.plugin = plugin;
-        this.ffaWorlds = Set.copyOf(plugin.getConfig().getStringList("ffa_worlds"));
     }
-
-    private final Set<String> ffaWorlds;
 
     @EventHandler(ignoreCancelled = true)
     public void onItem(PlayerItemDamageEvent event) {
-        if (!ffaWorlds.contains(event.getPlayer().getWorld().getName())) return;
+        if (!plugin.getFfaWorlds().contains(event.getPlayer().getWorld().getName())) return;
         event.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onHunger(FoodLevelChangeEvent event) {
-        if (!ffaWorlds.contains(event.getEntity().getWorld().getName())) return;
+        if (!plugin.getFfaWorlds().contains(event.getEntity().getWorld().getName())) return;
         event.setFoodLevel(20);
     }
 
@@ -72,7 +67,7 @@ public class ProtectionListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onDamage(EntityDamageEvent event) {
         if (!(event.getEntity() instanceof Player player)) return;
-        if (!ffaWorlds.contains(player.getWorld().getName())) return;
+        if (!plugin.getFfaWorlds().contains(player.getWorld().getName())) return;
         final User user = plugin.getSM().getUserManager().getUser(player);
         if (user == null) return;
         if (user.isInSpawn()) event.setCancelled(true);
@@ -80,9 +75,9 @@ public class ProtectionListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onFish(PlayerFishEvent event) {
-        if(event.getHook().getHookedEntity() == null) return;
+        if (event.getHook().getHookedEntity() == null) return;
         if (event.getHook().getHookedEntity().getType() != EntityType.ARMOR_STAND) return;
-        if (!ffaWorlds.contains(event.getPlayer().getWorld().getName())) return;
+        if (!plugin.getFfaWorlds().contains(event.getPlayer().getWorld().getName())) return;
         event.getHook().setHookedEntity(event.getPlayer());
     }
 
@@ -156,7 +151,7 @@ public class ProtectionListener implements Listener {
         if (event.getClickedInventory() == null) return;
         if (event.getView().getTopInventory().getType() != InventoryType.PLAYER && event.getView().getTopInventory().getType() != InventoryType.CRAFTING) {
             final Player player = (Player) event.getWhoClicked();
-            if (!ffaWorlds.contains(player.getWorld().getName())) return;
+            if (!plugin.getFfaWorlds().contains(player.getWorld().getName())) return;
             if (player.getGameMode().equals(GameMode.CREATIVE) && plugin.getConfig().getBoolean("world_protection.bypass_with_gm_creative"))
                 return;
             event.setCancelled(true);

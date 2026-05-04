@@ -24,6 +24,7 @@ public class SpawnManager {
 
     public SpawnManager(pFFA plugin) {
         this.plugin = plugin;
+        spawns = new LinkedHashMap<>();
         loadSpawns();
 
         showUnallowedSpawns = plugin.getConfig().getBoolean("guis.show_unallowed_spawns", false);
@@ -39,7 +40,7 @@ public class SpawnManager {
     private final boolean showUnallowedSpawns;
 
     @Getter
-    private final LinkedHashMap<String, Spawn> spawns = new LinkedHashMap<>();
+    private final LinkedHashMap<String, Spawn> spawns;
 
     /**
      * Get all spawns that the player has permission to.
@@ -61,20 +62,22 @@ public class SpawnManager {
     }
 
     public boolean exists(String name) {
-        if (spawns.containsKey(name.toLowerCase()))
+        final String nameLower = name.toLowerCase();
+        if (spawns.containsKey(nameLower))
             return true;
         for (String spawnName : spawns.keySet()) {
-            if (name.toLowerCase().contains(spawnName.toLowerCase()))
+            if (nameLower.contains(spawnName.toLowerCase()))
                 return true;
         }
         return false;
     }
 
     public Spawn getSpawn(String name) {
-        Spawn spawn = spawns.get(name.toLowerCase());
+        final String nameLower = name.toLowerCase();
+        Spawn spawn = spawns.get(nameLower);
         if (spawn == null)
             for (Map.Entry<String, Spawn> entry : spawns.entrySet()) {
-                if (name.toLowerCase().contains(entry.getKey().toLowerCase()))
+                if (nameLower.contains(entry.getKey().toLowerCase()))
                     spawn = entry.getValue();
             }
         return spawn;

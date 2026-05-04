@@ -23,7 +23,6 @@ public class CombatLogManager implements Listener {
 
     public CombatLogManager(pFFA plugin) {
         this.plugin = plugin;
-        this.ffaWorlds = Set.copyOf(plugin.getConfig().getStringList("ffa_worlds"));
         final ConfigurationSection combatlog = plugin.getConfig().getConfigurationSection("combatlog");
 
         if (!combatlog.getBoolean("enabled")) {
@@ -59,7 +58,7 @@ public class CombatLogManager implements Listener {
 
                 final int secondsLeft = combatLog.getTimeLeftSeconds() + 1;
                 final float timeLeft = Math.min(1.0f, Math.max(0.0f, secondsLeft / (float) combatLog.getDurationSeconds()));
-                for (Player player : combatLog.getPlayers()) {
+                for (final Player player : combatLog.getPlayers()) {
                     if (actionBar != null)
                         player.sendActionBar(actionBar);
                     if (displayLevel)
@@ -71,19 +70,17 @@ public class CombatLogManager implements Listener {
         });
     }
 
-    private final Set<String> ffaWorlds;
-
     @EventHandler(priority = MONITOR)
     public void onPlayerDamage(EntityDamageByEntityEvent event) {
         if (event.isCancelled()) return;
-        if (!ffaWorlds.contains(event.getEntity().getWorld().getName())) return;
+        if (!plugin.getFfaWorlds().contains(event.getEntity().getWorld().getName())) return;
         if (event.getEntity() instanceof Player victim && event.getDamager() instanceof Player attacker)
             startCombat(attacker, victim);
     }
 
     @EventHandler(priority = HIGH)
     public void onPlayerDeath(PlayerDeathEvent event) {
-        if (!ffaWorlds.contains(event.getEntity().getWorld().getName())) return;
+        if (!plugin.getFfaWorlds().contains(event.getEntity().getWorld().getName())) return;
         event.setDroppedExp(0);
         event.getDrops().clear();
         getCombatLogs(event.getEntity()).forEach(this::endCombat);
@@ -93,7 +90,7 @@ public class CombatLogManager implements Listener {
 
     @EventHandler(priority = LOW)
     public void onPlayerQuit(PlayerQuitEvent event) {
-        if (!ffaWorlds.contains(event.getPlayer().getWorld().getName())) return;
+        if (!plugin.getFfaWorlds().contains(event.getPlayer().getWorld().getName())) return;
         final Player player = event.getPlayer();
         final CombatLog combatLog = getLastCombatLog(player);
         if (combatLog != null) {

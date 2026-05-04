@@ -37,11 +37,11 @@ public abstract class GuiMenu implements Listener, InventoryHolder {
     @Setter
     private boolean closeOnClick = true;
 
-    public GuiMenu(Player player, String title, int size) {
+    protected GuiMenu(Player player, String title, int size) {
         this(player, title, size, new ArrayList<>());
     }
 
-    public GuiMenu(Player player, String title, int size, List<ItemStack> items) {
+    protected GuiMenu(Player player, String title, int size, List<ItemStack> items) {
         this.player = player;
         this.title = title;
         this.size = size;
@@ -55,30 +55,24 @@ public abstract class GuiMenu implements Listener, InventoryHolder {
         player.openInventory(inventory);
     }
 
-    public void close() {
-        if (player.getOpenInventory() != null && player.getOpenInventory().getTopInventory() == inventory)
-            player.closeInventory();
-        HandlerList.unregisterAll(this);
-    }
-
     public abstract void clickHandler(@Nullable ItemStack item, int slot);
 
     @EventHandler
     public void onClick(InventoryClickEvent event) {
         if (event.getClickedInventory() == null) return;
-        if (!event.getClickedInventory().equals(inventory)) return;
         if (event.getSlotType() == InventoryType.SlotType.OUTSIDE) return;
+        if (!event.getClickedInventory().equals(inventory)) return;
         event.setCancelled(true);
         event.setResult(Event.Result.DENY);
         clickHandler(event.getCurrentItem(), event.getSlot());
         if (closeOnClick)
-            close();
+            player.closeInventory();
     }
 
     @EventHandler
     public void onClose(InventoryCloseEvent event) {
-        // if (event.getInventory() == inventory)
-        // close();
+        if (event.getInventory() == inventory)
+            HandlerList.unregisterAll(this);
     }
 
 }

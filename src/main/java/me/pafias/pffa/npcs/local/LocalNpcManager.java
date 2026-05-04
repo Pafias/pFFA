@@ -19,6 +19,7 @@ import me.pafias.pffa.services.KitManager;
 import me.pafias.pffa.services.SpawnManager;
 import me.pafias.putils.BukkitPlayerManager;
 import me.pafias.putils.CC;
+import me.pafias.putils.Tasks;
 import me.pafias.putils.builders.PlayerProfileBuilder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -197,32 +198,37 @@ public class LocalNpcManager implements NpcManager {
     @Override
     public boolean trigger(@Nullable Entity entity, String entityName, User user, boolean leftClick) {
         assert entity == null; // Entity is only used for Citizens NPCs
-        if (entityName != null && kitManager.exists(entityName)) {
-            // Clicked on Kit npc
+        if (entityName != null) {
             final Kit kit = kitManager.getKit(entityName);
-            if (!leftClick) {
-                guiManager.openSpawnGui(user, kit);
-            } else {
-                kit.give(user.getPlayer());
-                spawnManager.getDefaultSpawn().teleport(user.getPlayer());
-                user.heal(false);
-                user.setLastSpawn(spawnManager.getDefaultSpawn());
+            if (kit != null) { // Clicked on Kit npc
+                if (!leftClick) {
+                    guiManager.openSpawnGui(user, kit);
+                } else {
+                    final Spawn defaultSpawn = spawnManager.getDefaultSpawn();
+                    kit.give(user.getPlayer());
+                    defaultSpawn.teleport(user.getPlayer());
+                    user.heal(false);
+                    user.setLastSpawn(defaultSpawn);
+                    Tasks.runLaterSync(1, () -> user.getPlayer().closeInventory());
+                }
+                user.setLastKit(kit);
+                return true;
             }
-            user.setLastKit(kit);
-            return true;
-        } else if (entityName != null && spawnManager.exists(entityName)) {
-            // Clicked on Spawn npc
             final Spawn spawn = spawnManager.getSpawn(entityName);
-            if (!leftClick) {
-                guiManager.openKitGui(user, spawn);
-            } else {
-                kitManager.getDefaultKit().give(user.getPlayer());
-                spawn.teleport(user.getPlayer());
-                user.heal(false);
-                user.setLastKit(kitManager.getDefaultKit());
+            if (spawn != null) { // Clicked on Spawn npc
+                if (!leftClick) {
+                    guiManager.openKitGui(user, spawn);
+                } else {
+                    final Kit defaultKit = kitManager.getDefaultKit();
+                    defaultKit.give(user.getPlayer());
+                    spawn.teleport(user.getPlayer());
+                    user.heal(false);
+                    user.setLastKit(defaultKit);
+                    Tasks.runLaterSync(1, () -> user.getPlayer().closeInventory());
+                }
+                user.setLastSpawn(spawn);
+                return true;
             }
-            user.setLastSpawn(spawn);
-            return true;
         }
         return false;
     }

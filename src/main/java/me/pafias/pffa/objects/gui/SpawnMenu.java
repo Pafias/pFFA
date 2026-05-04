@@ -7,6 +7,7 @@ import me.pafias.pffa.objects.Spawn;
 import me.pafias.pffa.objects.User;
 import me.pafias.putils.CC;
 import me.pafias.putils.InventoryUtils;
+import me.pafias.putils.Tasks;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextReplacementConfig;
 import org.bukkit.inventory.ItemStack;
@@ -89,6 +90,7 @@ public class SpawnMenu extends GuiMenu {
             kit.give(user.getPlayer());
         user.setLastSpawn(spawn);
         user.setLastKit(kit);
+        Tasks.runLaterSync(1, () -> player.closeInventory());
     }
 
 }

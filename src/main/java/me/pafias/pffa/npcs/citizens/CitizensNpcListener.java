@@ -21,7 +21,7 @@ public class CitizensNpcListener implements Listener {
 
     @EventHandler
     public void onInteract(PlayerInteractAtEntityEvent event) {
-        if (!plugin.getConfig().getStringList("ffa_worlds").contains(event.getPlayer().getWorld().getName())) return;
+        if (!plugin.getFfaWorlds().contains(event.getPlayer().getWorld().getName())) return;
         User user = plugin.getSM().getUserManager().getUser(event.getPlayer());
         if (user == null) return;
         boolean cancel = npcManager.trigger(event.getRightClicked(), event.getRightClicked().getCustomName(), user, false);
@@ -32,7 +32,7 @@ public class CitizensNpcListener implements Listener {
     @EventHandler
     public void onClick(EntityDamageByEntityEvent event) {
         if (!(event.getDamager() instanceof Player damager)) return;
-        if (!plugin.getConfig().getStringList("ffa_worlds").contains(damager.getWorld().getName())) return;
+        if (!plugin.getFfaWorlds().contains(damager.getWorld().getName())) return;
         User user = plugin.getSM().getUserManager().getUser(damager);
         if (user == null) return;
         boolean cancel = npcManager.trigger(event.getEntity(), event.getEntity().getCustomName(), user, true);

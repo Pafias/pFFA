@@ -26,15 +26,15 @@ public class KitManager {
 
     public KitManager(pFFA plugin) {
         this.plugin = plugin;
+        kits = new LinkedHashMap<>();
         loadKits();
-
         showUnallowedKits = plugin.getConfig().getBoolean("guis.show_unallowed_kits", false);
     }
 
     private final boolean showUnallowedKits;
 
     @Getter
-    private final LinkedHashMap<String, Kit> kits = new LinkedHashMap<>();
+    private final LinkedHashMap<String, Kit> kits;
 
     /**
      * Get all kits that the player has permission to.
@@ -56,10 +56,11 @@ public class KitManager {
     }
 
     public boolean exists(String name) {
-        if (kits.containsKey(name.toLowerCase()))
+        final String nameLower = name.toLowerCase();
+        if (kits.containsKey(nameLower))
             return true;
         for (String kitName : kits.keySet()) {
-            if (name.toLowerCase().contains(kitName.toLowerCase()))
+            if (nameLower.contains(kitName.toLowerCase()))
                 return true;
         }
         return false;
@@ -70,10 +71,11 @@ public class KitManager {
     }
 
     public Kit getKit(String name) {
-        Kit kit = kits.get(name.toLowerCase());
+        final String nameLower = name.toLowerCase();
+        Kit kit = kits.get(nameLower);
         if (kit == null)
             for (Map.Entry<String, Kit> entry : kits.entrySet()) {
-                if (name.toLowerCase().contains(entry.getKey().toLowerCase()))
+                if (nameLower.contains(entry.getKey().toLowerCase()))
                     kit = entry.getValue();
             }
         return kit;

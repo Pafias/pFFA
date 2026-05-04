@@ -30,10 +30,10 @@ public class LocalNpcListener extends SimplePacketListenerAbstract implements Li
 
     @Override
     public void onPacketPlayReceive(PacketPlayReceiveEvent event) {
-        if (!event.getPacketType().equals(PacketType.Play.Client.INTERACT_ENTITY)) return;
+        if (event.getPacketType() != PacketType.Play.Client.INTERACT_ENTITY) return;
 
         final Player player = event.getPlayer();
-        if (!plugin.getConfig().getStringList("ffa_worlds").contains(player.getWorld().getName())) return;
+        if (!plugin.getFfaWorlds().contains(player.getWorld().getName())) return;
 
         final WrapperPlayClientInteractEntity packet = new WrapperPlayClientInteractEntity(event);
 

@@ -54,7 +54,7 @@ public class LobbyCommand extends BaseFFACommand {
                 return;
             }
             final User user = plugin.getSM().getUserManager().getUser(player);
-            if (plugin.getConfig().getStringList("ffa_worlds").contains(player.getWorld().getName()) && !user.isInSpawn()
+            if (plugin.getFfaWorlds().contains(player.getWorld().getName()) && !user.isInSpawn()
                     && (!player.getGameMode().equals(GameMode.CREATIVE) && !player.getGameMode().equals(GameMode.SPECTATOR))) {
                 sender.sendMessage(CC.t("&cYou cannot do that here."));
                 return;

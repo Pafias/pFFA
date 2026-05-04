@@ -7,6 +7,7 @@ import me.pafias.pffa.objects.Spawn;
 import me.pafias.pffa.objects.User;
 import me.pafias.putils.CC;
 import me.pafias.putils.InventoryUtils;
+import me.pafias.putils.Tasks;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -62,6 +63,7 @@ public class KitMenu extends GuiMenu {
             spawn.teleport(user.getPlayer());
         user.setLastSpawn(spawn);
         user.setLastKit(kit);
+        Tasks.runLaterSync(1, () -> player.closeInventory());
     }
 
 }

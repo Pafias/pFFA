@@ -1,5 +1,6 @@
 package me.pafias.pffa;
 
+import lombok.Getter;
 import me.pafias.pffa.commands.commands.*;
 import me.pafias.pffa.listeners.*;
 import me.pafias.pffa.tasks.ArmorstandBlockingTask;
@@ -9,6 +10,8 @@ import me.pafias.putils.pUtils;
 import org.bukkit.Location;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.List;
 
 public final class pFFA extends JavaPlugin {
 
@@ -22,10 +25,6 @@ public final class pFFA extends JavaPlugin {
 
     public ServicesManager getSM() {
         return servicesManager;
-    }
-
-    public Location getLobbySpawn() {
-        return Serializer.parseConfigLocation("lobby.spawn");
     }
 
     @Override
@@ -45,6 +44,9 @@ public final class pFFA extends JavaPlugin {
         } catch (Throwable t) {
             t.printStackTrace();
         }
+
+        ffaWorlds = getConfig().getStringList("ffa_worlds");
+        lobbySpawn = Serializer.parseConfigLocation("lobby.spawn");
 
         servicesManager.onEnable();
         register();
@@ -87,5 +89,10 @@ public final class pFFA extends JavaPlugin {
     public void onDisable() {
         servicesManager.onDisable();
     }
+
+    @Getter
+    private List<String> ffaWorlds;
+    @Getter
+    private Location lobbySpawn;
 
 }

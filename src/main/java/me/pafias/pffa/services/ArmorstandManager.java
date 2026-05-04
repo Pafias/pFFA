@@ -5,6 +5,7 @@ import me.pafias.pffa.objects.Kit;
 import me.pafias.pffa.objects.Spawn;
 import me.pafias.pffa.objects.User;
 import me.pafias.pffa.pFFA;
+import me.pafias.putils.Tasks;
 import org.bukkit.entity.ArmorStand;
 
 public class ArmorstandManager {
@@ -20,32 +21,36 @@ public class ArmorstandManager {
     }
 
     public void trigger(ArmorStand as, User user, boolean leftclick) throws NullPointerException {
-        if (as.isCustomNameVisible() && as.getCustomName() != null && plugin.getSM().getKitManager().exists(as.getCustomName())) {
-            // Clicked on Kit armorstand
+        if (as.isCustomNameVisible() && as.getCustomName() != null) {
             final Kit kit = plugin.getSM().getKitManager().getKit(as.getCustomName());
-            if (!leftclick) {
-                guiManager.openSpawnGui(user, kit);
-            } else {
-                kit.give(user.getPlayer());
-                final Spawn spawn = plugin.getSM().getSpawnManager().getDefaultSpawn();
-                spawn.teleport(user.getPlayer());
-                user.heal(false);
+            if (kit != null) { // Clicked on Kit armorstand
+                if (!leftclick) {
+                    guiManager.openSpawnGui(user, kit);
+                } else {
+                    kit.give(user.getPlayer());
+                    final Spawn spawn = plugin.getSM().getSpawnManager().getDefaultSpawn();
+                    spawn.teleport(user.getPlayer());
+                    user.heal(false);
+                    user.setLastSpawn(spawn);
+                    Tasks.runLaterSync(1, () -> user.getPlayer().closeInventory());
+                }
+                user.setLastKit(kit);
+                return;
+            }
+            final Spawn spawn = plugin.getSM().getSpawnManager().getSpawn(as.getCustomName());
+            if (spawn != null) { // Clicked on Spawn armorstand
+                if (!leftclick) {
+                    guiManager.openKitGui(user, spawn);
+                } else {
+                    final Kit k = plugin.getSM().getKitManager().getDefaultKit();
+                    k.give(user.getPlayer());
+                    user.heal(false);
+                    spawn.teleport(user.getPlayer());
+                    user.setLastKit(k);
+                    Tasks.runLaterSync(1, () -> user.getPlayer().closeInventory());
+                }
                 user.setLastSpawn(spawn);
             }
-            user.setLastKit(kit);
-        } else if (as.isCustomNameVisible() && as.getCustomName() != null && plugin.getSM().getSpawnManager().exists(as.getCustomName())) {
-            // Clicked on Spawn armorstand
-            final Spawn spawn = plugin.getSM().getSpawnManager().getSpawn(as.getCustomName());
-            if (!leftclick) {
-                guiManager.openKitGui(user, spawn);
-            } else {
-                final Kit kit = plugin.getSM().getKitManager().getDefaultKit();
-                kit.give(user.getPlayer());
-                user.heal(false);
-                spawn.teleport(user.getPlayer());
-                user.setLastKit(kit);
-            }
-            user.setLastSpawn(spawn);
         }
     }
 

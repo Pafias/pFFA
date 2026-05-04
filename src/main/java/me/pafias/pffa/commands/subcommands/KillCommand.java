@@ -16,7 +16,10 @@ public class KillCommand extends BaseFFACommand {
 
     public KillCommand() {
         super("kill", null, "suicide", "die");
+        killCooldownMillis = plugin.getConfig().getLong("commands.kill_command_cooldown") * 1000L;
     }
+
+    private final long killCooldownMillis;
 
     @NotNull
     @Override
@@ -33,14 +36,13 @@ public class KillCommand extends BaseFFACommand {
     @Override
     public void execute(String mainCommand, CommandSender sender, String[] args) {
         if (args.length == 1) {
-            if (!(sender instanceof Player)) {
+            if (!(sender instanceof Player player)) {
                 sender.sendMessage(CC.t("&cOnly players."));
                 return;
             }
-            final User user = plugin.getSM().getUserManager().getUser((Player) sender);
+            final User user = plugin.getSM().getUserManager().getUser(player);
             if (user.isInSpawn())
                 return;
-            final long killCooldownMillis = plugin.getConfig().getLong("commands.kill_command_cooldown") * 1000L;
             if (System.currentTimeMillis() - user.lastKillMillis < killCooldownMillis) {
                 sender.sendMessage(CC.t("&cPlease wait until using this command again"));
                 return;

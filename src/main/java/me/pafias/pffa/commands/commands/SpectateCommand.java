@@ -35,7 +35,7 @@ public class SpectateCommand implements CommandExecutor, TabExecutor {
             return true;
         }
         final User user = plugin.getSM().getUserManager().getUser(player);
-        if (!user.isSpectating() && !plugin.getConfig().getStringList("ffa_worlds").contains(player.getWorld().getName())) {
+        if (!user.isSpectating() && !plugin.getFfaWorlds().contains(player.getWorld().getName())) {
             sender.sendMessage(CC.t("&cYou can only spectate in FFA worlds."));
             return true;
         }

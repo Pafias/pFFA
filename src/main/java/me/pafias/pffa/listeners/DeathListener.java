@@ -27,7 +27,6 @@ public class DeathListener implements Listener {
     public DeathListener(pFFA plugin) {
         this.plugin = plugin;
 
-        ffaWorlds = Set.copyOf(plugin.getConfig().getStringList("ffa_worlds"));
         healKillerOnDeath = plugin.getConfig().getBoolean("death.heal_killer");
 
         killstreakBroadcasts = new HashMap<>();
@@ -66,8 +65,6 @@ public class DeathListener implements Listener {
         }
     }
 
-    private final Set<String> ffaWorlds;
-
     private final Map<Integer, List<String>> killstreakBroadcasts;
 
     private void handleKillstreakBroadcast(User user) {
@@ -84,7 +81,7 @@ public class DeathListener implements Listener {
 
     @EventHandler
     public void onDeath(PlayerDeathEvent event) {
-        if (!ffaWorlds.contains(event.getEntity().getLocation().getWorld().getName()))
+        if (!plugin.getFfaWorlds().contains(event.getEntity().getLocation().getWorld().getName()))
             return;
         event.getDrops().clear();
         event.getEntity().teleport(plugin.getLobbySpawn());
@@ -115,7 +112,7 @@ public class DeathListener implements Listener {
 
     @EventHandler
     public void onRespawn(PlayerRespawnEvent event) {
-        if (!ffaWorlds.contains(event.getPlayer().getLocation().getWorld().getName()))
+        if (!plugin.getFfaWorlds().contains(event.getPlayer().getLocation().getWorld().getName()))
             return;
         event.setRespawnLocation(plugin.getLobbySpawn());
         event.getPlayer().setFoodLevel(20);

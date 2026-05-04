@@ -94,6 +94,18 @@ public class ServicesManager {
             return;
         }
 
+        // Lobby Manager initialization
+        try{
+            plugin.getLogger().info("Loading Lobby Manager...");
+            lobbyManager = new LobbyManager(config);
+            plugin.getLogger().info("Lobby Manager loaded.");
+        }catch(Exception ex){
+            plugin.getLogger().severe("Failed to initialize the LobbyManager. Disabling plugin.");
+            ex.printStackTrace();
+            plugin.getServer().getPluginManager().disablePlugin(plugin);
+            return;
+        }
+
         // Kit and Spawn manager initialization
         try {
             plugin.getLogger().info("Loading Kits Manager...");
@@ -165,7 +177,7 @@ public class ServicesManager {
         // Protocol listener initialization
         if (plugin.getServer().getPluginManager().isPluginEnabled("packetevents")) {
             plugin.getLogger().info("packetevents found, registering packet listeners...");
-            protocolListener = new ProtocolListener(plugin);
+            protocolListener = new ProtocolListener();
             plugin.getLogger().info("Packet listeners registered.");
         } else {
             protocolListener = null;
@@ -248,6 +260,7 @@ public class ServicesManager {
     private UserDataStorage userDataStorage;
 
     private UserManager userManager;
+    private LobbyManager lobbyManager;
     private KitManager kitManager;
     private SpawnManager spawnManager;
     private GuiManager guiManager;

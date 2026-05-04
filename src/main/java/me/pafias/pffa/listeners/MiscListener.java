@@ -30,8 +30,6 @@ public class MiscListener implements Listener {
     public MiscListener(pFFA plugin) {
         this.plugin = plugin;
 
-        ffaWorlds = Set.copyOf(plugin.getConfig().getStringList("ffa_worlds"));
-
         cleanArrows = plugin.getConfig().getBoolean("clean_arrows");
         interactivePlates = plugin.getConfig().getBoolean("interactive_pressureplates");
 
@@ -44,8 +42,6 @@ public class MiscListener implements Listener {
 
         preventDifferentKitPvp = plugin.getConfig().getBoolean("prevent_different_kit_pvp");
     }
-
-    private final Set<String> ffaWorlds;
 
     private static final Set<Material> PLATES = EnumSet.noneOf(Material.class);
 
@@ -129,7 +125,7 @@ public class MiscListener implements Listener {
             damagerUser = null;
         if(damagerUser == null) return;
 
-        if (!ffaWorlds.contains(event.getDamager().getWorld().getName())) return;
+        if (!plugin.getFfaWorlds().contains(event.getDamager().getWorld().getName())) return;
 
         if(damagerUser.getLastKit() != damagedUser.getLastKit() && damagerUser.getPlayer().getGameMode() != GameMode.CREATIVE){
             event.setCancelled(true);

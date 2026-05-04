@@ -111,38 +111,37 @@ public class CitizensNpcManager implements NpcManager {
         if (!entity.hasMetadata("NPC")) return false;
         final NPC npc = npcRegistry.getNPC(entity);
         if (npc == null) return false;
-        if (
-                (entity.isCustomNameVisible() && entity.getCustomName() != null && kitManager.exists(entity.getCustomName()))
-                        || (npc.getName() != null && kitManager.exists(npc.getName()))
-        ) {
-            // Clicked on Kit npc
+        if (npc.getName() != null || (entity.isCustomNameVisible() && entity.getCustomName() != null)) {
             final Kit kit = kitManager.getKit(npc.getName());
-            if (!leftClick) {
-                guiManager.openSpawnGui(user, kit);
-            } else {
-                kit.give(user.getPlayer());
-                spawnManager.getDefaultSpawn().teleport(user.getPlayer());
-                user.heal(false);
-                user.setLastSpawn(spawnManager.getDefaultSpawn());
+            if (kit != null) { // Clicked on Kit npc
+                if (!leftClick) {
+                    guiManager.openSpawnGui(user, kit);
+                } else {
+                    final Spawn defaultSpawn = spawnManager.getDefaultSpawn();
+                    kit.give(user.getPlayer());
+                    defaultSpawn.teleport(user.getPlayer());
+                    user.heal(false);
+                    user.setLastSpawn(defaultSpawn);
+                    Tasks.runLaterSync(1, () -> user.getPlayer().closeInventory());
+                }
+                user.setLastKit(kit);
+                return true;
             }
-            user.setLastKit(kit);
-            return true;
-        } else if (
-                (entity.isCustomNameVisible() && entity.getCustomName() != null && spawnManager.exists(entity.getCustomName()))
-                        || (npc.getName() != null && spawnManager.exists(npc.getName()))
-        ) {
-            // Clicked on Spawn npc
-            final Spawn spawn = spawnManager.getSpawn(entity.getCustomName());
-            if (!leftClick) {
-                guiManager.openKitGui(user, spawn);
-            } else {
-                kitManager.getDefaultKit().give(user.getPlayer());
-                spawn.teleport(user.getPlayer());
-                user.heal(false);
-                user.setLastKit(kitManager.getDefaultKit());
+            final Spawn spawn = spawnManager.getSpawn(npc.getName());
+            if (spawn != null) { // Clicked on Spawn npc
+                if (!leftClick) {
+                    guiManager.openKitGui(user, spawn);
+                } else {
+                    final Kit defaultKit = kitManager.getDefaultKit();
+                    defaultKit.give(user.getPlayer());
+                    spawn.teleport(user.getPlayer());
+                    user.heal(false);
+                    user.setLastKit(defaultKit);
+                    Tasks.runLaterSync(1, () -> user.getPlayer().closeInventory());
+                }
+                user.setLastSpawn(spawn);
+                return true;
             }
-            user.setLastSpawn(spawn);
-            return true;
         }
         return false;
     }

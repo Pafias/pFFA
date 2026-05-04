@@ -11,8 +11,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 
-import java.util.Set;
-
 public class ArmorstandListener implements Listener {
 
     private final pFFA plugin;
@@ -22,18 +20,14 @@ public class ArmorstandListener implements Listener {
     public ArmorstandListener(pFFA plugin, ArmorstandManager armorstandManager) {
         this.plugin = plugin;
         this.armorstandManager = armorstandManager;
-
-        ffaWorlds = Set.copyOf(plugin.getConfig().getStringList("ffa_worlds"));
     }
-
-    private final Set<String> ffaWorlds;
 
     @EventHandler
     public void onInteract(PlayerInteractAtEntityEvent event) {
         if (event.getPlayer().getGameMode() == GameMode.CREATIVE)
             return;
         if (!(event.getRightClicked() instanceof ArmorStand armorStand)) return;
-        if (!ffaWorlds.contains(event.getPlayer().getWorld().getName())) return;
+        if (!plugin.getFfaWorlds().contains(event.getPlayer().getWorld().getName())) return;
         final User user = plugin.getSM().getUserManager().getUser(event.getPlayer());
         if (user == null) return;
         event.setCancelled(true);
@@ -46,7 +40,7 @@ public class ArmorstandListener implements Listener {
         if (damager.getGameMode() == GameMode.CREATIVE)
             return;
         if (!(event.getEntity() instanceof ArmorStand armorStand)) return;
-        if (!ffaWorlds.contains(damager.getWorld().getName())) return;
+        if (!plugin.getFfaWorlds().contains(damager.getWorld().getName())) return;
         final User user = plugin.getSM().getUserManager().getUser(damager);
         if (user == null) return;
         event.setCancelled(true);
