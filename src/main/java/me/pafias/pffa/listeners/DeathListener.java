@@ -84,7 +84,6 @@ public class DeathListener implements Listener {
         if (!plugin.getFfaWorlds().contains(event.getEntity().getLocation().getWorld().getName()))
             return;
         event.getDrops().clear();
-        event.getEntity().teleport(plugin.getLobbySpawn());
         event.getEntity().getInventory().clear();
         for (PotionEffect pe : event.getEntity().getActivePotionEffects())
             event.getEntity().removePotionEffect(pe.getType());
