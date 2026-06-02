@@ -70,7 +70,7 @@ permissions:
       ffa.lobby: true
   ffa.lobby:
     description: Permission to use the ffa's lobby subcommand
-    default: op
+    default: true
   ffa.savekit:
     description: Permission to use the ffa's savekit subcommand
     default: op

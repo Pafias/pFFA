@@ -2,12 +2,15 @@ package me.pafias.pffa.objects.gui;
 
 import lombok.Getter;
 import lombok.Setter;
+import me.pafias.pffa.events.FFAPlayerSpawnedEvent;
+import me.pafias.pffa.events.FFAPlayerSpawnEvent;
 import me.pafias.pffa.objects.Kit;
 import me.pafias.pffa.objects.Spawn;
 import me.pafias.pffa.objects.User;
 import me.pafias.putils.CC;
 import me.pafias.putils.InventoryUtils;
 import me.pafias.putils.Tasks;
+import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -47,7 +50,7 @@ public class KitMenu extends GuiMenu {
             setCloseOnClick(false);
             return;
         }
-        final Kit kit = mapping.get(slot);
+        Kit kit = mapping.get(slot);
         if (kit == null) {
             setCloseOnClick(false);
             return;
@@ -57,13 +60,24 @@ public class KitMenu extends GuiMenu {
             setCloseOnClick(false);
             return;
         }
+
+        final FFAPlayerSpawnEvent event = new FFAPlayerSpawnEvent(player, spawn, kit);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled())
+            return;
+        spawn = event.getSpawn();
+        kit = event.getKit();
+        if (spawn != null) {
+            event.getSpawn().teleport(user.getPlayer());
+            user.setLastSpawn(spawn);
+        }
+        if (kit != null) {
+            kit.give(user.getPlayer());
+            user.setLastKit(kit);
+        }
         user.heal(false);
-        kit.give(user.getPlayer());
-        if (spawn != null)
-            spawn.teleport(user.getPlayer());
-        user.setLastSpawn(spawn);
-        user.setLastKit(kit);
         Tasks.runLaterSync(1, () -> player.closeInventory());
+        Bukkit.getPluginManager().callEvent(new FFAPlayerSpawnedEvent(user.getPlayer(), spawn, kit));
     }
 
 }

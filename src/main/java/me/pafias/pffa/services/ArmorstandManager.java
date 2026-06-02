@@ -1,11 +1,14 @@
 package me.pafias.pffa.services;
 
+import me.pafias.pffa.events.FFAPlayerSpawnedEvent;
+import me.pafias.pffa.events.FFAPlayerSpawnEvent;
 import me.pafias.pffa.listeners.ArmorstandListener;
 import me.pafias.pffa.objects.Kit;
 import me.pafias.pffa.objects.Spawn;
 import me.pafias.pffa.objects.User;
 import me.pafias.pffa.pFFA;
 import me.pafias.putils.Tasks;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.ArmorStand;
 
 public class ArmorstandManager {
@@ -22,34 +25,60 @@ public class ArmorstandManager {
 
     public void trigger(ArmorStand as, User user, boolean leftclick) throws NullPointerException {
         if (as.isCustomNameVisible() && as.getCustomName() != null) {
-            final Kit kit = plugin.getSM().getKitManager().getKit(as.getCustomName());
+            Kit kit = plugin.getSM().getKitManager().getKit(as.getCustomName());
             if (kit != null) { // Clicked on Kit armorstand
                 if (!leftclick) {
                     guiManager.openSpawnGui(user, kit);
+                    user.setLastKit(kit);
                 } else {
-                    kit.give(user.getPlayer());
-                    final Spawn spawn = plugin.getSM().getSpawnManager().getDefaultSpawn();
-                    spawn.teleport(user.getPlayer());
+                    Spawn spawn = plugin.getSM().getSpawnManager().getDefaultSpawn();
+
+                    final FFAPlayerSpawnEvent event = new FFAPlayerSpawnEvent(user.getPlayer(), spawn, kit);
+                    Bukkit.getPluginManager().callEvent(event);
+                    if (event.isCancelled())
+                        return;
+                    spawn = event.getSpawn();
+                    kit = event.getKit();
+                    if (spawn != null) {
+                        event.getSpawn().teleport(user.getPlayer());
+                        user.setLastSpawn(spawn);
+                    }
+                    if (kit != null) {
+                        kit.give(user.getPlayer());
+                        user.setLastKit(kit);
+                    }
                     user.heal(false);
-                    user.setLastSpawn(spawn);
                     Tasks.runLaterSync(1, () -> user.getPlayer().closeInventory());
+                    Bukkit.getPluginManager().callEvent(new FFAPlayerSpawnedEvent(user.getPlayer(), spawn, kit));
                 }
-                user.setLastKit(kit);
                 return;
             }
-            final Spawn spawn = plugin.getSM().getSpawnManager().getSpawn(as.getCustomName());
+            Spawn spawn = plugin.getSM().getSpawnManager().getSpawn(as.getCustomName());
             if (spawn != null) { // Clicked on Spawn armorstand
                 if (!leftclick) {
                     guiManager.openKitGui(user, spawn);
+                    user.setLastSpawn(spawn);
                 } else {
-                    final Kit k = plugin.getSM().getKitManager().getDefaultKit();
-                    k.give(user.getPlayer());
+                    Kit k = plugin.getSM().getKitManager().getDefaultKit();
+
+                    final FFAPlayerSpawnEvent event = new FFAPlayerSpawnEvent(user.getPlayer(), spawn, k);
+                    Bukkit.getPluginManager().callEvent(event);
+                    if (event.isCancelled())
+                        return;
+                    spawn = event.getSpawn();
+                    k = event.getKit();
+                    if (spawn != null) {
+                        event.getSpawn().teleport(user.getPlayer());
+                        user.setLastSpawn(spawn);
+                    }
+                    if (k != null) {
+                        k.give(user.getPlayer());
+                        user.setLastKit(k);
+                    }
                     user.heal(false);
-                    spawn.teleport(user.getPlayer());
-                    user.setLastKit(k);
+                    Bukkit.getPluginManager().callEvent(new FFAPlayerSpawnedEvent(user.getPlayer(), spawn, k));
                     Tasks.runLaterSync(1, () -> user.getPlayer().closeInventory());
                 }
-                user.setLastSpawn(spawn);
             }
         }
     }

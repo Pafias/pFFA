@@ -1,5 +1,7 @@
 package me.pafias.pffa.npcs.citizens;
 
+import me.pafias.pffa.events.FFAPlayerSpawnedEvent;
+import me.pafias.pffa.events.FFAPlayerSpawnEvent;
 import me.pafias.pffa.npcs.NpcManager;
 import me.pafias.pffa.objects.Kit;
 import me.pafias.pffa.objects.Spawn;
@@ -24,6 +26,7 @@ import net.citizensnpcs.trait.CurrentLocation;
 import net.citizensnpcs.trait.SkinTrait;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -112,34 +115,60 @@ public class CitizensNpcManager implements NpcManager {
         final NPC npc = npcRegistry.getNPC(entity);
         if (npc == null) return false;
         if (npc.getName() != null || (entity.isCustomNameVisible() && entity.getCustomName() != null)) {
-            final Kit kit = kitManager.getKit(npc.getName());
+            Kit kit = kitManager.getKit(npc.getName());
             if (kit != null) { // Clicked on Kit npc
                 if (!leftClick) {
                     guiManager.openSpawnGui(user, kit);
+                    user.setLastKit(kit);
                 } else {
-                    final Spawn defaultSpawn = spawnManager.getDefaultSpawn();
-                    kit.give(user.getPlayer());
-                    defaultSpawn.teleport(user.getPlayer());
+                    Spawn spawn = spawnManager.getDefaultSpawn();
+
+                    final FFAPlayerSpawnEvent event = new FFAPlayerSpawnEvent(user.getPlayer(), spawn, kit);
+                    Bukkit.getPluginManager().callEvent(event);
+                    if (event.isCancelled())
+                        return false;
+                    spawn = event.getSpawn();
+                    kit = event.getKit();
+                    if (spawn != null) {
+                        event.getSpawn().teleport(user.getPlayer());
+                        user.setLastSpawn(spawn);
+                    }
+                    if (kit != null) {
+                        kit.give(user.getPlayer());
+                        user.setLastKit(kit);
+                    }
                     user.heal(false);
-                    user.setLastSpawn(defaultSpawn);
                     Tasks.runLaterSync(1, () -> user.getPlayer().closeInventory());
+                    Bukkit.getPluginManager().callEvent(new FFAPlayerSpawnedEvent(user.getPlayer(), spawn, kit));
                 }
-                user.setLastKit(kit);
                 return true;
             }
-            final Spawn spawn = spawnManager.getSpawn(npc.getName());
+            Spawn spawn = spawnManager.getSpawn(npc.getName());
             if (spawn != null) { // Clicked on Spawn npc
                 if (!leftClick) {
                     guiManager.openKitGui(user, spawn);
+                    user.setLastSpawn(spawn);
                 } else {
-                    final Kit defaultKit = kitManager.getDefaultKit();
-                    defaultKit.give(user.getPlayer());
-                    spawn.teleport(user.getPlayer());
+                    Kit k = kitManager.getDefaultKit();
+
+                    final FFAPlayerSpawnEvent event = new FFAPlayerSpawnEvent(user.getPlayer(), spawn, k);
+                    Bukkit.getPluginManager().callEvent(event);
+                    if (event.isCancelled())
+                        return false;
+                    spawn = event.getSpawn();
+                    k = event.getKit();
+                    if (spawn != null) {
+                        event.getSpawn().teleport(user.getPlayer());
+                        user.setLastSpawn(spawn);
+                    }
+                    if (k != null) {
+                        k.give(user.getPlayer());
+                        user.setLastKit(k);
+                    }
                     user.heal(false);
-                    user.setLastKit(defaultKit);
                     Tasks.runLaterSync(1, () -> user.getPlayer().closeInventory());
+                    Bukkit.getPluginManager().callEvent(new FFAPlayerSpawnedEvent(user.getPlayer(), spawn, k));
                 }
-                user.setLastSpawn(spawn);
                 return true;
             }
         }
