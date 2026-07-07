@@ -41,6 +41,7 @@ public class PAPIExpansion extends PlaceholderExpansion {
             case "killstreak", "currentkillstreak" -> String.valueOf(user.getCurrentKillstreak());
             case "bestkillstreak" -> String.valueOf(user.getBestKillstreak());
             case "kdr" -> String.format("%.2f", user.getKDR());
+            case "health" -> String.format("%.2f", user.getPlayer().getHealth());
             default -> null;
         };
     }
