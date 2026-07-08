@@ -1,6 +1,9 @@
 # Do not change the config version
 config_version: '1.0'
 
+# Whether to automatically update the plugin when a new version is available
+auto_update: true
+
 database:
   # Available options: 'file', 'mongo', 'mysql'
   type: 'file'

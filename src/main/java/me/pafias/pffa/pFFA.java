@@ -39,11 +39,12 @@ public final class pFFA extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        try {
-            new AutoUpdaterTask(plugin).run();
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
+        if (getConfig().getBoolean("auto_update"))
+            try {
+                new AutoUpdaterTask(plugin).run();
+            } catch (Throwable t) {
+                t.printStackTrace();
+            }
 
         ffaWorlds = getConfig().getStringList("ffa_worlds");
         lobbySpawn = Serializer.parseConfigLocation("lobby.spawn");
