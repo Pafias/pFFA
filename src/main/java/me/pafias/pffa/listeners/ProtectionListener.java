@@ -3,12 +3,14 @@ package me.pafias.pffa.listeners;
 import me.pafias.pffa.objects.User;
 import me.pafias.pffa.pFFA;
 import org.bukkit.GameMode;
+import org.bukkit.block.Shelf;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
@@ -25,6 +27,14 @@ public class ProtectionListener implements Listener {
 
     public ProtectionListener(pFFA plugin) {
         this.plugin = plugin;
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onSignEdit(SignChangeEvent event) {
+        if (!plugin.getFfaWorlds().contains(event.getPlayer().getWorld().getName())) return;
+        if (event.getPlayer().getGameMode() == GameMode.CREATIVE) return;
+        if (plugin.getConfig().getBoolean("world_protection.prevent_sign_edits"))
+            event.setCancelled(true);
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -98,6 +108,7 @@ public class ProtectionListener implements Listener {
                         || ((event.getClickedBlock().getType().name().contains("CHEST") || event.getClickedBlock().getType().name().contains("BARREL") || event.getClickedBlock().getType().name().contains("SHULKER")) && plugin.getConfig().getBoolean("world_protection.prevent_chests"))
                         || (event.getClickedBlock().getType().name().contains("DROPPER") && plugin.getConfig().getBoolean("world_protection.prevent_dropper"))
                         || (event.getClickedBlock().getType().name().contains("DISPENSER") && plugin.getConfig().getBoolean("world_protection.prevent_dispenser"))
+                        || (event.getClickedBlock().getType().name().contains("SHELF") && plugin.getConfig().getBoolean("world_protection.prevent_shelf"))
                         || (plugin.getConfig().getStringList("world_protection.prevent_custom").stream().anyMatch(cs -> event.getClickedBlock().getType().name().toLowerCase().contains(cs.toLowerCase())))
         )
             event.setCancelled(true);
@@ -113,6 +124,8 @@ public class ProtectionListener implements Listener {
             shouldPrevent = plugin.getConfig().getBoolean("world_protection.prevent_itemframes");
         } else if (event.getRightClicked() instanceof Vehicle) {
             shouldPrevent = plugin.getConfig().getBoolean("world_protection.prevent_vehicles");
+        } else if (event.getRightClicked() instanceof Shelf) {
+            shouldPrevent = plugin.getConfig().getBoolean("world_protection.prevent_shelf");
         }
         if (!shouldPrevent) return;
         event.setCancelled(true);

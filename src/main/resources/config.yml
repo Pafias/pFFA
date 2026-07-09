@@ -34,6 +34,7 @@ ffa_worlds:
 # Various settings to do with (players) interacting with the world
 world_protection:
   bypass_with_gm_creative: true
+  prevent_sign_edits: true
   prevent_doors: false
   prevent_gates: false
   prevent_buttons: true
@@ -45,6 +46,7 @@ world_protection:
   prevent_vehicles: true
   prevent_dispenser: true
   prevent_dropper: true
+  prevent_shelf: true
   prevent_custom:
     - REPEATER
 
