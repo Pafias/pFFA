@@ -10,6 +10,7 @@ import me.pafias.pffa.listeners.*;
 import me.pafias.pffa.tasks.ArmorstandBlockingTask;
 import me.pafias.pffa.tasks.AutoUpdaterTask;
 import me.pafias.pffa.util.Serializer;
+import me.pafias.putils.CC;
 import me.pafias.putils.pUtils;
 import org.bukkit.Location;
 import org.bukkit.plugin.PluginManager;
@@ -59,7 +60,15 @@ public final class pFFA extends JavaPlugin {
         getServer().getOnlinePlayers()
                 .stream()
                 .filter(p -> !p.hasMetadata("NPC"))
-                .forEach(p -> servicesManager.getUserManager().addUser(p));
+                .forEach(p -> {
+                    try {
+                        servicesManager.getUserManager().loadUser(p.getUniqueId());
+                        servicesManager.getUserManager().addUser(p);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        p.kickPlayer(CC.t("&cFailed to load your data."));
+                    }
+                });
 
         new ArmorstandBlockingTask(plugin).runTaskTimer(plugin, 100, 3 * 20L);
     }

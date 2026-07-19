@@ -3,6 +3,7 @@ package me.pafias.pffa.listeners;
 import me.pafias.pffa.pFFA;
 import me.pafias.putils.CC;
 import org.bukkit.GameMode;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -34,15 +35,17 @@ public class JoinQuitListener implements Listener {
             plugin.getSM().getUserManager().addUser(event.getPlayer());
         } catch (Exception ex) {
             ex.printStackTrace();
-            event.getPlayer().kick(CC.a("An error occurred while loading your player. Please try again later."));
+            event.getPlayer().kick(CC.a("An error occurred while loading your player/data. Please try again later."));
+            return;
         }
 
-        event.getPlayer().setGameMode(GameMode.ADVENTURE);
-        event.getPlayer().getInventory().clear();
-        event.getPlayer().getActivePotionEffects().forEach(pe -> event.getPlayer().removePotionEffect(pe.getType()));
-        event.getPlayer().setHealth(event.getPlayer().getMaxHealth());
-        event.getPlayer().setFoodLevel(20);
-        event.getPlayer().setSaturation(0);
+        final Player player = event.getPlayer();
+        player.setGameMode(GameMode.ADVENTURE);
+        player.getInventory().clear();
+        player.getActivePotionEffects().forEach(pe -> player.removePotionEffect(pe.getType()));
+        player.setHealth(player.getMaxHealth());
+        player.setFoodLevel(20);
+        player.setSaturation(0);
     }
 
     @EventHandler(priority = EventPriority.HIGH)

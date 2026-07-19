@@ -84,7 +84,7 @@ public class ConvertCommand extends BaseFFACommand {
             int deaths = config.getInt("deaths", 0);
             int bestKillstreak = config.getInt("killstreak", 0);
             FfaData ffaData = new FfaData(kills, deaths, bestKillstreak);
-            UserData userData = new UserData(false, uuid, ffaData);
+            UserData userData = new UserData(uuid, ffaData);
             plugin.getSM().getUserDataStorage().setUserData(userData);
             i++;
         }

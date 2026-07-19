@@ -1,20 +1,14 @@
 package me.pafias.pffa.storage;
 
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.ReplaceOptions;
-import com.mongodb.client.model.Sorts;
+import com.mongodb.client.model.*;
 import me.pafias.pffa.commands.subcommands.LeaderboardCommand;
 import me.pafias.pffa.objects.FfaData;
 import me.pafias.pffa.objects.UserData;
 import org.bson.Document;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.UnknownNullability;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class MongoUserDataStorage implements UserDataStorage {
 
@@ -24,9 +18,11 @@ public class MongoUserDataStorage implements UserDataStorage {
         this.collection = collection;
     }
 
+    private static final ReplaceOptions UPSERT_OPTIONS = new ReplaceOptions().upsert(true);
+
     public UserData fromDocument(@Nullable Document document) {
         if (document == null) return null;
-        return new UserData(false,
+        return new UserData(
                 UUID.fromString(document.getString("_id")),
                 new FfaData(
                         document.getInteger("kills"),
@@ -36,8 +32,8 @@ public class MongoUserDataStorage implements UserDataStorage {
         );
     }
 
-    public Document toDocument(@UnknownNullability UserData userData) {
-        if (userData == null) return null;
+    public Document toDocument(UserData userData) {
+        Objects.requireNonNull(userData);
         return new Document("_id", userData.getUniqueId().toString())
                 .append("kills", userData.getFfaData().getKills())
                 .append("deaths", userData.getFfaData().getDeaths())
@@ -57,7 +53,33 @@ public class MongoUserDataStorage implements UserDataStorage {
                 .replaceOne(
                         Filters.eq("_id", userData.getUniqueId().toString()),
                         toDocument(userData),
-                        new ReplaceOptions().upsert(true));
+                        UPSERT_OPTIONS);
+    }
+
+    @Override
+    public void setUserDataBatch(Collection<UserData> userData) {
+        if (userData == null || userData.isEmpty())
+            return;
+
+        final List<WriteModel<Document>> writes = new ArrayList<>(userData.size());
+
+        for (UserData data : userData) {
+            if (data == null)
+                continue;
+
+            writes.add(new ReplaceOneModel<>(
+                    Filters.eq("_id", data.getUniqueId().toString()),
+                    toDocument(data),
+                    UPSERT_OPTIONS
+            ));
+        }
+
+        if (!writes.isEmpty()) {
+            collection.bulkWrite(
+                    writes,
+                    new BulkWriteOptions().ordered(false)
+            );
+        }
     }
 
     @Override
@@ -66,17 +88,17 @@ public class MongoUserDataStorage implements UserDataStorage {
             return Collections.emptyList();
 
         final List<UserData> list = new ArrayList<>();
-        collection
-                .find()
-                .sort(Sorts.orderBy(
-                        Sorts.descending(statistic.getDbColumnName())
+        collection.find()
+                .projection(Projections.include(
+                        "_id",
+                        "kills",
+                        "deaths",
+                        "killstreak"
                 ))
+                .sort(Sorts.descending(statistic.getDbColumnName()))
                 .limit(resultLimit)
-                .forEach(document -> {
-                    final UserData userData = fromDocument(document);
-                    if (userData != null)
-                        list.add(userData);
-                });
+                .map(this::fromDocument)
+                .into(list);
         return list;
     }
 

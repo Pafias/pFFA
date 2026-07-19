@@ -143,7 +143,7 @@ public class EditstatsCommand extends BaseFFACommand {
                         user.setBestKillstreak(killstreak);
                     } else {
                         final FfaData ffaData = new FfaData(kills, deaths, killstreak);
-                        final UserData userData = new UserData(false, player.getUniqueId(), ffaData);
+                        final UserData userData = new UserData(player.getUniqueId(), ffaData);
                         try {
                             plugin.getSM().getUserDataStorage().setUserData(userData);
                         } catch (Exception ex) {

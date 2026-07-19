@@ -22,7 +22,7 @@ public class MysqlManager {
             boolean ssl
     ) {
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl("jdbc:mysql://" + host + ":" + port + "/" + database + "?autoReconnect=true&useSSL=" + ssl);
+        config.setJdbcUrl("jdbc:mysql://" + host + ":" + port + "/" + database + "?autoReconnect=true&useSSL=" + ssl + "&rewriteBatchedStatements=true");
         config.setUsername(username);
         config.setPassword(password);
         dataSource = new HikariDataSource(config);

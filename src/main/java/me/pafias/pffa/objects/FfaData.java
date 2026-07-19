@@ -15,4 +15,8 @@ public class FfaData {
         return kills / (double) (deaths == 0 ? 1 : deaths);
     }
 
+    public FfaData copy() {
+        return new FfaData(kills, deaths, killstreak);
+    }
+
 }

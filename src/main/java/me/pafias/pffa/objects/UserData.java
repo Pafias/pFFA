@@ -9,10 +9,11 @@ import java.util.UUID;
 @AllArgsConstructor
 public class UserData {
 
-    private final boolean temp;
-
     private final UUID uniqueId;
     private final FfaData ffaData;
 
+    public UserData copy() {
+        return new UserData(uniqueId, ffaData.copy());
+    }
 }
 

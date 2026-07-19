@@ -4,6 +4,7 @@ import me.pafias.pffa.commands.subcommands.LeaderboardCommand;
 import me.pafias.pffa.objects.UserData;
 import me.pafias.pffa.objects.exceptions.UserLoadingException;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface UserDataStorage {
@@ -23,6 +24,13 @@ public interface UserDataStorage {
      * @param userData The user data to save
      */
     void setUserData(UserData userData);
+
+    /**
+     * Saves the user data to the storage.
+     *
+     * @param userData The collection of user data to save
+     */
+    void setUserDataBatch(Collection<UserData> userData);
 
     /**
      * Returns an ordered list of users based on the specified statistic, limited to the specified number of results.
