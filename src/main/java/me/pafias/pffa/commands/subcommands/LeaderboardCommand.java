@@ -5,9 +5,7 @@ import lombok.Getter;
 import me.pafias.pffa.commands.BaseFFACommand;
 import me.pafias.pffa.objects.UserData;
 import me.pafias.pffa.storage.UserDataStorage;
-import me.pafias.putils.BukkitPlayerManager;
-import me.pafias.putils.CC;
-import me.pafias.putils.Tasks;
+import me.pafias.putils.*;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -38,7 +36,7 @@ public class LeaderboardCommand extends BaseFFACommand {
 
     private final Map<Statistic, Instant> lastFetches = new EnumMap<>(Statistic.class);
 
-    private final Map<Statistic, Map<OfflinePlayer, Integer>> cachedLeaderboards = new EnumMap<>(Statistic.class);
+    private final Map<Statistic, Map<String, Integer>> cachedLeaderboards = new EnumMap<>(Statistic.class);
 
     @Override
     public void execute(String mainCommand, CommandSender sender, String[] args) {
@@ -53,26 +51,35 @@ public class LeaderboardCommand extends BaseFFACommand {
             return;
         }
         sender.sendMessage(CC.t("&6Fetching data..."));
-        final CompletableFuture<Map<OfflinePlayer, Integer>> future = new CompletableFuture<>();
+        final CompletableFuture<Map<String, Integer>> future = new CompletableFuture<>();
         Tasks.runAsync(() -> {
             if (cachedLeaderboards.containsKey(statistic)) { // Already cached
                 final Instant lastFetch = lastFetches.get(statistic);
                 if (Duration.between(lastFetch, Instant.now()).toSeconds() < 30) { // Too little time has passed, use cache
-                    final Map<OfflinePlayer, Integer> cachedLeaderboard = cachedLeaderboards.get(statistic);
+                    final Map<String, Integer> cachedLeaderboard = cachedLeaderboards.get(statistic);
                     future.complete(cachedLeaderboard);
                     return;
                 }
             }
             final List<UserData> userDataList = userDataStorage.getTopStatistic(statistic, 10);
-            final Map<OfflinePlayer, Integer> map = new LinkedHashMap<>(userDataList.size());
+            final Map<String, Integer> map = new LinkedHashMap<>(userDataList.size());
             for (UserData userData : userDataList) {
-                final OfflinePlayer player = BukkitPlayerManager.getOfflinePlayerByUUID(userData.getUniqueId(), false);
                 final int value = switch (statistic) {
                     case KILLS -> userData.getFfaData().getKills();
                     case DEATHS -> userData.getFfaData().getDeaths();
                     case KILLSTREAK -> userData.getFfaData().getKillstreak();
                 };
-                map.put(player, value);
+                String name = "&cUnknown";
+                final OfflinePlayer offlinePlayer = BukkitPlayerManager.getOfflinePlayerByUUID(userData.getUniqueId(), false);
+                if (offlinePlayer != null && offlinePlayer.getName() != null) {
+                    name = offlinePlayer.getName();
+                } else {
+                    final MojangPlayer mojangPlayer = MojangUtils.getMojangPlayer(userData.getUniqueId());
+                    if (mojangPlayer != null) {
+                        name = mojangPlayer.getName();
+                    }
+                }
+                map.put(name, value);
             }
             lastFetches.put(statistic, Instant.now());
             cachedLeaderboards.put(statistic, map);
@@ -81,10 +88,9 @@ public class LeaderboardCommand extends BaseFFACommand {
         future.thenAccept(map -> {
             sender.sendMessage(CC.t("&7--------------- &3Top 10 " + statistic.getDisplayName() + " &7---------------"));
             int nr = 1;
-            for (Map.Entry<OfflinePlayer, Integer> entry : map.entrySet()) {
-                final OfflinePlayer offlinePlayer = entry.getKey();
+            for (Map.Entry<String, Integer> entry : map.entrySet()) {
+                final String name = entry.getKey();
                 final Integer value = entry.getValue();
-                final String name = offlinePlayer != null && offlinePlayer.getName() != null ? offlinePlayer.getName() : "&cUnknown";
                 sender.sendMessage(CC.tf("&7[&e#%d&7] &b%s &7with &d%d &7%s", nr, name, value, statistic.getDisplayName()));
                 nr++;
             }
@@ -108,7 +114,9 @@ public class LeaderboardCommand extends BaseFFACommand {
     @Getter
     @AllArgsConstructor
     public enum Statistic {
-        KILLS("kills", "kills"), DEATHS("deaths", "deaths"), KILLSTREAK("killstreak", "kill streak");
+        KILLS("kills", "kills"),
+        DEATHS("deaths", "deaths"),
+        KILLSTREAK("killstreak", "kill streak");
 
         private final String dbColumnName, displayName;
 
