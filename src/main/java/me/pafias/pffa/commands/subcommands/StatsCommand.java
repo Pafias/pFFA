@@ -4,8 +4,8 @@ import me.pafias.pffa.commands.BaseFFACommand;
 import me.pafias.pffa.objects.FfaData;
 import me.pafias.pffa.objects.User;
 import me.pafias.pffa.objects.UserData;
-import me.pafias.putils.BukkitPlayerManager;
-import me.pafias.putils.CC;
+import me.pafias.putils.*;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -46,18 +46,25 @@ public class StatsCommand extends BaseFFACommand {
         else
             targetName = sender.getName();
         sender.sendMessage(CC.t("&6Fetching data..."));
-        CompletableFuture.supplyAsync(() -> BukkitPlayerManager.getOfflinePlayerByInput(targetName))
-                .thenAccept(offlinePlayer -> {
-                    if (offlinePlayer == null) {
+        CompletableFuture.supplyAsync(() -> {
+                    final OfflinePlayer offlinePlayer = BukkitPlayerManager.getOfflinePlayerByInput(targetName, false);
+                    if (offlinePlayer != null && offlinePlayer.getName() != null) {
+                        return new SimplePlayer(offlinePlayer.getUniqueId(), offlinePlayer.getName());
+                    } else {
+                        final MojangPlayer mojangPlayer = MojangUtils.getMojangPlayerByInput(targetName);
+                        if (mojangPlayer != null) {
+                            return new SimplePlayer(mojangPlayer.getUniqueId(), mojangPlayer.getName());
+                        }
+                    }
+                    return null;
+                })
+                .thenAccept(player -> {
+                    if (player == null) {
                         sender.sendMessage(CC.t("&cPlayer not found!"));
                         return;
                     }
-                    if (offlinePlayer.isOnline()) {
-                        User user = plugin.getSM().getUserManager().getUser(offlinePlayer.getUniqueId());
-                        if (user == null) {
-                            sender.sendMessage(CC.t("&cPlayer not found!"));
-                            return;
-                        }
+                    final User user = plugin.getSM().getUserManager().getUser(player.getUniqueId());
+                    if (user != null) {
                         sender.sendMessage(CC.multiLine(
                                 "",
                                 CC.af("&3---------- &9FFA Stats for &d%s &3----------", user.getName()),
@@ -69,7 +76,7 @@ public class StatsCommand extends BaseFFACommand {
                                 ""
                         ));
                     } else {
-                        UserData userData = plugin.getSM().getUserDataStorage().getUserData(offlinePlayer.getUniqueId().toString());
+                        UserData userData = plugin.getSM().getUserDataStorage().getUserData(player.getUniqueId().toString());
                         if (userData == null) {
                             sender.sendMessage(CC.t("&cNo data found on this player."));
                             return;
@@ -77,7 +84,7 @@ public class StatsCommand extends BaseFFACommand {
                         FfaData ffaData = userData.getFfaData();
                         sender.sendMessage(CC.multiLine(
                                 "",
-                                CC.af("&3---------- &9FFA Stats for &d%s &3----------", offlinePlayer.getName()),
+                                CC.af("&3---------- &9FFA Stats for &d%s &3----------", player.getName()),
                                 CC.af("&6Kills: &7%d", ffaData.getKills()),
                                 CC.af("&6Deaths: &7%d", ffaData.getDeaths()),
                                 CC.af("&6KDR: &7%.2f", ffaData.getKDR()),
@@ -92,9 +99,10 @@ public class StatsCommand extends BaseFFACommand {
     public List<String> tabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 2 && sender.hasPermission(getPermission() + ".others")) {
             final List<String> list = new ArrayList<>();
+            final String arg = args[1].toLowerCase();
             for (final Player p : plugin.getServer().getOnlinePlayers()) {
                 if (!(sender instanceof Player player) || player.canSee(p)) {
-                    if (p.getName().toLowerCase().startsWith(args[1].toLowerCase())) {
+                    if (p.getName().toLowerCase().startsWith(arg)) {
                         list.add(p.getName());
                     }
                 }
