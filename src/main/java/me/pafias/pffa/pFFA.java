@@ -1,5 +1,9 @@
 package me.pafias.pffa;
 
+import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.manager.server.ServerVersion;
+import com.viaversion.viaversion.api.Via;
+import com.viaversion.viaversion.api.protocol.version.ProtocolVersion;
 import lombok.Getter;
 import me.pafias.pffa.commands.commands.*;
 import me.pafias.pffa.listeners.*;
@@ -64,6 +68,27 @@ public final class pFFA extends JavaPlugin {
         // Listeners
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvents(new JoinQuitListener(plugin), plugin);
+
+        try {
+            // HOW IS THERE NO (NATIVE) WAY TO GET THE SERVER'S PROTOCOL VERSION NUMBER... SMH
+            if (getServer().getPluginManager().isPluginEnabled("packetevents")) {
+                final ServerVersion version = PacketEvents.getAPI().getServerManager().getVersion();
+                if (version.isNewerThanOrEquals(ServerVersion.V_1_21_9))
+                    pm.registerEvents(new SpawnListener(getLobbySpawn()), plugin);
+                else
+                    pm.registerEvents(new SpawnListenerPre1_21_9(getLobbySpawn()), plugin);
+            } else if (getServer().getPluginManager().isPluginEnabled("ViaVersion")) {
+                final ProtocolVersion version = Via.getAPI().getServerVersion().highestSupportedProtocolVersion();
+                if (version.newerThanOrEqualTo(ProtocolVersion.v1_21_9))
+                    pm.registerEvents(new SpawnListener(getLobbySpawn()), plugin);
+                else
+                    pm.registerEvents(new SpawnListenerPre1_21_9(getLobbySpawn()), plugin);
+            }
+        } catch (Throwable t) {
+            // Fallback, just in case any of that shit above hits the fan :sob:
+            pm.registerEvents(new SpawnListenerPre1_21_9(getLobbySpawn()), plugin);
+        }
+
         pm.registerEvents(new ProtectionListener(plugin), plugin);
         pm.registerEvents(new DeathListener(plugin), plugin);
         pm.registerEvents(new MiscListener(plugin), plugin);

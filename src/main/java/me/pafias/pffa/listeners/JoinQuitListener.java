@@ -9,7 +9,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 
 public class JoinQuitListener implements Listener {
 
@@ -44,11 +43,6 @@ public class JoinQuitListener implements Listener {
         event.getPlayer().setHealth(event.getPlayer().getMaxHealth());
         event.getPlayer().setFoodLevel(20);
         event.getPlayer().setSaturation(0);
-    }
-
-    @EventHandler
-    public void onSpawn(PlayerSpawnLocationEvent event) {
-        event.setSpawnLocation(plugin.getLobbySpawn());
     }
 
     @EventHandler(priority = EventPriority.HIGH)
