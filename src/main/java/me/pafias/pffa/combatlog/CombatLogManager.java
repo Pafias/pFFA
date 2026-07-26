@@ -1,5 +1,7 @@
 package me.pafias.pffa.combatlog;
 
+import me.pafias.pffa.events.CombatEndedEvent;
+import me.pafias.pffa.events.CombatStartedEvent;
 import me.pafias.pffa.pFFA;
 import me.pafias.putils.CC;
 import me.pafias.putils.Tasks;
@@ -120,6 +122,7 @@ public class CombatLogManager implements Listener {
             final CombatLog log = new CombatLog(attacker, victim, combatLogDurationInSeconds);
             combatLogs.add(log);
             indexCombatLog(log);
+            plugin.getServer().getPluginManager().callEvent(new CombatStartedEvent(log, log.getAttacker(), log.getVictim()));
         } else
             combatLog.reset(combatLogDurationInSeconds);
     }
@@ -139,6 +142,8 @@ public class CombatLogManager implements Listener {
             player.setExp(0);
             player.sendMessage(CC.tf("&aYou are no longer in combat with %s", combatLog.getVictim() == player ? combatLog.getAttacker().getName() : combatLog.getVictim().getName()));
         }
+
+        plugin.getServer().getPluginManager().callEvent(new CombatEndedEvent(combatLog, combatLog.getAttacker(), combatLog.getVictim()));
     }
 
     private void indexCombatLog(CombatLog combatLog) {
