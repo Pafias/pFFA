@@ -8,8 +8,8 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.Getter;
-import me.pafias.pffa.events.FFAPlayerSpawnedEvent;
 import me.pafias.pffa.events.FFAPlayerSpawnEvent;
+import me.pafias.pffa.events.FFAPlayerSpawnedEvent;
 import me.pafias.pffa.npcs.NpcManager;
 import me.pafias.pffa.npcs.local.packets.*;
 import me.pafias.pffa.objects.Kit;
@@ -24,7 +24,6 @@ import me.pafias.putils.CC;
 import me.pafias.putils.Tasks;
 import me.pafias.putils.builders.PlayerProfileBuilder;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -121,20 +120,20 @@ public class LocalNpcManager implements NpcManager {
      * Creates a new NPC with the proper name and skin.
      */
     @Override
-    public void createNpc(Component npcName, String npcSkinPlayerName, Location location, @Nullable Kit kit) {
+    public void createNpc(String name, Component nametag, String npcSkinPlayerName, Location location, @Nullable Kit kit) {
         final OfflinePlayer skinPlayer = BukkitPlayerManager.getOfflinePlayerByName(npcSkinPlayerName, false);
         final PlayerProfile skinProfile = new PlayerProfileBuilder()
                 .setUuid(skinPlayer.getUniqueId())
                 .setName(skinPlayer.getName())
                 .setFetchProperties(true)
                 .build();
-        final String cleanName = PlainTextComponentSerializer.plainText().serializeOr(npcName, "");
+        final UUID npcUuid = UUID.nameUUIDFromBytes(name.getBytes());
         final PlayerProfile profile = new PlayerProfileBuilder()
-                .setName(cleanName)
-                .setUuid(UUID.nameUUIDFromBytes(cleanName.getBytes()))
+                .setName(npcUuid.toString().substring(0, 8))
+                .setUuid(npcUuid)
                 .setProperties(skinProfile.getProperties())
                 .build();
-        createNpc(profile, npcName, location, kit, true);
+        createNpc(name, profile, nametag, location, kit, true);
     }
 
     /**
@@ -143,23 +142,23 @@ public class LocalNpcManager implements NpcManager {
     public void createNpc(UUID npcUuid, String npcName, Set<ProfileProperty> properties, Component nametag, Location location, @Nullable Kit kit, boolean save) {
         final PlayerProfile profile = new PlayerProfileBuilder()
                 .setUuid(npcUuid)
-                .setName(npcName)
+                .setName(npcUuid.toString().substring(0, 8))
                 .setFetchProperties(false)
                 .build();
         if (properties != null)
             profile.setProperties(properties);
-        createNpc(profile, nametag, location, kit, save);
+        createNpc(npcName, profile, nametag, location, kit, save);
     }
 
     /**
-     * Creates a new NPC with the given profile
+     * Creates a new NPC with the given profile.
      */
-    public void createNpc(PlayerProfile profile, Component nametag, Location location, @Nullable Kit kit, boolean save) {
-        final FakeNpc npc = new FakeNpc(executor, packetHandler, profile, nametag, location, kit);
+    public void createNpc(String name, PlayerProfile profile, Component nametag, Location location, @Nullable Kit kit, boolean save) {
+        final FakeNpc npc = new FakeNpc(executor, packetHandler, name, profile, nametag, location, kit);
         npcs.put(npc.getEntityId(), npc);
 
         if (save) {
-            config.set(npc.getProfile().getId().toString() + ".name", npc.getProfile().getName());
+            config.set(npc.getProfile().getId().toString() + ".name", npc.getName());
             profile.getProperties().forEach(property -> {
                 config.set(npc.getProfile().getId().toString() + ".properties." + property.getName() + ".value", property.getValue());
                 if (property.isSigned())
@@ -205,8 +204,9 @@ public class LocalNpcManager implements NpcManager {
             Kit kit = kitManager.getKit(entityName);
             if (kit != null) { // Clicked on Kit npc
                 if (!leftClick) {
-                    guiManager.openSpawnGui(user, kit);
-                    user.setLastKit(kit);
+                    boolean yes = guiManager.openSpawnGui(user, kit);
+                    if (yes)
+                        user.setLastKit(kit);
                 } else {
                     Spawn spawn = spawnManager.getDefaultSpawn();
 
@@ -233,8 +233,9 @@ public class LocalNpcManager implements NpcManager {
             Spawn spawn = spawnManager.getSpawn(entityName);
             if (spawn != null) { // Clicked on Spawn npc
                 if (!leftClick) {
-                    guiManager.openKitGui(user, spawn);
-                    user.setLastSpawn(spawn);
+                    boolean yes = guiManager.openKitGui(user, spawn);
+                    if (yes)
+                        user.setLastSpawn(spawn);
                 } else {
                     Kit k = kitManager.getDefaultKit();
 
@@ -263,8 +264,22 @@ public class LocalNpcManager implements NpcManager {
     }
 
     @Override
-    public <T> boolean exists(T npc) {
+    public <T> boolean exists(T identifier) {
+        if (identifier instanceof Integer entityId)
+            return npcs.containsKey(entityId.intValue());
+        else if (identifier instanceof Entity entity)
+            return npcs.containsKey(entity.getEntityId());
         return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T, R> R getNpc(T identifier) {
+        if (identifier instanceof Integer entityId)
+            return (R) npcs.get(entityId.intValue());
+        else if (identifier instanceof Entity entity)
+            return (R) npcs.get(entity.getEntityId());
+        return null;
     }
 
     @Override

@@ -62,9 +62,9 @@ public class GuiManager implements Listener {
         return false;
     }
 
-    public void openKitGui(User user, Spawn spawn) {
+    public boolean openKitGui(User user, Spawn spawn) {
         if (isRateLimited(user.getPlayer()))
-            return;
+            return false;
         KitMenu kitMenu = kitInvCache.get(user.getPlayer());
         if (kitMenu == null) {
             kitMenu = new KitMenu(user, spawn, kitManager.getKits(user.getPlayer()).values());
@@ -72,11 +72,12 @@ public class GuiManager implements Listener {
         }
         kitMenu.setSpawn(spawn);
         kitMenu.open();
+        return true;
     }
 
-    public void openSpawnGui(User user, Kit kit) {
+    public boolean openSpawnGui(User user, Kit kit) {
         if (isRateLimited(user.getPlayer()))
-            return;
+            return false;
         SpawnMenu spawnMenu = spawnInvCache.get(user.getPlayer());
         if (spawnMenu == null) {
             spawnMenu = new SpawnMenu(user, kit, spawnManager.getSpawns(user.getPlayer()).values());
@@ -84,6 +85,7 @@ public class GuiManager implements Listener {
         }
         spawnMenu.setKit(kit);
         spawnMenu.open();
+        return true;
     }
 
     @EventHandler

@@ -3,6 +3,7 @@ package me.pafias.pffa.npcs.local.packets;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
 import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes;
+import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
 import com.github.retrooper.packetevents.protocol.player.Equipment;
 import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.protocol.player.TextureProperty;
@@ -10,11 +11,12 @@ import com.github.retrooper.packetevents.protocol.player.UserProfile;
 import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.wrapper.play.server.*;
 import me.pafias.pffa.npcs.local.FakeNpc;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.*;
 
 public class PacketHandler1_17 implements PacketHandler {
 
@@ -120,6 +122,77 @@ public class PacketHandler1_17 implements PacketHandler {
         PacketEvents.getAPI().getPlayerManager().sendPacket(player, new WrapperPlayServerEntityHeadLook(
                 npc.getEntityId(),
                 location.getYaw()
+        ));
+    }
+
+    /**
+     * The nametag is rendered by a separate invisible armor stand riding along with the NPC, rather than the
+     * NPC's own player entity because vanilla does not support colored and long nametags.
+     * It's spawned with a small upward nudge for readability above the NPC's own nameplate.
+     */
+    @Override
+    public void spawnNametag(Player player, FakeNpc npc) {
+        PacketEvents.getAPI().getPlayerManager().sendPacket(player, new WrapperPlayServerSpawnEntity(
+                npc.getNametagEntityId(),
+                Optional.of(UUID.randomUUID()),
+                EntityTypes.ARMOR_STAND,
+                new Vector3d(
+                        npc.getLocation().getX(),
+                        npc.getLocation().getY() + 0.88,
+                        npc.getLocation().getZ()
+                ),
+                0, 0, 0,
+                0,
+                Optional.empty()
+        ));
+        PacketEvents.getAPI().getPlayerManager().sendPacket(player, new WrapperPlayServerEntityMetadata(
+                npc.getNametagEntityId(),
+                List.of(
+                        new EntityData<>(0, EntityDataTypes.BYTE, (byte) 0x20), // invisible
+                        new EntityData<>(2, EntityDataTypes.OPTIONAL_ADV_COMPONENT, Optional.of(npc.getNametag())),
+                        new EntityData<>(3, EntityDataTypes.BOOLEAN, true), // custom name visible
+                        new EntityData<>(5, EntityDataTypes.BOOLEAN, true), // no gravity
+                        new EntityData<>(15, EntityDataTypes.BYTE, (byte) (0x01 | 0x08)) // small, no base plate
+                )
+        ));
+    }
+
+    @Override
+    public void destroyNametag(Player player, FakeNpc npc) {
+        PacketEvents.getAPI().getPlayerManager().sendPacket(player, new WrapperPlayServerDestroyEntities(
+                npc.getNametagEntityId()
+        ));
+    }
+
+    /**
+     * An empty profile name leaves a small empty nameplate background rendered,
+     * so we'll send a scoreboard team packet with nametag visibility NEVER
+     * to fully suppress the native nameplate, leaving only the custom nametag visible.
+     */
+    @Override
+    public void hideNativeNameplate(Player player, FakeNpc npc) {
+        PacketEvents.getAPI().getPlayerManager().sendPacket(player, new WrapperPlayServerTeams(
+                "pffa_npc_" + npc.getEntityId(),
+                WrapperPlayServerTeams.TeamMode.CREATE,
+                new WrapperPlayServerTeams.ScoreBoardTeamInfo(
+                        Component.empty(),
+                        null,
+                        null,
+                        WrapperPlayServerTeams.NameTagVisibility.NEVER,
+                        WrapperPlayServerTeams.CollisionRule.NEVER,
+                        NamedTextColor.WHITE,
+                        WrapperPlayServerTeams.OptionData.NONE
+                ),
+                npc.getProfile().getName()
+        ));
+    }
+
+    @Override
+    public void showNativeNameplate(Player player, FakeNpc npc) {
+        PacketEvents.getAPI().getPlayerManager().sendPacket(player, new WrapperPlayServerTeams(
+                "pffa_npc_" + npc.getEntityId(),
+                WrapperPlayServerTeams.TeamMode.REMOVE,
+                (WrapperPlayServerTeams.ScoreBoardTeamInfo) null
         ));
     }
 

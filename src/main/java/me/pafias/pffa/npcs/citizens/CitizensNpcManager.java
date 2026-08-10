@@ -23,9 +23,9 @@ import net.citizensnpcs.api.npc.SimpleNPCDataStore;
 import net.citizensnpcs.api.trait.trait.Equipment;
 import net.citizensnpcs.api.util.YamlStorage;
 import net.citizensnpcs.trait.CurrentLocation;
+import net.citizensnpcs.trait.HologramTrait;
 import net.citizensnpcs.trait.SkinTrait;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
@@ -68,13 +68,13 @@ public class CitizensNpcManager implements NpcManager {
     private NPCDataStore npcDataStore;
 
     @Override
-    public void createNpc(Component npcName, String npcSkinPlayerName, Location location, @Nullable Kit kit) {
-        final String name = PlainTextComponentSerializer.plainText().serializeOrNull(npcName);
-        if (name == null || name.isEmpty())
+    public void createNpc(String npcName, Component npcNametag, String npcSkinPlayerName, Location location, @Nullable Kit kit) {
+        if (npcName == null || npcName.isEmpty())
             throw new IllegalArgumentException("NPC name cannot be null or empty.");
         if (location == null || location.getWorld() == null)
             throw new IllegalArgumentException("Location cannot be null or in an invalid world.");
-        final NPC npc = npcRegistry.createNPC(EntityType.PLAYER, name);
+        final NPC npc = npcRegistry.createNPC(EntityType.PLAYER, npcName);
+        npc.getOrAddTrait(HologramTrait.class).addLine(CC.serialize(npcNametag));
         npc.spawn(location, SpawnReason.CREATE);
         final CurrentLocation currentLocation = npc.getOrAddTrait(CurrentLocation.class);
         currentLocation.setLocation(location);
@@ -88,10 +88,6 @@ public class CitizensNpcManager implements NpcManager {
         final SkinTrait skinTrait = npc.getOrAddTrait(SkinTrait.class);
         skinTrait.setSkinName(npcSkinPlayerName);
         npcRegistry.saveToStore();
-    }
-
-    public void createNpc(String npcName, Location location, @Nullable Kit kit) {
-        createNpc(CC.a(npcName), npcName, location, kit);
     }
 
     public void removeNpc(Location location) {
@@ -176,14 +172,22 @@ public class CitizensNpcManager implements NpcManager {
     }
 
     @Override
-    public <T> boolean exists(T npc) {
-        if (npc instanceof NPC var)
+    public <T> boolean exists(T identifier) {
+        if (identifier instanceof NPC var)
             return var.getOwningRegistry().equals(npcRegistry);
-        else if (npc instanceof Entity entity) {
+        else if (identifier instanceof Entity entity) {
             final NPC npcEntity = npcRegistry.getNPC(entity);
             return npcEntity != null && npcEntity.getOwningRegistry().equals(npcRegistry);
         }
         return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T, R> R getNpc(T identifier) {
+        if (identifier instanceof Entity entity)
+            return (R) npcRegistry.getNPC(entity);
+        return null;
     }
 
     @Override

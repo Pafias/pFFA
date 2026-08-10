@@ -63,7 +63,15 @@ public class ReloadCommand extends BaseFFACommand {
         plugin.getServer().getOnlinePlayers()
                 .stream()
                 .filter(p -> !p.hasMetadata("NPC"))
-                .forEach(p -> plugin.getSM().getUserManager().addUser(p));
+                .forEach(p -> {
+                    try {
+                        plugin.getSM().getUserManager().loadUser(p.getUniqueId());
+                        plugin.getSM().getUserManager().addUser(p);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        sender.sendMessage(CC.t("&cFailed to reload data for " + p.getName() + "."));
+                    }
+                });
         if (error) {
             sender.sendMessage(CC.t("&cSomething went wrong while reloading the plugin. Restarting the server is recommended to avoid issues."));
         } else {

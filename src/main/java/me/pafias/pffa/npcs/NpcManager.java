@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 public interface NpcManager {
 
-    void createNpc(Component npcName, String npcSkinPlayerName, Location location, @Nullable Kit kit);
+    void createNpc(String npcName, Component npcNametag, String npcSkinPlayerName, Location location, @Nullable Kit kit);
 
     void removeNpc(Location location);
 
@@ -27,10 +27,18 @@ public interface NpcManager {
     /**
      * Checks if the NPC exists in the registry.
      *
-     * @param npc The NPC to check.
+     * @param identifier The identifier to check for.
      * @return true if the NPC exists, false otherwise.
      */
-    <T> boolean exists(T npc);
+    <T> boolean exists(T identifier);
+
+    /**
+     * Retrieves the backend-native NPC object for the given identifier (entity id or Bukkit Entity).
+     *
+     * @param identifier The identifier to look up the NPC by.
+     * @return The NPC, or null if none is found.
+     */
+    <T, R> R getNpc(T identifier);
 
     void shutdown();
 

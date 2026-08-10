@@ -35,8 +35,23 @@ public class NpcCommand extends BaseFFACommand {
 
     private void help(CommandSender sender, String label) {
         sender.sendMessage(CC.t("&f------------------ &bFFA NPCs &f------------------"));
-        sender.sendMessage(CC.tf("&3/%s npc create <name> [kit] &9- Create a new NPC at your location", label));
+        sender.sendMessage(CC.tf("&3/%s npc create <name/id> \"<nametag>\" <skin> [kit] &9- Create a new NPC at your location", label));
         sender.sendMessage(CC.tf("&3/%s npc remove &9- Remove the nearest NPC", label));
+    }
+
+    /**
+     * Finds the index of the arg that closes the quoted nametag starting at args[3], scanning up to
+     * (but not including) scanEndExclusive. Returns -1 if the nametag isn't quoted or isn't closed yet.
+     */
+    private int findNametagEndIndex(String[] args, int scanEndExclusive) {
+        if (args.length <= 3 || !args[3].startsWith("\""))
+            return -1;
+        for (int i = 3; i < scanEndExclusive; i++) {
+            final boolean isFirstToken = i == 3;
+            if (args[i].endsWith("\"") && (!isFirstToken || args[i].length() > 1))
+                return i;
+        }
+        return -1;
     }
 
     @Override
@@ -57,17 +72,7 @@ public class NpcCommand extends BaseFFACommand {
         }
         switch (subCommand) {
             case "create":
-                if (args.length < 3) {
-                    help(sender, mainCommand);
-                    return;
-                }
-                final Component name = CC.a(args[2]);
-                final String skinName = args[3];
-                final Location location = player.getLocation();
-                final String kitName = args.length >= 5 ? args[4] : null;
-                final Kit kit = kitName == null ? null : plugin.getSM().getKitManager().getKit(kitName);
-                npcManager.createNpc(name, skinName, location, kit);
-                sender.sendMessage(CC.t("&aNPC created successfully at your location."));
+                handleCreate(mainCommand, sender, player, npcManager, args);
                 break;
             case "remove":
                 try {
@@ -78,7 +83,45 @@ public class NpcCommand extends BaseFFACommand {
                 }
                 sender.sendMessage(CC.t("&aNPC removed successfully."));
                 break;
+            default:
+                help(sender, mainCommand);
+                break;
         }
+    }
+
+    private void handleCreate(String mainCommand, CommandSender sender, Player player, NpcManager npcManager, String[] args) {
+        if (args.length < 4) {
+            help(sender, mainCommand);
+            return;
+        }
+        final String name = args[2];
+        if (!args[3].startsWith("\"")) {
+            sender.sendMessage(CC.t("&cThe nametag must be wrapped in quotes."));
+            return;
+        }
+        final int nametagEndIndex = findNametagEndIndex(args, args.length);
+        if (nametagEndIndex == -1) {
+            sender.sendMessage(CC.t("&cUnclosed quote in nametag."));
+            return;
+        }
+        final StringBuilder rawNametag = new StringBuilder();
+        for (int i = 3; i <= nametagEndIndex; i++) {
+            if (i > 3) rawNametag.append(' ');
+            rawNametag.append(args[i]);
+        }
+        final Component nametag = CC.a(rawNametag.substring(1, rawNametag.length() - 1));
+
+        final int skinIndex = nametagEndIndex + 1;
+        if (args.length <= skinIndex) {
+            help(sender, mainCommand);
+            return;
+        }
+        final String skinName = args[skinIndex];
+        final Location location = player.getLocation();
+        final String kitName = args.length > skinIndex + 1 ? args[skinIndex + 1] : null;
+        final Kit kit = kitName == null ? null : plugin.getSM().getKitManager().getKit(kitName);
+        npcManager.createNpc(name, nametag, skinName, location, kit);
+        sender.sendMessage(CC.t("&aNPC created successfully at your location."));
     }
 
     @Override
@@ -88,24 +131,37 @@ public class NpcCommand extends BaseFFACommand {
                     .filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase()))
                     .toList();
 
-        else if (args.length == 3) {
-            if (args[1].equalsIgnoreCase("create")) {
-                if (args[2].isBlank())
-                    return Collections.singletonList("<name>");
-                return Collections.singletonList(CC.t(args[2]));
-            }
-        } else if (args.length == 4) {
-            if (args[1].equalsIgnoreCase("create"))
-                return Arrays.stream(plugin.getServer().getOfflinePlayers())
-                        .map(OfflinePlayer::getName)
-                        .filter(Objects::nonNull)
-                        .filter(name -> name.toLowerCase().startsWith(args[3].toLowerCase()))
-                        .toList();
-        } else if (args.length == 5 && args[1].equalsIgnoreCase("create"))
+        if (!args[1].equalsIgnoreCase("create"))
+            return Collections.emptyList();
+
+        if (args.length == 3)
+            return Collections.singletonList("<name>");
+
+        if (args.length == 4) {
+            if (args[3].isBlank())
+                return Collections.singletonList("\"<nametag>\"");
+            return Collections.singletonList(CC.t(args[3]));
+        }
+
+        // Beyond the name and the start of the nametag, completions only make sense once the
+        // quoted nametag (everything but the currently-typed last token) has actually closed.
+        final int nametagEndIndex = findNametagEndIndex(args, args.length - 1);
+        if (nametagEndIndex == -1)
+            return Collections.emptyList();
+
+        final int skinIndex = nametagEndIndex + 1;
+        final int currentIndex = args.length - 1;
+        if (currentIndex == skinIndex)
+            return Arrays.stream(plugin.getServer().getOfflinePlayers())
+                    .map(OfflinePlayer::getName)
+                    .filter(Objects::nonNull)
+                    .filter(name -> name.toLowerCase().startsWith(args[currentIndex].toLowerCase()))
+                    .toList();
+        if (currentIndex == skinIndex + 1)
             return plugin.getSM().getKitManager().getKits()
                     .keySet()
                     .stream()
-                    .filter(name -> name.toLowerCase().startsWith(args[4].toLowerCase()))
+                    .filter(name -> name.toLowerCase().startsWith(args[currentIndex].toLowerCase()))
                     .toList();
 
         return Collections.emptyList();

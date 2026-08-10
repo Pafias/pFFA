@@ -17,6 +17,14 @@ public interface PacketHandler {
 
     void destroyNpc(Player player, FakeNpc npc);
 
+    void spawnNametag(Player player, FakeNpc npc);
+
+    void destroyNametag(Player player, FakeNpc npc);
+
+    void hideNativeNameplate(Player player, FakeNpc npc);
+
+    void showNativeNameplate(Player player, FakeNpc npc);
+
     // Extras
 
     void rotate(Player player, FakeNpc npc, float yaw, float pitch);

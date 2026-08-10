@@ -13,6 +13,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Queue;
 import java.util.Random;
@@ -27,6 +29,8 @@ public class FakeNpc {
     private final PacketHandler packetHandler;
 
     @Getter
+    private final String name;
+    @Getter
     private final PlayerProfile profile;
     @Getter
     private final Component nametag;
@@ -39,13 +43,17 @@ public class FakeNpc {
     private final int entityId = new Random().nextInt(100000) + 2000;
 
     @Getter
+    private final int nametagEntityId = new Random().nextInt(100000) + 2000;
+
+    @Getter
     private final Set<Player> viewers = ConcurrentHashMap.newKeySet();
 
     private final ExecutorService executor;
 
-    public FakeNpc(ExecutorService executor, PacketHandler packetHandler, PlayerProfile profile, Component nametag, Location location, Kit kit) {
+    public FakeNpc(ExecutorService executor, @NotNull PacketHandler packetHandler, @NotNull String name, @NotNull PlayerProfile profile, Component nametag, Location location, @Nullable Kit kit) {
         this.executor = executor;
         this.packetHandler = packetHandler;
+        this.name = name;
         this.profile = profile;
         this.nametag = nametag;
         this.location = location;
@@ -63,6 +71,8 @@ public class FakeNpc {
 
             packetHandler.addToTab(player, this);
             packetHandler.spawnNpc(player, this);
+            packetHandler.spawnNametag(player, this);
+            packetHandler.hideNativeNameplate(player, this);
             if (kit != null) {
                 Equipment[] equipment = new Equipment[4];
                 int i = 0;
@@ -94,6 +104,8 @@ public class FakeNpc {
             if (!viewers.contains(player)) return;
             viewers.remove(player);
             packetHandler.destroyNpc(player, this);
+            packetHandler.destroyNametag(player, this);
+            packetHandler.showNativeNameplate(player, this);
         });
     }
 
