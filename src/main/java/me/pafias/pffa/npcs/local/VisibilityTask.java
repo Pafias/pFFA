@@ -39,7 +39,8 @@ public class VisibilityTask extends BukkitRunnable {
     private boolean isChunkLoadedForPlayer(Player player, Location location) {
         if (!player.getWorld().equals(location.getWorld()))
             return false;
-        return location.getWorld().isChunkLoaded(location.getChunk());
+        // Use coordinates, location.getChunk() would fetch the chunk off the main thread
+        return location.getWorld().isChunkLoaded(location.getBlockX() >> 4, location.getBlockZ() >> 4);
     }
 
 }

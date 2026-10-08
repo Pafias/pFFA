@@ -32,6 +32,10 @@ commands:
     aliases: [ lb ]
     description: Leaderboard command
     permission: ffa.leaderboard
+  compare:
+    usage: /compare <player>
+    description: Compare command
+    permission: ffa.compare
 permissions:
   ffa.kill.others:
     description: Permission to use the ffa's kill (sub)command on other players
@@ -100,3 +104,6 @@ permissions:
   ffa.leaderboard:
     default: true
     description: Permission to use the leaderboard command
+  ffa.compare:
+    default: true
+    description: Permission to use the compare command

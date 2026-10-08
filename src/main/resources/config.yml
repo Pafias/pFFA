@@ -103,6 +103,7 @@ commands:
   override_kill_command: true
   override_spectate_command: true
   override_leaderboard_command: true
+  override_compare_command: true
   kill_command_cooldown: 5
 
 # This will make players get a little velocity boost when they step on a pressure plate

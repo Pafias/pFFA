@@ -118,6 +118,8 @@ public final class pFFA extends JavaPlugin {
             getCommand("spectate").setExecutor(new SpectateCommand(plugin));
         if (getConfig().getBoolean("commands.override_leaderboard_command"))
             getCommand("leaderboard").setExecutor(new LeaderboardCommand(plugin));
+        if (getConfig().getBoolean("commands.override_compare_command"))
+            getCommand("compare").setExecutor(new CompareCommand(plugin));
     }
 
     @Override

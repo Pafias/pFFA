@@ -4,6 +4,7 @@ import com.github.retrooper.packetevents.event.SimplePacketListenerAbstract;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
+import me.pafias.pffa.objects.User;
 import me.pafias.pffa.pFFA;
 import me.pafias.putils.Tasks;
 import org.bukkit.entity.Player;
@@ -40,7 +41,13 @@ public class LocalNpcListener extends SimplePacketListenerAbstract implements Li
         final FakeNpc npc = npcManager.getNpc(packet.getEntityId());
         if (npc != null) {
             final boolean leftClick = packet.getAction() == WrapperPlayClientInteractEntity.InteractAction.ATTACK;
-            Tasks.runSync(() -> npcManager.trigger(null, npc.getName(), plugin.getSM().getUserManager().getUser(player), leftClick));
+            Tasks.runSync(() -> {
+                // Player may have disconnected between packet receipt and this tick
+                if (!player.isOnline()) return;
+                final User user = plugin.getSM().getUserManager().getUser(player);
+                if (user == null) return;
+                npcManager.trigger(null, npc.getName(), user, leftClick);
+            });
         }
 
     }

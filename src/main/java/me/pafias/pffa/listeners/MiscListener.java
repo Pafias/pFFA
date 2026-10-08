@@ -5,6 +5,7 @@ import me.pafias.pffa.objects.Spawn;
 import me.pafias.pffa.objects.User;
 import me.pafias.pffa.pFFA;
 import me.pafias.putils.CC;
+import net.kyori.adventure.text.Component;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -37,7 +38,7 @@ public class MiscListener implements Listener {
         quickRespawnEnabled = quickRespawnConfig.getBoolean("enabled");
         quickRespawnPermission = quickRespawnConfig.getString("permission");
         quickRespawnMaterial = Material.getMaterial(quickRespawnConfig.getString("item.material"));
-        quickRespawnName = quickRespawnConfig.getString("item.name");
+        quickRespawnName = CC.a(quickRespawnConfig.getString("item.name"));
         quickRespawnSingleAction = quickRespawnConfig.getBoolean("single_action");
 
         preventDifferentKitPvp = plugin.getConfig().getBoolean("prevent_different_kit_pvp");
@@ -54,7 +55,8 @@ public class MiscListener implements Listener {
     private boolean cleanArrows, interactivePlates;
 
     private boolean quickRespawnSingleAction, quickRespawnEnabled;
-    private String quickRespawnPermission, quickRespawnName;
+    private String quickRespawnPermission;
+    private Component quickRespawnName;
     private Material quickRespawnMaterial;
 
     @EventHandler
@@ -79,13 +81,12 @@ public class MiscListener implements Listener {
         if (!quickRespawnEnabled) return;
         if (!event.hasItem() || event.getAction() == Action.PHYSICAL) return;
         final ItemStack item = event.getItem();
+        if (item.getType() != quickRespawnMaterial) return;
         if (!item.hasItemMeta()) return;
+        if (!event.getPlayer().hasPermission(quickRespawnPermission)) return;
         final ItemMeta meta = item.getItemMeta();
         if (!meta.hasDisplayName()) return;
-        if (!event.getPlayer().hasPermission(quickRespawnPermission)) return;
-        if (event.getItem().getType() != quickRespawnMaterial)
-            return;
-        if (!meta.displayName().equals(CC.a(quickRespawnName)))
+        if (!meta.displayName().equals(quickRespawnName))
             return;
         final User user = plugin.getSM().getUserManager().getUser(event.getPlayer());
         if (user == null) return;

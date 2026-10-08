@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import lombok.Getter;
 import me.pafias.pffa.objects.Spawn;
+import me.pafias.pffa.objects.User;
 import me.pafias.pffa.pFFA;
 import me.pafias.pffa.util.Serializer;
 import me.pafias.putils.CC;
@@ -30,7 +31,10 @@ public class SpawnManager {
         showUnallowedSpawns = plugin.getConfig().getBoolean("guis.show_unallowed_spawns", false);
 
         // Nearby players update task
-        final Predicate<Player> predicate = p -> !plugin.getSM().getUserManager().getUser(p).isInSpawn();
+        final Predicate<Player> predicate = p -> {
+            final User user = plugin.getSM().getUserManager().getUser(p);
+            return user != null && !user.isInSpawn();
+        };
         Tasks.runRepeatingSync(60, 60, () -> {
             for (final Spawn spawn : spawns.values())
                 spawn.setNearbyPlayers(spawn.getLocation().getNearbyPlayers(spawn.getPlayerDetectionRadius(), predicate));

@@ -2,6 +2,7 @@ package me.pafias.pffa.commands.commands;
 
 import me.pafias.pffa.commands.BaseFFACommand;
 import me.pafias.pffa.commands.subcommands.*;
+import me.pafias.pffa.commands.subcommands.CompareCommand;
 import me.pafias.pffa.commands.subcommands.KillCommand;
 import me.pafias.pffa.commands.subcommands.LeaderboardCommand;
 import me.pafias.pffa.commands.subcommands.SpawnCommand;
@@ -36,6 +37,7 @@ public class FFACommand implements CommandExecutor, TabExecutor {
         commands.add(new ConvertCommand());
         commands.add(new NpcCommand());
         commands.add(new LeaderboardCommand());
+        commands.add(new CompareCommand());
     }
 
     private final Set<BaseFFACommand> commands = new HashSet<>();
